@@ -1,6 +1,7 @@
 package game.wortwerk;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,25 +27,34 @@ public class QuizController {
     }
 
     @PostMapping("/answer")
-    public String answer(@RequestParam("article") String article, Model model, HttpSession session) {
+    public String answer(@RequestParam("article") String article, Model model, HttpSession session, HttpServletRequest request) {
         QuizState state = getOrCreateState(session);
         state.answer(article);
+        if (!isHtmxRequest(request)) {
+            return "redirect:/";
+        }
         model.addAttribute("state", state);
         return "fragments :: interaction";
     }
 
     @PostMapping("/next")
-    public String next(Model model, HttpSession session) {
+    public String next(Model model, HttpSession session, HttpServletRequest request) {
         QuizState state = getOrCreateState(session);
         state.nextRound();
+        if (!isHtmxRequest(request)) {
+            return "redirect:/";
+        }
         model.addAttribute("state", state);
         return "fragments :: interaction";
     }
 
     @PostMapping("/restart")
-    public String restart(Model model, HttpSession session) {
+    public String restart(Model model, HttpSession session, HttpServletRequest request) {
         QuizState state = quizService.startNewQuiz();
         session.setAttribute(SESSION_KEY, state);
+        if (!isHtmxRequest(request)) {
+            return "redirect:/";
+        }
         model.addAttribute("state", state);
         return "fragments :: interaction";
     }
@@ -56,5 +66,9 @@ public class QuizController {
             session.setAttribute(SESSION_KEY, state);
         }
         return state;
+    }
+
+    private boolean isHtmxRequest(HttpServletRequest request) {
+        return "true".equalsIgnoreCase(request.getHeader("HX-Request"));
     }
 }

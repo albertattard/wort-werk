@@ -4,11 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -20,12 +21,16 @@ class QuizControllerTest {
 
     @Test
     void shouldRenderInitialQuizPage() throws Exception {
-        mockMvc.perform(get("/"))
+        MvcResult result = mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Wort-Werk")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("der")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("die")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("das")));
+                .andReturn();
+
+        String body = result.getResponse().getContentAsString();
+        assertThat(body)
+                .contains("Wort-Werk")
+                .contains("der")
+                .contains("die")
+                .contains("das");
     }
 
     @Test
@@ -33,16 +38,18 @@ class QuizControllerTest {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/answer").param("article", "der"))
+        MvcResult answerResult = mockMvc.perform(post("/answer").header("HX-Request", "true").param("article", "der"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.anyOf(
-                        org.hamcrest.Matchers.containsString("Richtig:"),
-                        org.hamcrest.Matchers.containsString("Falsch.")
-                )));
+                .andReturn();
 
-        mockMvc.perform(post("/next"))
+        String answerBody = answerResult.getResponse().getContentAsString();
+        assertThat(answerBody.contains("Richtig:") || answerBody.contains("Falsch.")).isTrue();
+
+        MvcResult nextResult = mockMvc.perform(post("/next").header("HX-Request", "true"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Runde")));
+                .andReturn();
+
+        assertThat(nextResult.getResponse().getContentAsString()).contains("Runde");
     }
 
     @Test
@@ -50,8 +57,10 @@ class QuizControllerTest {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/restart"))
+        MvcResult result = mockMvc.perform(post("/restart").header("HX-Request", "true"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Runde")));
+                .andReturn();
+
+        assertThat(result.getResponse().getContentAsString()).contains("Runde");
     }
 }
