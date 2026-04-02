@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wort-Werk</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: linear-gradient(160deg, #faf6ef, #e6f2f1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: min(760px, 92vw);
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+            padding: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 1.7rem;
+        }
+
+        .muted {
+            color: #4b4b4b;
+            margin: 0 0 16px;
+        }
+    </style>
+</head>
+<body>
+<section class="card">
+    <h1>Wort-Werk</h1>
+    <p class="muted">Artikeltrainer mit Bildimpulsen</p>
+    <div id="quiz-interaction" th:replace="~{fragments :: interaction(state=${state})}"></div>
+</section>
+</body>
+</html>

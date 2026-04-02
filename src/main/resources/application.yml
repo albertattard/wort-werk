@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: wort-werk
+
+wortwerk:
+  articles-csv: assets/articles.csv
+  assets-dir: assets

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="interaction(state)">
+    <style>
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .image-wrap {
+            background: #f8f8f8;
+            border-radius: 12px;
+            min-height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .image-wrap img {
+            width: 100%;
+            max-height: 420px;
+            object-fit: contain;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            background: #0f766e;
+            color: #fff;
+        }
+
+        button:hover {
+            background: #115e59;
+        }
+
+        .feedback {
+            margin-top: 14px;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .next-row {
+            margin-top: 14px;
+        }
+
+        .results {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .results .score {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .choices {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div th:if="${!state.finished}">
+        <div class="status">
+            <span th:text="|Runde ${state.currentRound} von ${state.totalRounds}|">Runde 1 von 10</span>
+            <span th:text="|Punkte: ${state.score}|">Punkte: 0</span>
+        </div>
+
+        <div class="image-wrap">
+            <img th:src="@{${'/' + state.currentQuestion.imagePath}}" th:alt="${state.currentQuestion.noun}">
+        </div>
+
+        <div th:if="${!state.answered}" class="choices">
+            <button hx-post="/answer" hx-vals='{"article":"der"}' hx-target="#quiz-interaction" hx-swap="innerHTML">der</button>
+            <button hx-post="/answer" hx-vals='{"article":"die"}' hx-target="#quiz-interaction" hx-swap="innerHTML">die</button>
+            <button hx-post="/answer" hx-vals='{"article":"das"}' hx-target="#quiz-interaction" hx-swap="innerHTML">das</button>
+        </div>
+
+        <div th:if="${state.answered}">
+            <p class="feedback" th:text="${state.feedback}"></p>
+            <div class="next-row">
+                <button hx-post="/next" hx-target="#quiz-interaction" hx-swap="innerHTML">Weiter</button>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${state.finished}" class="results">
+        <p class="score" th:text="|Endstand: ${state.score} / ${state.totalRounds}|">Endstand: 0 / 10</p>
+        <button hx-post="/restart" hx-target="#quiz-interaction" hx-swap="innerHTML">Neu starten</button>
+    </div>
+</div>
+</body>
+</html>
