@@ -9,7 +9,8 @@ public final class QuizState {
 
     private int currentIndex;
     private int score;
-    private boolean answered;
+    private String selectedArticle;
+    private Boolean lastAnswerCorrect;
     private String feedback;
 
     public QuizState(List<ArticleEntry> questions, int totalRounds) {
@@ -17,7 +18,8 @@ public final class QuizState {
         this.totalRounds = totalRounds;
         this.currentIndex = 0;
         this.score = 0;
-        this.answered = false;
+        this.selectedArticle = null;
+        this.lastAnswerCorrect = null;
         this.feedback = "";
     }
 
@@ -31,10 +33,6 @@ public final class QuizState {
 
     public int getScore() {
         return score;
-    }
-
-    public boolean isAnswered() {
-        return answered;
     }
 
     public boolean isFinished() {
@@ -52,31 +50,42 @@ public final class QuizState {
         return feedback;
     }
 
+    public boolean hasFeedback() {
+        return feedback != null && !feedback.isBlank();
+    }
+
+    public boolean isCorrectHighlighted(String article) {
+        return Boolean.FALSE.equals(lastAnswerCorrect)
+                && !isFinished()
+                && getCurrentQuestion().article().equals(article);
+    }
+
+    public boolean isWrongSelection(String article) {
+        return Boolean.FALSE.equals(lastAnswerCorrect)
+                && selectedArticle != null
+                && selectedArticle.equals(article)
+                && !isCorrectHighlighted(article);
+    }
+
     public void answer(String selectedArticle) {
-        if (isFinished() || answered) {
+        if (isFinished()) {
             return;
         }
 
         ArticleEntry current = getCurrentQuestion();
         boolean correct = current.article().equals(selectedArticle);
+        this.selectedArticle = selectedArticle;
 
         if (correct) {
             score++;
-            feedback = "Richtig: " + current.articlePhrase();
+            feedback = "";
+            lastAnswerCorrect = true;
+            currentIndex++;
+            this.selectedArticle = null;
+            lastAnswerCorrect = null;
         } else {
             feedback = "Falsch. Richtig ist: " + current.articlePhrase();
+            lastAnswerCorrect = false;
         }
-
-        answered = true;
-    }
-
-    public void nextRound() {
-        if (!answered || isFinished()) {
-            return;
-        }
-
-        currentIndex++;
-        answered = false;
-        feedback = "";
     }
 }

@@ -28,6 +28,7 @@ class QuizControllerTest {
         String body = result.getResponse().getContentAsString();
         assertThat(body)
                 .contains("Wort-Werk")
+                .contains("question-noun")
                 .contains("der")
                 .contains("die")
                 .contains("das");
@@ -35,21 +36,19 @@ class QuizControllerTest {
 
     @Test
     void shouldAnswerAndMoveToNextRound() throws Exception {
-        mockMvc.perform(get("/"))
-                .andExpect(status().isOk());
+        MvcResult initialResult = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String initialBody = initialResult.getResponse().getContentAsString();
 
         MvcResult answerResult = mockMvc.perform(post("/answer").header("HX-Request", "true").param("article", "der"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String answerBody = answerResult.getResponse().getContentAsString();
-        assertThat(answerBody.contains("Richtig:") || answerBody.contains("Falsch.")).isTrue();
-
-        MvcResult nextResult = mockMvc.perform(post("/next").header("HX-Request", "true"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertThat(nextResult.getResponse().getContentAsString()).contains("Runde");
+        assertThat(answerBody).containsAnyOf("Runde 1 von 10", "Runde 2 von 10");
+        assertThat(answerBody).contains("question-noun");
+        assertThat(initialBody).isNotEqualTo(answerBody);
     }
 
     @Test

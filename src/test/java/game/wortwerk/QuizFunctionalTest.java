@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.LoadState;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -22,6 +23,28 @@ class QuizFunctionalTest {
 
     private Playwright playwright;
     private Browser browser;
+    private static final Map<String, String> ARTICLE_BY_NOUN = Map.ofEntries(
+            Map.entry("Apfel", "der"),
+            Map.entry("Banane", "die"),
+            Map.entry("Bett", "das"),
+            Map.entry("Fleisch", "das"),
+            Map.entry("Gabel", "die"),
+            Map.entry("Hund", "der"),
+            Map.entry("Kartoffel", "die"),
+            Map.entry("Katze", "die"),
+            Map.entry("Käse", "der"),
+            Map.entry("Lampe", "die"),
+            Map.entry("Löffel", "der"),
+            Map.entry("Messer", "das"),
+            Map.entry("Orange", "die"),
+            Map.entry("Schinken", "der"),
+            Map.entry("Sofa", "das"),
+            Map.entry("Stuhl", "der"),
+            Map.entry("Teppich", "der"),
+            Map.entry("Tisch", "der"),
+            Map.entry("Tomate", "die"),
+            Map.entry("Zwiebel", "die")
+    );
 
     @BeforeAll
     void setUpBrowser() {
@@ -45,6 +68,7 @@ class QuizFunctionalTest {
             page.navigate(baseUrl());
 
             assertThat(page.getByTestId("question-image").isVisible()).isTrue();
+            assertThat(page.getByTestId("question-noun").isVisible()).isTrue();
             assertThat(page.getByTestId("answer-der").isVisible()).isTrue();
             assertThat(page.getByTestId("answer-die").isVisible()).isTrue();
             assertThat(page.getByTestId("answer-das").isVisible()).isTrue();
@@ -52,45 +76,56 @@ class QuizFunctionalTest {
     }
 
     @Test
-    void shouldShowFeedbackAfterAnswer() {
+    void shouldKeepSameObjectAndHighlightCorrectArticleWhenWrongSelected() {
         try (Page page = browser.newPage()) {
             page.navigate(baseUrl());
 
-            postFromPage(page, "answer", "article=der");
-            page.reload();
-            String feedback = page.getByTestId("feedback").textContent();
+            String noun = page.getByTestId("question-noun").textContent();
+            assertThat(noun).isNotNull();
+            String correctArticle = ARTICLE_BY_NOUN.get(noun);
+            assertThat(correctArticle).isNotBlank();
 
-            assertThat(feedback).isNotNull();
-            assertThat(feedback).satisfiesAnyOf(
-                    value -> assertThat(value).contains("Richtig:"),
-                    value -> assertThat(value).contains("Falsch.")
-            );
+            String wrongArticle = pickWrongArticle(correctArticle);
+            clickArticle(page, wrongArticle);
+
+            assertThat(page.getByTestId("question-noun").textContent()).isEqualTo(noun);
+            assertThat(page.getByTestId("answer-" + correctArticle).getAttribute("class"))
+                    .contains("correct-answer");
         }
     }
 
     @Test
-    void shouldFinishTenRoundsAndRestart() {
+    void shouldAdvanceOnlyAfterCorrectSelection() {
         try (Page page = browser.newPage()) {
             page.navigate(baseUrl());
 
-            for (int i = 0; i < 10; i++) {
-                postFromPage(page, "answer", "article=der");
-                postFromPage(page, "next", "");
-            }
+            String noun = page.getByTestId("question-noun").textContent();
+            assertThat(noun).isNotNull();
+            String correctArticle = ARTICLE_BY_NOUN.get(noun);
+            assertThat(correctArticle).isNotBlank();
+            String wrongArticle = pickWrongArticle(correctArticle);
 
-            page.reload();
-            assertThat(page.getByTestId("results").isVisible()).isTrue();
-            assertThat(page.getByTestId("final-score").textContent().contains("Endstand:")).isTrue();
+            clickArticle(page, wrongArticle);
+            assertThat(page.getByTestId("question-noun").textContent()).isEqualTo(noun);
 
-            postFromPage(page, "restart", "");
-            page.reload();
-            assertThat(page.getByTestId("round-label").textContent().contains("Runde 1 von 10")).isTrue();
+            clickArticle(page, correctArticle);
+
+            String nextNoun = page.getByTestId("question-noun").textContent();
+            assertThat(nextNoun).isNotNull();
+            assertThat(nextNoun).isNotEqualTo(noun);
         }
     }
 
-    private void postFromPage(Page page, String path, String formBody) {
-        page.evaluate("payload => fetch(payload.url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: payload.body })",
-                Map.of("url", baseUrl() + path, "body", formBody));
+    private void clickArticle(Page page, String article) {
+        page.getByTestId("answer-" + article).click();
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+    }
+
+    private String pickWrongArticle(String correctArticle) {
+        if (!"der".equals(correctArticle)) {
+            return "der";
+        }
+        return "die";
     }
 
     private String baseUrl() {

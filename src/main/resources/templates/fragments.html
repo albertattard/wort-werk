@@ -28,9 +28,26 @@
         }
 
         .choices {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .choices form {
+            margin: 0;
+        }
+
+        .choices button {
+            min-width: 68px;
+        }
+
+        .question-noun {
+            text-align: center;
+            margin: 10px 0 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
 
         button {
@@ -45,6 +62,14 @@
 
         button:hover {
             background: #115e59;
+        }
+
+        button.correct-answer {
+            background: #2e7d32;
+        }
+
+        button.wrong-answer {
+            background: #b71c1c;
         }
 
         .feedback {
@@ -70,7 +95,7 @@
 
         @media (max-width: 700px) {
             .choices {
-                grid-template-columns: 1fr;
+                gap: 10px;
             }
         }
     </style>
@@ -85,34 +110,34 @@
             <img data-testid="question-image" th:src="@{${'/' + state.currentQuestion.imagePath}}" th:alt="${state.currentQuestion.noun}">
         </div>
 
-        <div th:if="${!state.answered}" class="choices">
-            <form method="post" action="/answer" hx-post="/answer" hx-target="#quiz-interaction" hx-swap="innerHTML">
+        <p class="question-noun" data-testid="question-noun" th:text="${state.currentQuestion.noun}">Objektname</p>
+
+        <div class="choices">
+            <form method="post" action="/answer">
                 <input type="hidden" name="article" value="der">
-                <button data-testid="answer-der" type="submit">der</button>
+                <button data-testid="answer-der" type="submit"
+                        th:classappend="${state.isCorrectHighlighted('der')} ? ' correct-answer' : (${state.isWrongSelection('der')} ? ' wrong-answer' : '')">der</button>
             </form>
-            <form method="post" action="/answer" hx-post="/answer" hx-target="#quiz-interaction" hx-swap="innerHTML">
+            <form method="post" action="/answer">
                 <input type="hidden" name="article" value="die">
-                <button data-testid="answer-die" type="submit">die</button>
+                <button data-testid="answer-die" type="submit"
+                        th:classappend="${state.isCorrectHighlighted('die')} ? ' correct-answer' : (${state.isWrongSelection('die')} ? ' wrong-answer' : '')">die</button>
             </form>
-            <form method="post" action="/answer" hx-post="/answer" hx-target="#quiz-interaction" hx-swap="innerHTML">
+            <form method="post" action="/answer">
                 <input type="hidden" name="article" value="das">
-                <button data-testid="answer-das" type="submit">das</button>
+                <button data-testid="answer-das" type="submit"
+                        th:classappend="${state.isCorrectHighlighted('das')} ? ' correct-answer' : (${state.isWrongSelection('das')} ? ' wrong-answer' : '')">das</button>
             </form>
         </div>
 
-        <div th:if="${state.answered}">
+        <div th:if="${state.hasFeedback()}">
             <p class="feedback" data-testid="feedback" th:text="${state.feedback}"></p>
-            <div class="next-row">
-                <form method="post" action="/next" hx-post="/next" hx-target="#quiz-interaction" hx-swap="innerHTML">
-                    <button data-testid="next-button" type="submit">Weiter</button>
-                </form>
-            </div>
         </div>
     </div>
 
     <div th:if="${state.finished}" class="results" data-testid="results">
         <p class="score" data-testid="final-score" th:text="|Endstand: ${state.score} / ${state.totalRounds}|">Endstand: 0 / 10</p>
-        <form method="post" action="/restart" hx-post="/restart" hx-target="#quiz-interaction" hx-swap="innerHTML">
+        <form method="post" action="/restart">
             <button data-testid="restart-button" type="submit">Neu starten</button>
         </form>
     </div>

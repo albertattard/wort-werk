@@ -39,6 +39,9 @@ Use one of these `category` values for new tasks:
 ## Task Files
 
 - [TASK-001: Implement SPEC-001 Quiz Vertical Slice](./quiz/TASK-001-implement-spec-001-quiz-vertical-slice.md)
+- [TASK-002: Enforce Correct Selection Before Advancing and Show Noun](./quiz/TASK-002-enforce-correct-before-advance-and-show-noun.md)
+- [TASK-003: Center Noun and Article Buttons](./quiz/TASK-003-center-noun-and-article-buttons.md)
+- [TASK-004: Use UI Clicks in Functional Tests](./quiz/TASK-004-use-ui-clicks-in-functional-tests.md)
 
 ## Pending
 
@@ -51,6 +54,9 @@ Use one of these `category` values for new tasks:
 ## Done
 
 - [x] [TASK-001: Implement SPEC-001 Quiz Vertical Slice](./quiz/TASK-001-implement-spec-001-quiz-vertical-slice.md)
+- [x] [TASK-002: Enforce Correct Selection Before Advancing and Show Noun](./quiz/TASK-002-enforce-correct-before-advance-and-show-noun.md)
+- [x] [TASK-003: Center Noun and Article Buttons](./quiz/TASK-003-center-noun-and-article-buttons.md)
+- [x] [TASK-004: Use UI Clicks in Functional Tests](./quiz/TASK-004-use-ui-clicks-in-functional-tests.md)
 
 ## Blocked
 

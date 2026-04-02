@@ -18,7 +18,13 @@ The app provides a quiz session where each round shows one image and three artic
 - `die`
 - `das`
 
-After each answer, the app immediately shows whether the answer is correct and displays the correct German phrase (for example: `Richtig: der Apfel`).
+The noun is shown under the image.
+
+If the learner selects a wrong article, the same object remains visible, feedback is shown, and the correct article is highlighted.
+
+Only after the learner selects the correct article does the quiz advance to the next entry.
+
+The noun label and article choices are visually centered under the image.
 
 At the end of 10 rounds, the app displays the final score.
 
@@ -28,19 +34,24 @@ Input:
 - click/tap one article option for the current image
 
 Output:
-- immediate feedback per round (`Richtig`/`Falsch`)
-- correct article+noun in German
+- immediate feedback when the selected article is wrong
+- correct article highlight on wrong selections
+- same object shown until correct answer is chosen
 - final score after 10 rounds
 
 ## Acceptance Criteria
 
 - [x] The quiz presents exactly one image per round.
+- [x] The noun for the current object is shown under the image.
+- [x] The noun label and article choices are centered for easier focus.
 - [x] The learner can answer only with `der`, `die`, or `das`.
-- [x] Feedback is immediate after each answer.
+- [x] A wrong selection keeps the same object visible and highlights the correct article.
+- [x] The quiz advances only after a correct selection.
 - [x] Learner-facing text never includes English translations.
 - [x] A session consists of exactly 10 rounds.
 - [x] A final score is shown at the end of the session.
 - [x] Question data is loaded from `assets/articles.csv`.
+- [x] Functional tests validate article selection via real button clicks.
 
 ## Non-goals
 
