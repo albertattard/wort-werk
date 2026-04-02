@@ -59,14 +59,14 @@ Output:
 - [x] The learner can answer only with `der`, `die`, or `das`.
 - [x] A wrong selection keeps the same object visible and highlights the correct article.
 - [x] The quiz advances only after a correct selection.
-- [ ] When a prompt is shown, noun-only audio is played once.
-- [ ] A speaker icon is shown next to the noun and replays noun-only audio when pressed.
-- [ ] When a correct article is selected, article+noun audio is played once before moving on.
-- [ ] The next prompt is shown only after correct article+noun audio playback completes.
+- [x] When a prompt is shown, noun-only audio is played once.
+- [x] A speaker icon is shown next to the noun and replays noun-only audio when pressed.
+- [x] When a correct article is selected, article+noun audio is played once before moving on.
+- [x] The next prompt is shown only after correct article+noun audio playback completes.
 - [x] Learner-facing text never includes English translations.
 - [x] A session consists of exactly 10 rounds.
 - [x] A final score is shown at the end of the session.
-- [x] Question data is loaded from `assets/articles.csv`.
+- [x] Question and audio path data are loaded from `assets/articles.csv`.
 - [x] Functional tests validate article selection via real button clicks.
 
 ## Non-goals

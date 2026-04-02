@@ -11,6 +11,7 @@ public final class QuizState {
     private int score;
     private String selectedArticle;
     private Boolean lastAnswerCorrect;
+    private boolean awaitingCorrectAudioCompletion;
     private String feedback;
 
     public QuizState(List<ArticleEntry> questions, int totalRounds) {
@@ -20,6 +21,7 @@ public final class QuizState {
         this.score = 0;
         this.selectedArticle = null;
         this.lastAnswerCorrect = null;
+        this.awaitingCorrectAudioCompletion = false;
         this.feedback = "";
     }
 
@@ -54,6 +56,18 @@ public final class QuizState {
         return feedback != null && !feedback.isBlank();
     }
 
+    public boolean isAwaitingCorrectAudioCompletion() {
+        return awaitingCorrectAudioCompletion;
+    }
+
+    public String getNounAudioPath() {
+        return getCurrentQuestion().nounAudioPath();
+    }
+
+    public String getCorrectPhraseAudioPath() {
+        return getCurrentQuestion().phraseAudioPath();
+    }
+
     public boolean isCorrectHighlighted(String article) {
         return Boolean.FALSE.equals(lastAnswerCorrect)
                 && !isFinished()
@@ -68,7 +82,7 @@ public final class QuizState {
     }
 
     public void answer(String selectedArticle) {
-        if (isFinished()) {
+        if (isFinished() || awaitingCorrectAudioCompletion) {
             return;
         }
 
@@ -80,12 +94,21 @@ public final class QuizState {
             score++;
             feedback = "";
             lastAnswerCorrect = true;
-            currentIndex++;
-            this.selectedArticle = null;
-            lastAnswerCorrect = null;
+            awaitingCorrectAudioCompletion = true;
         } else {
             feedback = "Falsch. Richtig ist: " + current.articlePhrase();
             lastAnswerCorrect = false;
         }
+    }
+
+    public void moveToNextQuestion() {
+        if (isFinished() || !awaitingCorrectAudioCompletion) {
+            return;
+        }
+        currentIndex++;
+        selectedArticle = null;
+        lastAnswerCorrect = null;
+        awaitingCorrectAudioCompletion = false;
+        feedback = "";
     }
 }

@@ -9,7 +9,12 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,33 +28,13 @@ class QuizFunctionalTest {
 
     private Playwright playwright;
     private Browser browser;
-    private static final Map<String, String> ARTICLE_BY_NOUN = Map.ofEntries(
-            Map.entry("Apfel", "der"),
-            Map.entry("Banane", "die"),
-            Map.entry("Bett", "das"),
-            Map.entry("Fleisch", "das"),
-            Map.entry("Gabel", "die"),
-            Map.entry("Hund", "der"),
-            Map.entry("Kartoffel", "die"),
-            Map.entry("Katze", "die"),
-            Map.entry("Käse", "der"),
-            Map.entry("Lampe", "die"),
-            Map.entry("Löffel", "der"),
-            Map.entry("Messer", "das"),
-            Map.entry("Orange", "die"),
-            Map.entry("Schinken", "der"),
-            Map.entry("Sofa", "das"),
-            Map.entry("Stuhl", "der"),
-            Map.entry("Teppich", "der"),
-            Map.entry("Tisch", "der"),
-            Map.entry("Tomate", "die"),
-            Map.entry("Zwiebel", "die")
-    );
+    private Map<String, String> articleByNoun;
 
     @BeforeAll
     void setUpBrowser() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
+        articleByNoun = loadArticleByNoun(Path.of("assets/articles.csv"));
     }
 
     @AfterAll
@@ -69,6 +54,7 @@ class QuizFunctionalTest {
 
             assertThat(page.getByTestId("question-image").isVisible()).isTrue();
             assertThat(page.getByTestId("question-noun").isVisible()).isTrue();
+            assertThat(page.getByTestId("noun-replay").isVisible()).isTrue();
             assertThat(page.getByTestId("answer-der").isVisible()).isTrue();
             assertThat(page.getByTestId("answer-die").isVisible()).isTrue();
             assertThat(page.getByTestId("answer-das").isVisible()).isTrue();
@@ -82,7 +68,7 @@ class QuizFunctionalTest {
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
-            String correctArticle = ARTICLE_BY_NOUN.get(noun);
+            String correctArticle = articleByNoun.get(noun);
             assertThat(correctArticle).isNotBlank();
 
             String wrongArticle = pickWrongArticle(correctArticle);
@@ -97,11 +83,16 @@ class QuizFunctionalTest {
     @Test
     void shouldAdvanceOnlyAfterCorrectSelection() {
         try (Page page = browser.newPage()) {
+            page.addInitScript("""
+                    HTMLMediaElement.prototype.play = function() {
+                      return Promise.resolve();
+                    };
+                    """);
             page.navigate(baseUrl());
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
-            String correctArticle = ARTICLE_BY_NOUN.get(noun);
+            String correctArticle = articleByNoun.get(noun);
             assertThat(correctArticle).isNotBlank();
             String wrongArticle = pickWrongArticle(correctArticle);
 
@@ -109,10 +100,38 @@ class QuizFunctionalTest {
             assertThat(page.getByTestId("question-noun").textContent()).isEqualTo(noun);
 
             clickArticle(page, correctArticle);
+            assertThat(page.getByTestId("question-noun").textContent()).isEqualTo(noun);
+
+            page.evaluate("() => document.querySelector('[data-testid=\"audio-correct\"]').dispatchEvent(new Event('ended'))");
+            page.waitForFunction(
+                    "previousNoun => document.querySelector('[data-testid=\"question-noun\"]')?.textContent !== previousNoun",
+                    noun);
 
             String nextNoun = page.getByTestId("question-noun").textContent();
             assertThat(nextNoun).isNotNull();
             assertThat(nextNoun).isNotEqualTo(noun);
+        }
+    }
+
+    @Test
+    void shouldReplayNounAudioWhenSpeakerClicked() {
+        try (Page page = browser.newPage()) {
+            page.addInitScript("""
+                    window.__playCount = 0;
+                    const originalPlay = HTMLMediaElement.prototype.play;
+                    HTMLMediaElement.prototype.play = function() {
+                      window.__playCount++;
+                      return Promise.resolve();
+                    };
+                    """);
+            page.navigate(baseUrl());
+
+            int before = ((Number) page.evaluate("() => window.__playCount")).intValue();
+            page.getByTestId("noun-replay").click();
+            page.waitForTimeout(100);
+            int after = ((Number) page.evaluate("() => window.__playCount")).intValue();
+
+            assertThat(after).isGreaterThan(before);
         }
     }
 
@@ -130,5 +149,38 @@ class QuizFunctionalTest {
 
     private String baseUrl() {
         return "http://127.0.0.1:" + port + "/";
+    }
+
+    private Map<String, String> loadArticleByNoun(final Path csvPath) {
+        try {
+            var lines = Files.readAllLines(csvPath, StandardCharsets.UTF_8);
+            if (lines.isEmpty()) {
+                throw new IllegalStateException("CSV is empty: " + csvPath);
+            }
+            String[] header = lines.getFirst().split(",", -1);
+            int nounIndex = indexOf(header, "Noun");
+            int articleIndex = indexOf(header, "Article");
+
+            return lines.stream()
+                    .skip(1)
+                    .map(String::trim)
+                    .filter(line -> !line.isEmpty())
+                    .map(line -> line.split(",", -1))
+                    .collect(Collectors.toMap(
+                            parts -> parts[nounIndex].trim(),
+                            parts -> parts[articleIndex].trim()
+                    ));
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed reading CSV: " + csvPath, e);
+        }
+    }
+
+    private int indexOf(String[] header, String column) {
+        for (int i = 0; i < header.length; i++) {
+            if (column.equals(header[i].trim())) {
+                return i;
+            }
+        }
+        throw new IllegalStateException("Missing required CSV column: " + column);
     }
 }

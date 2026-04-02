@@ -37,6 +37,17 @@ public class QuizController {
         return "fragments :: interaction";
     }
 
+    @PostMapping("/next")
+    public String next(Model model, HttpSession session, HttpServletRequest request) {
+        QuizState state = getOrCreateState(session);
+        state.moveToNextQuestion();
+        if (!isHtmxRequest(request)) {
+            return "redirect:/";
+        }
+        model.addAttribute("state", state);
+        return "fragments :: interaction";
+    }
+
     @PostMapping("/restart")
     public String restart(Model model, HttpSession session, HttpServletRequest request) {
         QuizState state = quizService.startNewQuiz();

@@ -1,7 +1,7 @@
 ---
 id: TASK-005
 title: Add Audio Cues for Prompt and Correct Answer
-status: pending
+status: done
 category: quiz
 related_features:
   - SPEC-001
@@ -32,15 +32,16 @@ Add audio playback to reinforce image-word association: play noun-only audio whe
 
 ## Acceptance Criteria
 
-- [ ] Prompt loads and noun-only audio is played once.
-- [ ] Speaker icon is visible next to noun and replays noun-only audio.
-- [ ] Correct selection plays article+noun audio once.
-- [ ] Next prompt does not render until correct article+noun audio playback has completed.
-- [ ] Quiz proceeds correctly through rounds with audio enabled.
-- [ ] Functional tests cover prompt audio trigger, replay trigger, and correct-answer audio trigger.
-- [ ] `./mvnw clean verify` passes.
+- [x] Prompt loads and noun-only audio is played once.
+- [x] Speaker icon is visible next to noun and replays noun-only audio.
+- [x] Correct selection plays article+noun audio once.
+- [x] Next prompt does not render until correct article+noun audio playback has completed.
+- [x] Quiz proceeds correctly through rounds with audio enabled.
+- [x] Functional tests cover prompt audio trigger, replay trigger, and correct-answer audio trigger.
+- [x] `./mvnw clean verify` passes.
 
-## Open Questions
+## Notes
 
-- Should wrong selections also play audio (for example, the correct phrase), or remain silent?
-- Should replay be disabled while other audio is currently playing, or should replay interrupt and restart noun audio?
+- Wrong selections remain silent; only visual feedback is shown.
+- Replay is disabled while correct-answer audio is playing.
+- Audio paths are read from `assets/articles.csv` when provided, with naming-convention fallback for compatibility.

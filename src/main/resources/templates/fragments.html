@@ -44,10 +44,33 @@
         }
 
         .question-noun {
-            text-align: center;
-            margin: 10px 0 16px;
+            margin: 0;
             font-size: 3rem;
             font-weight: 600;
+        }
+
+        .noun-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0 16px;
+        }
+
+        .noun-replay {
+            min-width: 44px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            padding: 0;
+            font-size: 1.2rem;
+            line-height: 1;
+            background: #f8f8f8;
+            color: #166534;
+        }
+
+        .noun-replay:hover {
+            background: #e8e8e8;
         }
 
         button {
@@ -100,7 +123,8 @@
         }
     </style>
 
-    <div th:if="${!state.finished}">
+    <div th:if="${!state.finished}" data-quiz-audio-root="true"
+         th:attr="data-awaiting-correct-audio=${state.awaitingCorrectAudioCompletion}">
         <div class="status" data-testid="quiz-status">
             <span data-testid="round-label" th:text="|Runde ${state.currentRound} von ${state.totalRounds}|">Runde 1 von 10</span>
             <span data-testid="score-label" th:text="|Punkte: ${state.score}|">Punkte: 0</span>
@@ -110,25 +134,76 @@
             <img data-testid="question-image" th:src="@{${'/' + state.currentQuestion.imagePath}}" th:alt="${state.currentQuestion.noun}">
         </div>
 
-        <p class="question-noun" data-testid="question-noun" th:text="${state.currentQuestion.noun}">Objektname</p>
+        <div class="noun-row">
+            <p class="question-noun" data-testid="question-noun" th:text="${state.currentQuestion.noun}">Objektname</p>
+            <button class="noun-replay" type="button" data-testid="noun-replay" aria-label="Wort erneut abspielen"
+                    th:disabled="${state.awaitingCorrectAudioCompletion}">&#128266;</button>
+        </div>
 
         <div class="choices">
             <form method="post" action="/answer">
                 <input type="hidden" name="article" value="der">
                 <button data-testid="answer-der" type="submit"
+                        th:disabled="${state.awaitingCorrectAudioCompletion}"
                         th:classappend="${state.isCorrectHighlighted('der')} ? ' correct-answer' : (${state.isWrongSelection('der')} ? ' wrong-answer' : '')">der</button>
             </form>
             <form method="post" action="/answer">
                 <input type="hidden" name="article" value="die">
                 <button data-testid="answer-die" type="submit"
+                        th:disabled="${state.awaitingCorrectAudioCompletion}"
                         th:classappend="${state.isCorrectHighlighted('die')} ? ' correct-answer' : (${state.isWrongSelection('die')} ? ' wrong-answer' : '')">die</button>
             </form>
             <form method="post" action="/answer">
                 <input type="hidden" name="article" value="das">
                 <button data-testid="answer-das" type="submit"
+                        th:disabled="${state.awaitingCorrectAudioCompletion}"
                         th:classappend="${state.isCorrectHighlighted('das')} ? ' correct-answer' : (${state.isWrongSelection('das')} ? ' wrong-answer' : '')">das</button>
             </form>
         </div>
+
+        <audio data-testid="audio-noun" preload="auto" th:src="@{${'/' + state.nounAudioPath}}"></audio>
+        <audio data-testid="audio-correct" preload="auto" th:src="@{${'/' + state.correctPhraseAudioPath}}"></audio>
+        <form th:if="${state.awaitingCorrectAudioCompletion}" method="post" action="/next" data-testid="next-form"></form>
+
+        <script th:inline="javascript">
+            (() => {
+                const root = document.currentScript.closest("[data-quiz-audio-root]");
+                if (!root) {
+                    return;
+                }
+
+                const nounAudio = root.querySelector('[data-testid="audio-noun"]');
+                const correctAudio = root.querySelector('[data-testid="audio-correct"]');
+                const replayButton = root.querySelector('[data-testid="noun-replay"]');
+                const nextForm = root.querySelector('[data-testid="next-form"]');
+                const awaitingCorrectAudio = root.dataset.awaitingCorrectAudio === "true";
+
+                const playFromStart = (audio) => {
+                    if (!audio) {
+                        return;
+                    }
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.play().catch(() => {
+                        // Ignore autoplay/replay failures; UI stays interactive.
+                    });
+                };
+
+                replayButton?.addEventListener("click", () => {
+                    playFromStart(nounAudio);
+                });
+
+                if (awaitingCorrectAudio) {
+                    correctAudio?.addEventListener("ended", () => {
+                        nextForm?.requestSubmit();
+                    }, { once: true });
+                    playFromStart(correctAudio);
+                    return;
+                }
+
+                playFromStart(nounAudio);
+            })();
+        </script>
 
         <div th:if="${state.hasFeedback()}">
             <p class="feedback" data-testid="feedback" th:text="${state.feedback}"></p>

@@ -1,22 +1,22 @@
-Noun,Article,Image
-Apfel,der,assets/images/Apfel.png
-Banane,die,assets/images/Banane.png
-Bett,das,assets/images/Bett.png
-Fleisch,das,assets/images/Fleisch.png
-Gabel,die,assets/images/Gabel.png
-Hund,der,assets/images/Hund.png
-Kartoffel,die,assets/images/Kartoffel.png
-Katze,die,assets/images/Katze.png
-Käse,der,assets/images/Käse.png
-Lampe,die,assets/images/Lampe.png
-Löffel,der,assets/images/Löffel.png
-Messer,das,assets/images/Messer.png
-Orange,die,assets/images/Orange.png
-Schinken,der,assets/images/Schinken.png
-Sessel,der,assets/images/Sessel.png
-Sofa,das,assets/images/Sofa.png
-Stuhl,der,assets/images/Stuhl.png
-Teppich,der,assets/images/Teppich.png
-Tisch,der,assets/images/Tisch.png
-Tomate,die,assets/images/Tomate.png
-Zwiebel,die,assets/images/Zwiebel.png
+Noun,Article,Image,Audio,AnswerAudio
+Apfel,der,assets/images/Apfel.png,assets/audio/Apfel.mp3,assets/audio/der Apfel.mp3
+Banane,die,assets/images/Banane.png,assets/audio/Banane.mp3,assets/audio/die Banane.mp3
+Bett,das,assets/images/Bett.png,assets/audio/Bett.mp3,assets/audio/das Bett.mp3
+Fleisch,das,assets/images/Fleisch.png,assets/audio/Fleisch.mp3,assets/audio/das Fleisch.mp3
+Gabel,die,assets/images/Gabel.png,assets/audio/Gabel.mp3,assets/audio/die Gabel.mp3
+Hund,der,assets/images/Hund.png,assets/audio/Hund.mp3,assets/audio/der Hund.mp3
+Kartoffel,die,assets/images/Kartoffel.png,assets/audio/Kartoffel.mp3,assets/audio/die Kartoffel.mp3
+Katze,die,assets/images/Katze.png,assets/audio/Katze.mp3,assets/audio/die Katze.mp3
+Käse,der,assets/images/Käse.png,assets/audio/Käse.mp3,assets/audio/der Käse.mp3
+Lampe,die,assets/images/Lampe.png,assets/audio/Lampe.mp3,assets/audio/die Lampe.mp3
+Löffel,der,assets/images/Löffel.png,assets/audio/Löffel.mp3,assets/audio/der Löffel.mp3
+Messer,das,assets/images/Messer.png,assets/audio/Messer.mp3,assets/audio/das Messer.mp3
+Orange,die,assets/images/Orange.png,assets/audio/Orange.mp3,assets/audio/die Orange.mp3
+Schinken,der,assets/images/Schinken.png,assets/audio/Schinken.mp3,assets/audio/der Schinken.mp3
+Sessel,der,assets/images/Sessel.png,assets/audio/Sessel.mp3,assets/audio/der Sessel.mp3
+Sofa,das,assets/images/Sofa.png,assets/audio/Sofa.mp3,assets/audio/das Sofa.mp3
+Stuhl,der,assets/images/Stuhl.png,assets/audio/Stuhl.mp3,assets/audio/der Stuhl.mp3
+Teppich,der,assets/images/Teppich.png,assets/audio/Teppich.mp3,assets/audio/der Teppich.mp3
+Tisch,der,assets/images/Tisch.png,assets/audio/Tisch.mp3,assets/audio/der Tisch.mp3
+Tomate,die,assets/images/Tomate.png,assets/audio/Tomate.mp3,assets/audio/die Tomate.mp3
+Zwiebel,die,assets/images/Zwiebel.png,assets/audio/Zwiebel.mp3,assets/audio/die Zwiebel.mp3

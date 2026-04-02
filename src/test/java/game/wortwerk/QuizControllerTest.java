@@ -35,7 +35,7 @@ class QuizControllerTest {
     }
 
     @Test
-    void shouldAnswerAndMoveToNextRound() throws Exception {
+    void shouldWaitForNextAfterCorrectAnswer() throws Exception {
         MvcResult initialResult = mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -46,9 +46,14 @@ class QuizControllerTest {
                 .andReturn();
 
         String answerBody = answerResult.getResponse().getContentAsString();
-        assertThat(answerBody).containsAnyOf("Runde 1 von 10", "Runde 2 von 10");
+        assertThat(answerBody).contains("Runde 1 von 10");
         assertThat(answerBody).contains("question-noun");
-        assertThat(initialBody).isNotEqualTo(answerBody);
+        assertThat(answerBody).isNotEqualTo(initialBody);
+
+        MvcResult nextResult = mockMvc.perform(post("/next").header("HX-Request", "true"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertThat(nextResult.getResponse().getContentAsString()).containsAnyOf("Runde 1 von 10", "Runde 2 von 10");
     }
 
     @Test
