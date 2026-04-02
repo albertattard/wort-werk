@@ -1,0 +1,107 @@
+#!/usr/bin/env -S java --source 25
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+class TtsScript {
+
+    private static final String MODEL = "gpt-4o-mini-tts";
+    private static final String VOICE = "nova";
+    private static final String INSTRUCTIONS = "Sprich auf Deutsch (de-DE), klar und freundlich.";
+
+    static void main(final String[] args) throws Exception {
+        if (args.length < 1 || args.length > 2) {
+            System.err.println("Usage: " + scriptName() + " <text> [output-file]");
+            System.exit(1);
+        }
+
+        final String text = args[0].trim();
+        if (text.isBlank()) {
+            System.err.println("Text cannot be blank");
+            System.exit(1);
+        }
+
+        final Path outputFile = args.length == 2
+                ? Path.of(args[1])
+                : Path.of("assets", "audio", defaultFileName(text));
+        final Path parent = outputFile.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+
+        final Path apiKeyFile = Path.of(System.getProperty("user.home"), ".chatgpt", "api.key");
+        final String apiKey;
+        try {
+            apiKey = Files.readString(apiKeyFile, StandardCharsets.UTF_8).trim();
+        } catch (final IOException e) {
+            System.err.println("Unable to read API key from " + apiKeyFile + ": " + e.getMessage());
+            System.exit(1);
+            return;
+        }
+
+        if (apiKey.isBlank()) {
+            System.err.println("API key is empty in " + apiKeyFile);
+            System.exit(1);
+        }
+
+        final String requestBody = """
+                {"model":"%s","voice":"%s","input":"%s","instructions":"%s"}
+                """.formatted(
+                escapeJson(MODEL),
+                escapeJson(VOICE),
+                escapeJson(text),
+                escapeJson(INSTRUCTIONS)
+        );
+
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            final HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.openai.com/v1/audio/speech"))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
+                    .build();
+
+            final HttpResponse<Path> response = client.send(request, HttpResponse.BodyHandlers.ofFile(outputFile));
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                final String error = Files.readString(response.body(), StandardCharsets.UTF_8);
+                System.err.println("TTS request failed (" + response.statusCode() + "): " + error);
+                System.exit(1);
+            }
+
+            System.out.println("Saved to " + response.body());
+        }
+    }
+
+    private static String defaultFileName(final String text) {
+        final String normalized = text
+                .replaceAll("\\s+", " ")
+                .trim();
+        final String safe = normalized
+                .replaceAll("[\\\\/:*?\"<>|]", "_");
+        return safe + ".mp3";
+    }
+
+    private static String escapeJson(final String value) {
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\b", "\\b")
+                .replace("\f", "\\f")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+    }
+
+    private static String scriptName() {
+        final String command = System.getProperty("jdk.launcher.sourcefile");
+        return command == null
+                ? "tools/tts"
+                : Path.of(command).getFileName().toString();
+    }
+}
