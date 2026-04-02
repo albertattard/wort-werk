@@ -16,15 +16,20 @@ If there is a conflict, update specs/ADRs first and then implement.
 
 ## Required Workflow
 
+The following gates are mandatory and sequential:
+
 1. Create or update a `SPEC` in `docs/spec/`.
 2. Create or update a linked `TASK` in `docs/tasks/`.
-3. Verify baseline before changes: tests must pass.
-4. Apply TDD for functional behavior changes:
+3. Confirm both files exist and are linked before touching production code or tests.
+4. Verify baseline before changes: tests must pass.
+5. Apply TDD for functional behavior changes:
    - create or update a functional test first,
    - run functional tests and confirm the new test fails,
    - implement the change,
    - run tests and confirm the new test passes.
-5. Mark task/spec status only after acceptance criteria pass.
+6. Mark task/spec status only after acceptance criteria pass.
+
+If a request arrives without a spec/task update, stop implementation and create/update those artifacts first.
 
 ## Testing Standards
 
