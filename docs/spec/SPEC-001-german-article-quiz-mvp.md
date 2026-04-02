@@ -26,17 +26,29 @@ Only after the learner selects the correct article does the quiz advance to the 
 
 The noun label and article choices are visually centered under the image.
 
+When an image is shown, the app plays the noun audio once (without article).
+
+The noun row includes a speaker icon button that replays noun-only audio on demand.
+
+When the learner selects the correct article, the app plays the full phrase audio (article + noun) to reinforce association.
+
+The quiz advances to the next entry only after the full article+noun audio playback completes.
+
 At the end of 10 rounds, the app displays the final score.
 
 ## Inputs/Outputs
 
 Input:
 - click/tap one article option for the current image
+- click/tap speaker icon next to noun to replay noun-only audio
 
 Output:
 - immediate feedback when the selected article is wrong
 - correct article highlight on wrong selections
 - same object shown until correct answer is chosen
+- noun audio when a prompt is shown
+- noun-only audio replay when speaker icon is pressed
+- article+noun audio when the correct article is selected
 - final score after 10 rounds
 
 ## Acceptance Criteria
@@ -47,6 +59,10 @@ Output:
 - [x] The learner can answer only with `der`, `die`, or `das`.
 - [x] A wrong selection keeps the same object visible and highlights the correct article.
 - [x] The quiz advances only after a correct selection.
+- [ ] When a prompt is shown, noun-only audio is played once.
+- [ ] A speaker icon is shown next to the noun and replays noun-only audio when pressed.
+- [ ] When a correct article is selected, article+noun audio is played once before moving on.
+- [ ] The next prompt is shown only after correct article+noun audio playback completes.
 - [x] Learner-facing text never includes English translations.
 - [x] A session consists of exactly 10 rounds.
 - [x] A final score is shown at the end of the session.
