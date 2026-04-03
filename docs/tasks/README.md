@@ -48,7 +48,7 @@ Use one of these `category` values for new tasks:
 
 ## Pending
 
-- [ ] [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
+- (none)
 
 ## In Progress
 
@@ -62,6 +62,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-004: Use UI Clicks in Functional Tests](./quiz/TASK-004-use-ui-clicks-in-functional-tests.md)
 - [x] [TASK-005: Add Audio Cues for Prompt and Correct Answer](./quiz/TASK-005-add-audio-cues-for-prompt-and-correct-answer.md)
 - [x] [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
+- [x] [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 
 ## Blocked
 

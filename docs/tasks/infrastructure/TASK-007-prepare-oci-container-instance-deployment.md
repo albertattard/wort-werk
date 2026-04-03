@@ -1,7 +1,7 @@
 ---
 id: TASK-007
 title: Prepare OCI Container Instance Deployment
-status: pending
+status: done
 category: infrastructure
 related_features:
   - SPEC-003
@@ -49,11 +49,11 @@ Optional (not required for initial testing):
 
 ## Acceptance Criteria
 
-- [ ] Deployment runbook exists under `container/` (or equivalent) and is actionable.
-- [ ] Runbook includes OCIR authentication and image push steps.
-- [ ] Runbook includes OCI Container Instance create/update steps.
-- [ ] Runbook includes ingress/security checklist.
-- [ ] IaC files exist for core OCI resources (at minimum: Container Instance and networking prerequisites).
-- [ ] IaC scope explicitly lists required vs optional OCI resources.
-- [ ] Scope limitations (no DB, no OKE) are stated.
-- [ ] `./mvnw clean verify` passes after documentation updates.
+- [x] Deployment runbook exists under `container/` (or equivalent) and is actionable.
+- [x] Runbook includes OCIR authentication and image push steps.
+- [x] Runbook includes OCI Container Instance create/update steps.
+- [x] Runbook includes ingress/security checklist.
+- [x] IaC files exist for core OCI resources (at minimum: Container Instance and networking prerequisites).
+- [x] IaC scope explicitly lists required vs optional OCI resources.
+- [x] Scope limitations (no DB, no OKE) are stated.
+- [x] `./mvnw clean verify` passes after documentation updates.

@@ -2,6 +2,8 @@
 
 This project ships a production image definition at `container/Dockerfile`.
 
+OCI deployment runbook: [OCI-DEPLOYMENT.md](./OCI-DEPLOYMENT.md)
+
 ## Build (Local, Single Architecture)
 
 Example for `linux/amd64`:

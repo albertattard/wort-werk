@@ -1,7 +1,7 @@
 ---
 id: SPEC-003
 title: OCI Deployment via Container Instance
-status: in_progress
+status: done
 priority: medium
 owner: @aattard
 last_updated: 2026-04-03
@@ -33,12 +33,12 @@ Output:
 
 ## Acceptance Criteria
 
-- [ ] Deployment documentation exists for OCIR push + OCI Container Instance run.
-- [ ] Deployment docs include networking and ingress requirements.
-- [ ] Deployment docs include update strategy for new image versions.
-- [ ] Deployment docs include optional load balancer/TLS step.
-- [ ] Infrastructure is defined as code (IaC) for core OCI deployment resources.
-- [ ] Scope explicitly excludes database and Kubernetes/OKE.
+- [x] Deployment documentation exists for OCIR push + OCI Container Instance run.
+- [x] Deployment docs include networking and ingress requirements.
+- [x] Deployment docs include update strategy for new image versions.
+- [x] Deployment docs include optional load balancer/TLS step.
+- [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
+- [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals
 

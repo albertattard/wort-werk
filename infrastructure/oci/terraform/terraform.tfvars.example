@@ -1,0 +1,14 @@
+region              = "eu-frankfurt-1"
+create_compartment  = false
+compartment_ocid    = "ocid1.compartment.oc1..example"
+tenancy_ocid        = "ocid1.tenancy.oc1..example"
+availability_domain = "kIdk:EU-FRANKFURT-1-AD-1"
+image_url           = "fra.ocir.io/<namespace>/wort-werk:latest"
+
+# Public testing can start with 0.0.0.0/0. Restrict this CIDR for safer environments.
+allowed_ingress_cidr = "0.0.0.0/0"
+
+# Optional IAM policy management
+create_iam_policy  = false
+deployer_group_name = "wort-werk-deployers"
+pusher_group_name   = "wort-werk-pushers"
