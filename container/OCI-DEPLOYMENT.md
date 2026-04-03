@@ -37,6 +37,7 @@ Set your OCIR namespace, region and repository:
 OCI_REGION="fra"
 OCI_PROFILE="FRANKFURT"
 OCIR_NAMESPACE="$(oci os ns get --profile "${OCI_PROFILE}" --query 'data' --raw-output)"
+OCI_USERNAME="<oci-username>"
 OCIR_REPOSITORY="wort-werk"
 IMAGE_TAG="$(git rev-parse --short=12 HEAD)"
 IMAGE="${OCI_REGION}.ocir.io/${OCIR_NAMESPACE}/${OCIR_REPOSITORY}:${IMAGE_TAG}"
@@ -63,7 +64,7 @@ Authenticate Docker to OCIR (use OCI auth token as password):
 
 ```bash
 docker login "${OCI_REGION}.ocir.io" \
-  --username "${OCIR_NAMESPACE}/<oci-username>" \
+  --username "${OCIR_NAMESPACE}/${OCI_USERNAME}" \
   --password-stdin
 ```
 
@@ -82,12 +83,22 @@ Foundation Terraform is in [`infrastructure/oci/foundation`](../infrastructure/o
 ```bash
 cd infrastructure/oci/foundation
 cp terraform.tfvars.example terraform.tfvars
-# set tenancy_ocid, region, compartment/network CIDRs and repository name
+# set tenancy_ocid, parent_compartment_ocid, region and home_region (tenancy home region), plus compartment/network CIDRs and repository name
 terraform init
 terraform apply
 ```
 
 This creates compartment, networking and OCIR repository.
+
+Get the tenancy home region (example using profile `FRANKFURT`):
+
+```bash
+oci iam region-subscription list \
+  --profile "FRANKFURT" \
+  --tenancy-id "ocid1.tenancy.oc1..<your-tenancy>" \
+  --query 'data[?"is-home-region"==`true`]."region-name" | [0]' \
+  --raw-output
+```
 
 ## 3) Deploy Runtime (Terraform)
 
@@ -149,6 +160,21 @@ Rollback:
 
 1. Re-run runtime apply with previous known-good `image_tag`.
 2. Verify Container Instance health.
+
+Scripted release path:
+
+```bash
+export OCI_PROFILE="FRANKFURT"
+export OCI_USERNAME="<oci-username>"
+export OCI_AUTH_TOKEN="<oci-auth-token>"
+export KEEP_IMAGE_COUNT=2
+./infrastructure/oci/deploy.sh release
+```
+
+`deploy.sh release` aligns with IaC by:
+- using foundation Terraform outputs for runtime network wiring
+- applying runtime Terraform for the new image
+- pruning only older images beyond a safe retention window (default keep 2)
 
 ## 7) Optional Load Balancer + TLS Later
 

@@ -2,12 +2,18 @@ provider "oci" {
   region = var.region
 }
 
+provider "oci" {
+  alias  = "home"
+  region = var.home_region
+}
+
 data "oci_objectstorage_namespace" "this" {
   compartment_id = var.tenancy_ocid
 }
 
 resource "oci_identity_compartment" "wort_werk" {
-  compartment_id = var.tenancy_ocid
+  provider       = oci.home
+  compartment_id = var.parent_compartment_ocid
   name           = var.compartment_name
   description    = "Compartment for Wort-Werk resources"
   enable_delete  = true

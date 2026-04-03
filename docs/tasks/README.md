@@ -46,6 +46,7 @@ Use one of these `category` values for new tasks:
 - [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 - [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 - [TASK-008: Split OCI IaC into Foundation and Runtime Stacks](./infrastructure/TASK-008-split-oci-iac-foundation-and-runtime.md)
+- [TASK-009: Automate OCI Build Push and Runtime Deploy](./infrastructure/TASK-009-automate-build-push-runtime-deploy.md)
 
 ## Pending
 
@@ -65,6 +66,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 - [x] [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 - [x] [TASK-008: Split OCI IaC into Foundation and Runtime Stacks](./infrastructure/TASK-008-split-oci-iac-foundation-and-runtime.md)
+- [x] [TASK-009: Automate OCI Build Push and Runtime Deploy](./infrastructure/TASK-009-automate-build-push-runtime-deploy.md)
 
 ## Blocked
 

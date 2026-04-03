@@ -8,6 +8,16 @@ variable "region" {
   type        = string
 }
 
+variable "home_region" {
+  description = "OCI home region used for tenancy-scoped IAM operations (example: us-ashburn-1)."
+  type        = string
+}
+
+variable "parent_compartment_ocid" {
+  description = "Parent compartment OCID under which the Wort-Werk compartment will be created."
+  type        = string
+}
+
 variable "compartment_name" {
   description = "Name of the dedicated compartment created for Wort-Werk."
   type        = string

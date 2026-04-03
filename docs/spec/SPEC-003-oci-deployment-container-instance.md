@@ -31,6 +31,7 @@ Output:
 - runtime stack for Container Instance rollout
 - running Wort-Werk instance in OCI Container Instances
 - documented deployment flow and operational update path
+- scripted build/push/runtime deployment flow aligned to IaC
 
 ## Deployment Model
 
@@ -51,6 +52,8 @@ Expected lifecycle:
 - [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
 - [x] Infrastructure is split into foundation/runtime stacks.
 - [x] Runtime stack consumes foundation outputs and deploys by immutable image tag.
+- [x] Repository includes deployment script that builds, pushes and applies runtime stack.
+- [x] Deployment script supports safe image cleanup policy (retention-based) instead of deleting all previous images.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals
