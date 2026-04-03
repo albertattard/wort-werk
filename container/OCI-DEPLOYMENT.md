@@ -15,14 +15,13 @@ Explicitly out of scope:
 
 ## Required OCI Resources (Core)
 
-- Compartment (existing or dedicated)
+- Dedicated compartment (created by Terraform by default)
 - VCN
 - Subnet for Container Instance
 - NSG or Security List rules
 - Internet Gateway (or equivalent egress path)
 - OCIR repository
 - Container Instance
-- IAM policies for push/deploy operations
 
 Optional (later):
 - OCI Load Balancer
@@ -36,10 +35,17 @@ Set your OCIR namespace, region and repository:
 
 ```bash
 OCI_REGION="fra"
-OCIR_NAMESPACE="<your-namespace>"
+OCI_PROFILE="FRANKFURT"
+OCIR_NAMESPACE="$(oci os ns get --profile "${OCI_PROFILE}" --query 'data' --raw-output)"
 OCIR_REPOSITORY="wort-werk"
-IMAGE_TAG="$(git rev-parse --short HEAD)"
+IMAGE_TAG="$(git rev-parse --short=12 HEAD)"
 IMAGE="${OCI_REGION}.ocir.io/${OCIR_NAMESPACE}/${OCIR_REPOSITORY}:${IMAGE_TAG}"
+```
+
+Validate namespace lookup:
+
+```bash
+echo "${OCIR_NAMESPACE}"
 ```
 
 Build from repository root:
@@ -61,34 +67,67 @@ docker login "${OCI_REGION}.ocir.io" \
   --password-stdin
 ```
 
+`OCI_PROFILE="FRANKFURT"` is expected to target the Frankfurt region endpoint (`fra`).
+
 If needed, push explicitly:
 
 ```bash
 docker push "${IMAGE}"
 ```
 
-## 2) Provision Core Infrastructure (Terraform)
+## 2) Provision Foundation (Terraform)
 
-Terraform definitions are in [`infrastructure/oci/terraform`](../infrastructure/oci/terraform).
+Foundation Terraform is in [`infrastructure/oci/foundation`](../infrastructure/oci/foundation).
 
 ```bash
-cd infrastructure/oci/terraform
+cd infrastructure/oci/foundation
 cp terraform.tfvars.example terraform.tfvars
-# set compartment, availability domain, image_url, region and ingress CIDR
+# set tenancy_ocid, region, compartment/network CIDRs and repository name
 terraform init
 terraform apply
 ```
 
-This creates networking, OCIR repository and Container Instance prerequisites plus the Container Instance itself.
+This creates compartment, networking and OCIR repository.
 
-## 3) Ingress and Security Checklist
+## 3) Deploy Runtime (Terraform)
+
+Runtime Terraform is in [`infrastructure/oci/runtime`](../infrastructure/oci/runtime).
+
+Fetch foundation outputs:
+
+```bash
+FOUNDATION_DIR="infrastructure/oci/foundation"
+RUNTIME_DIR="infrastructure/oci/runtime"
+
+COMPARTMENT_OCID="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
+SUBNET_ID="$(terraform -chdir="${FOUNDATION_DIR}" output -raw subnet_id)"
+NSG_ID="$(terraform -chdir="${FOUNDATION_DIR}" output -raw nsg_id)"
+```
+
+Apply runtime:
+
+```bash
+terraform -chdir="${RUNTIME_DIR}" init
+terraform -chdir="${RUNTIME_DIR}" apply \
+  -var "region=eu-frankfurt-1" \
+  -var "tenancy_ocid=ocid1.tenancy.oc1..<your-tenancy>" \
+  -var "compartment_ocid=${COMPARTMENT_OCID}" \
+  -var "subnet_id=${SUBNET_ID}" \
+  -var "nsg_id=${NSG_ID}" \
+  -var "image_repository=${OCI_REGION}.ocir.io/${OCIR_NAMESPACE}/${OCIR_REPOSITORY}" \
+  -var "image_tag=${IMAGE_TAG}"
+```
+
+Availability Domain is resolved automatically from your tenancy; use `availability_domain_index` if you want a specific AD.
+
+## 4) Ingress and Security Checklist
 
 - Ensure NSG ingress allows TCP `8080` from your test CIDR (start with `0.0.0.0/0` only for initial testing).
 - Ensure subnet route table includes `0.0.0.0/0` via Internet Gateway.
 - Ensure Container Instance VNIC has public IP assigned for direct IP testing.
-- Ensure IAM groups used for push/deploy have required policies.
+- Ensure the identity executing Terraform has permissions to manage OCI network, compartment, OCIR and Container Instance resources.
 
-## 4) Validate Deployment
+## 5) Validate Deployment
 
 - Open OCI Console -> Container Instances -> Wort-Werk instance.
 - Confirm container state is `RUNNING`.
@@ -96,22 +135,22 @@ This creates networking, OCIR repository and Container Instance prerequisites pl
 
 No domain is required for initial testing. Public-IP HTTP is acceptable until TLS/domain are added.
 
-## 5) Update Strategy (New Image Versions)
+## 6) Update Strategy (New Image Versions)
 
 For each release:
 
 1. Build and push a new immutable tag (for example git SHA).
-2. Update `image_url` in Terraform variables to the new tag.
-3. Run `terraform apply`.
+2. Re-run runtime apply with the new `image_tag`.
+3. Apply runtime stack only.
 4. Verify health via browser and Container Instance status.
 5. Keep prior image tag for rollback.
 
 Rollback:
 
-1. Restore previous known-good image tag in Terraform variables.
-2. Re-run `terraform apply`.
+1. Re-run runtime apply with previous known-good `image_tag`.
+2. Verify Container Instance health.
 
-## 6) Optional Load Balancer + TLS Later
+## 7) Optional Load Balancer + TLS Later
 
 When domain/TLS is ready:
 

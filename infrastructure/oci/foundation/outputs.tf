@@ -1,6 +1,6 @@
 output "compartment_ocid" {
-  description = "Compartment used by Wort-Werk resources."
-  value       = local.target_compartment_ocid
+  description = "Compartment OCID used by Wort-Werk resources."
+  value       = oci_identity_compartment.wort_werk.id
 }
 
 output "vcn_id" {
@@ -18,12 +18,12 @@ output "nsg_id" {
   value       = oci_core_network_security_group.wort_werk.id
 }
 
+output "ocir_namespace" {
+  description = "Object Storage/OCIR namespace."
+  value       = data.oci_objectstorage_namespace.this.namespace
+}
+
 output "ocir_repository_name" {
   description = "OCIR repository display name."
   value       = oci_artifacts_container_repository.wort_werk.display_name
-}
-
-output "container_instance_id" {
-  description = "OCI Container Instance OCID."
-  value       = oci_container_instances_container_instance.wort_werk.id
 }

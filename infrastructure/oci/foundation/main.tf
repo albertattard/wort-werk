@@ -1,0 +1,85 @@
+provider "oci" {
+  region = var.region
+}
+
+data "oci_objectstorage_namespace" "this" {
+  compartment_id = var.tenancy_ocid
+}
+
+resource "oci_identity_compartment" "wort_werk" {
+  compartment_id = var.tenancy_ocid
+  name           = var.compartment_name
+  description    = "Compartment for Wort-Werk resources"
+  enable_delete  = true
+}
+
+resource "oci_core_vcn" "wort_werk" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  cidr_blocks    = [var.vcn_cidr]
+  display_name   = "wort-werk"
+  dns_label      = "wortwerk"
+}
+
+resource "oci_core_internet_gateway" "wort_werk" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = "wort-werk"
+  enabled        = true
+}
+
+resource "oci_core_route_table" "public" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = "wort-werk-public"
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_internet_gateway.wort_werk.id
+  }
+}
+
+resource "oci_core_network_security_group" "wort_werk" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = "wort-werk"
+}
+
+resource "oci_core_network_security_group_security_rule" "ingress_http" {
+  network_security_group_id = oci_core_network_security_group.wort_werk.id
+  direction                 = "INGRESS"
+  protocol                  = "6"
+  source                    = var.allowed_ingress_cidr
+  source_type               = "CIDR_BLOCK"
+
+  tcp_options {
+    destination_port_range {
+      min = var.app_port
+      max = var.app_port
+    }
+  }
+}
+
+resource "oci_core_network_security_group_security_rule" "egress_all" {
+  network_security_group_id = oci_core_network_security_group.wort_werk.id
+  direction                 = "EGRESS"
+  protocol                  = "all"
+  destination               = "0.0.0.0/0"
+  destination_type          = "CIDR_BLOCK"
+}
+
+resource "oci_core_subnet" "container" {
+  compartment_id             = oci_identity_compartment.wort_werk.id
+  vcn_id                     = oci_core_vcn.wort_werk.id
+  cidr_block                 = var.container_subnet_cidr
+  display_name               = "wort-werk"
+  dns_label                  = "wortwerk"
+  route_table_id             = oci_core_route_table.public.id
+  prohibit_public_ip_on_vnic = false
+}
+
+resource "oci_artifacts_container_repository" "wort_werk" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  display_name   = var.ocir_repository_name
+  is_public      = false
+}

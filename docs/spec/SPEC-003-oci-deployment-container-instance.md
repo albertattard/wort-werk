@@ -23,13 +23,24 @@ Deployment should support the current architecture:
 ## Inputs/Outputs
 
 Input:
-- built/pushed container image in OCIR
-- OCI network + runtime configuration
+- Foundation infrastructure configuration (compartment/network/OCIR)
+- Runtime image metadata (repository + immutable image tag)
 
 Output:
+- reusable foundation stack
+- runtime stack for Container Instance rollout
 - running Wort-Werk instance in OCI Container Instances
 - documented deployment flow and operational update path
-- infrastructure as code definition for OCI deployment resources
+
+## Deployment Model
+
+Two-stack Terraform model:
+- `foundation`: compartment, VCN, subnet, NSG, route table, internet gateway, OCIR repository
+- `runtime`: Container Instance only, parameterized by `image_repository` + `image_tag`
+
+Expected lifecycle:
+- foundation apply: infrequent (environment setup/change)
+- runtime apply: frequent (release/update/rollback)
 
 ## Acceptance Criteria
 
@@ -38,6 +49,8 @@ Output:
 - [x] Deployment docs include update strategy for new image versions.
 - [x] Deployment docs include optional load balancer/TLS step.
 - [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
+- [x] Infrastructure is split into foundation/runtime stacks.
+- [x] Runtime stack consumes foundation outputs and deploys by immutable image tag.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

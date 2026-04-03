@@ -1,0 +1,7 @@
+region               = "eu-frankfurt-1"
+tenancy_ocid         = "ocid1.tenancy.oc1..example"
+compartment_name     = "wort-werk"
+ocir_repository_name = "wort-werk"
+
+# Public testing can start with 0.0.0.0/0. Restrict this CIDR for safer environments.
+allowed_ingress_cidr = "0.0.0.0/0"
