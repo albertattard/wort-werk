@@ -44,10 +44,11 @@ Use one of these `category` values for new tasks:
 - [TASK-004: Use UI Clicks in Functional Tests](./quiz/TASK-004-use-ui-clicks-in-functional-tests.md)
 - [TASK-005: Add Audio Cues for Prompt and Correct Answer](./quiz/TASK-005-add-audio-cues-for-prompt-and-correct-answer.md)
 - [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
+- [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 
 ## Pending
 
-- (none)
+- [ ] [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 
 ## In Progress
 
