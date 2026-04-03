@@ -29,6 +29,7 @@ Input:
 Output:
 - running Wort-Werk instance in OCI Container Instances
 - documented deployment flow and operational update path
+- infrastructure as code definition for OCI deployment resources
 
 ## Acceptance Criteria
 
@@ -36,10 +37,10 @@ Output:
 - [ ] Deployment docs include networking and ingress requirements.
 - [ ] Deployment docs include update strategy for new image versions.
 - [ ] Deployment docs include optional load balancer/TLS step.
+- [ ] Infrastructure is defined as code (IaC) for core OCI deployment resources.
 - [ ] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals
 
 - Kubernetes (OKE) deployment.
 - Database provisioning and migration.
-- Automated IaC pipeline in this spec phase.
