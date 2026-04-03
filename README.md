@@ -38,3 +38,33 @@ docs/
 - Use `./mvnw test` for unit/integration tests (excluding `@Tag("e2e")`).
 - Use `./mvnw verify` to run the full pipeline, including `@Tag("e2e")` tests.
 - Use `./mvnw clean verify` as the required pre-commit validation command.
+
+## Container
+
+Use the production image definition in `container/Dockerfile`.
+
+Single-architecture local build (example: amd64):
+
+```bash
+docker build \
+  --file ./container/Dockerfile \
+  --tag game:wort-werk \
+  --platform linux/amd64 \
+  --load \
+  .
+```
+
+Run and stop locally:
+
+```bash
+docker run \
+  --rm \
+  --detach \
+  --name wort-werk \
+  --publish 8080:8080 \
+  game:wort-werk
+
+docker stop wort-werk
+```
+
+For multi-architecture publishing (`linux/amd64` + `linux/arm64`) see [container/README.md](./container/README.md).

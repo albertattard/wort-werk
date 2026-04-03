@@ -43,6 +43,7 @@ Use one of these `category` values for new tasks:
 - [TASK-003: Center Noun and Article Buttons](./quiz/TASK-003-center-noun-and-article-buttons.md)
 - [TASK-004: Use UI Clicks in Functional Tests](./quiz/TASK-004-use-ui-clicks-in-functional-tests.md)
 - [TASK-005: Add Audio Cues for Prompt and Correct Answer](./quiz/TASK-005-add-audio-cues-for-prompt-and-correct-answer.md)
+- [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 
 ## Pending
 
@@ -59,6 +60,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-003: Center Noun and Article Buttons](./quiz/TASK-003-center-noun-and-article-buttons.md)
 - [x] [TASK-004: Use UI Clicks in Functional Tests](./quiz/TASK-004-use-ui-clicks-in-functional-tests.md)
 - [x] [TASK-005: Add Audio Cues for Prompt and Correct Answer](./quiz/TASK-005-add-audio-cues-for-prompt-and-correct-answer.md)
+- [x] [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 
 ## Blocked
 
