@@ -1,9 +1,0 @@
-region               = "eu-frankfurt-1"
-home_region          = "us-ashburn-1"
-tenancy_ocid         = "ocid1.tenancy.oc1..example"
-parent_compartment_ocid = "ocid1.compartment.oc1..aaaaaaaa3fa234ivzowsxs43jrp56mpt5mx5dg5oijtds5nhf6qkr2vxwskq"
-compartment_name     = "wort-werk"
-ocir_repository_name = "wort-werk"
-
-# Public testing can start with 0.0.0.0/0. Restrict this CIDR for safer environments.
-allowed_ingress_cidr = "0.0.0.0/0"

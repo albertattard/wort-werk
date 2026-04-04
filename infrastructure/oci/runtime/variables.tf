@@ -35,6 +35,12 @@ variable "container_instance_name" {
   default     = "wort-werk"
 }
 
+variable "container_instance_shape" {
+  description = "Container Instance shape (example: CI.Standard.A1.Flex or CI.Standard.E4.Flex)."
+  type        = string
+  default     = "CI.Standard.A1.Flex"
+}
+
 variable "image_repository" {
   description = "OCIR repository path without tag, for example fra.ocir.io/<namespace>/wort-werk."
   type        = string
@@ -43,6 +49,23 @@ variable "image_repository" {
 variable "image_tag" {
   description = "OCI image tag (recommended: git commit hash)."
   type        = string
+}
+
+variable "image_registry_endpoint" {
+  description = "Image registry endpoint host, for example fra.ocir.io."
+  type        = string
+}
+
+variable "image_registry_username" {
+  description = "Registry username used by OCI Container Instance to pull private image."
+  type        = string
+  sensitive   = true
+}
+
+variable "image_registry_password" {
+  description = "Registry auth token/password used by OCI Container Instance to pull private image."
+  type        = string
+  sensitive   = true
 }
 
 variable "ocpus" {

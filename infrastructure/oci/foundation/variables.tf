@@ -53,3 +53,9 @@ variable "ocir_repository_name" {
   type        = string
   default     = "wort-werk"
 }
+
+variable "ocir_registry" {
+  description = "OCIR registry host, for example fra.ocir.io."
+  type        = string
+  default     = "fra.ocir.io"
+}

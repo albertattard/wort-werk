@@ -82,8 +82,7 @@ Foundation Terraform is in [`infrastructure/oci/foundation`](../infrastructure/o
 
 ```bash
 cd infrastructure/oci/foundation
-cp terraform.tfvars.example terraform.tfvars
-# set tenancy_ocid, parent_compartment_ocid, region and home_region (tenancy home region), plus compartment/network CIDRs and repository name
+# create terraform.tfvars and set tenancy_ocid, parent_compartment_ocid, region and home_region (tenancy home region), plus compartment/network CIDRs and repository name
 terraform init
 terraform apply
 ```
@@ -113,6 +112,7 @@ RUNTIME_DIR="infrastructure/oci/runtime"
 COMPARTMENT_OCID="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
 SUBNET_ID="$(terraform -chdir="${FOUNDATION_DIR}" output -raw subnet_id)"
 NSG_ID="$(terraform -chdir="${FOUNDATION_DIR}" output -raw nsg_id)"
+REGISTRY_ENDPOINT="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_registry)"
 ```
 
 Apply runtime:
@@ -125,6 +125,9 @@ terraform -chdir="${RUNTIME_DIR}" apply \
   -var "compartment_ocid=${COMPARTMENT_OCID}" \
   -var "subnet_id=${SUBNET_ID}" \
   -var "nsg_id=${NSG_ID}" \
+  -var "image_registry_endpoint=${REGISTRY_ENDPOINT}" \
+  -var "image_registry_username=${OCIR_NAMESPACE}/${OCI_USERNAME}" \
+  -var "image_registry_password=${OCI_AUTH_TOKEN}" \
   -var "image_repository=${OCI_REGION}.ocir.io/${OCIR_NAMESPACE}/${OCIR_REPOSITORY}" \
   -var "image_tag=${IMAGE_TAG}"
 ```
@@ -164,16 +167,21 @@ Rollback:
 Scripted release path:
 
 ```bash
-export OCI_PROFILE="FRANKFURT"
 export OCI_USERNAME="<oci-username>"
 export OCI_AUTH_TOKEN="<oci-auth-token>"
 export KEEP_IMAGE_COUNT=2
 ./infrastructure/oci/deploy.sh release
 ```
 
+To switch to AMD64, set Terraform variable `container_instance_shape` in
+`infrastructure/oci/runtime/terraform.tfvars` (for example `CI.Standard.E4.Flex`).
+
+`OCI_PROFILE` defaults to `FRANKFURT` in the script; override only if needed.
+
 `deploy.sh release` aligns with IaC by:
 - using foundation Terraform outputs for runtime network wiring
 - applying runtime Terraform for the new image
+- configuring private OCIR image pull credentials for Container Instance runtime
 - pruning only older images beyond a safe retention window (default keep 2)
 
 ## 7) Optional Load Balancer + TLS Later

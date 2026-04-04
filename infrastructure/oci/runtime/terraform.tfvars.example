@@ -1,9 +1,0 @@
-region                    = "eu-frankfurt-1"
-tenancy_ocid              = "ocid1.tenancy.oc1..example"
-compartment_ocid          = "ocid1.compartment.oc1..example"
-subnet_id                 = "ocid1.subnet.oc1..example"
-nsg_id                    = "ocid1.networksecuritygroup.oc1..example"
-availability_domain_index = 0
-container_instance_name   = "wort-werk"
-image_repository          = "fra.ocir.io/<namespace>/wort-werk"
-image_tag                 = "abcdef123456"
