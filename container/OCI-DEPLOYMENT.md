@@ -135,7 +135,8 @@ Availability Domain is resolved automatically from your tenancy; use `availabili
 
 ## 4) Ingress and Security Checklist
 
-- Ensure NSG ingress allows TCP `8080` from your test CIDR (start with `0.0.0.0/0` only for initial testing).
+- Ensure container NSG ingress allows TCP `8080` from Load Balancer NSG.
+- Ensure load balancer NSG ingress allows TCP `80` and `443` from your test CIDR (start with `0.0.0.0/0` only for initial testing).
 - Ensure subnet route table includes `0.0.0.0/0` via Internet Gateway.
 - Ensure Container Instance VNIC has public IP assigned for direct IP testing.
 - Ensure the identity executing Terraform has permissions to manage OCI network, compartment, OCIR and Container Instance resources.

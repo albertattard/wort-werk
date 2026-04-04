@@ -47,6 +47,7 @@ write_runtime_foundation_vars() {
   local image_registry_endpoint
   local app_port
   local lb_listener_port
+  local https_listener_port
   local load_balancer_min_bandwidth_mbps
   local load_balancer_max_bandwidth_mbps
 
@@ -62,6 +63,7 @@ write_runtime_foundation_vars() {
   image_registry_endpoint="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_registry)"
   app_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw app_port)"
   lb_listener_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw lb_listener_port)"
+  https_listener_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw https_listener_port)"
   load_balancer_min_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_min_bandwidth_mbps)"
   load_balancer_max_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_max_bandwidth_mbps)"
 
@@ -78,6 +80,7 @@ image_repository = "${image_repository}"
 image_registry_endpoint = "${image_registry_endpoint}"
 app_port = ${app_port}
 lb_listener_port = ${lb_listener_port}
+https_listener_port = ${https_listener_port}
 load_balancer_min_bandwidth_mbps = ${load_balancer_min_bandwidth_mbps}
 load_balancer_max_bandwidth_mbps = ${load_balancer_max_bandwidth_mbps}
 EOF

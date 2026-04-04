@@ -54,6 +54,12 @@ variable "lb_listener_port" {
   default     = 80
 }
 
+variable "https_listener_port" {
+  description = "Public HTTPS listener port on the OCI Load Balancer."
+  type        = number
+  default     = 443
+}
+
 variable "load_balancer_min_bandwidth_mbps" {
   description = "Minimum flexible load balancer bandwidth in Mbps."
   type        = number

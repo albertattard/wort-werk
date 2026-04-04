@@ -32,6 +32,7 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation output
 - `image_registry_endpoint`
 - `app_port`
 - `lb_listener_port`
+- `https_listener_port`
 - `load_balancer_min_bandwidth_mbps`
 - `load_balancer_max_bandwidth_mbps`
 

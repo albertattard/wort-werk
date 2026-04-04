@@ -53,6 +53,11 @@ output "lb_listener_port" {
   value       = var.lb_listener_port
 }
 
+output "https_listener_port" {
+  description = "Public HTTPS listener port exposed by the OCI Load Balancer."
+  value       = var.https_listener_port
+}
+
 output "load_balancer_min_bandwidth_mbps" {
   description = "Minimum flexible load balancer bandwidth in Mbps."
   value       = var.load_balancer_min_bandwidth_mbps

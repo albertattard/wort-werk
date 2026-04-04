@@ -23,6 +23,7 @@ Move TLS certificate handling into runtime Terraform so certificate bundle, HTTP
 - Update runtime outputs and deployment docs for TLS-first access.
 - Define project-local certificate directory conventions.
 - Remove optional TLS toggle and enforce always-on HTTPS in runtime Terraform.
+- Ensure foundation NSG ingress permits public HTTPS traffic to the Load Balancer listener.
 
 ## Assumptions
 
@@ -36,5 +37,6 @@ Move TLS certificate handling into runtime Terraform so certificate bundle, HTTP
 - [x] HTTP listener always redirects to HTTPS.
 - [x] Runtime outputs are HTTPS-only (`access_url` and `https_access_url`).
 - [x] Runtime no longer exposes a `tls_enabled` variable.
+- [x] Foundation NSG includes ingress rule for port `443`.
 - [x] Deployment docs include copy/paste commands for certificate placement and Terraform apply.
 - [x] `./mvnw clean verify` passes after changes.

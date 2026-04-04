@@ -95,6 +95,21 @@ resource "oci_core_network_security_group_security_rule" "lb_ingress_http" {
   }
 }
 
+resource "oci_core_network_security_group_security_rule" "lb_ingress_https" {
+  network_security_group_id = oci_core_network_security_group.load_balancer.id
+  direction                 = "INGRESS"
+  protocol                  = "6"
+  source                    = var.allowed_ingress_cidr
+  source_type               = "CIDR_BLOCK"
+
+  tcp_options {
+    destination_port_range {
+      min = var.https_listener_port
+      max = var.https_listener_port
+    }
+  }
+}
+
 resource "oci_core_network_security_group_security_rule" "lb_egress_to_container" {
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "EGRESS"

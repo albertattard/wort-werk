@@ -58,6 +58,7 @@ Expected lifecycle:
 - [x] Runtime Terraform manages OCI LB certificate, HTTPS listener and HTTP to HTTPS redirect.
 - [x] Runtime docs define project-local certificate file paths consumed by Terraform.
 - [x] Runtime Terraform assumes TLS is mandatory and always configures HTTPS + HTTP to HTTPS redirect.
+- [x] Foundation networking allows public ingress to both HTTP (`80`) and HTTPS (`443`) listener ports on the Load Balancer.
 - [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
 - [x] Infrastructure is split into foundation/runtime stacks.
 - [x] Runtime stack consumes foundation outputs and deploys by immutable image tag.

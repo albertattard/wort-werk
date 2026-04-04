@@ -44,6 +44,8 @@ The Wort-Werk compartment is created under `parent_compartment_ocid`.
 - `load_balancer_nsg_id`
 - `load_balancer_public_ip_id`
 - `load_balancer_public_ip`
+- `lb_listener_port`
+- `https_listener_port`
 - `ocir_namespace`
 - `ocir_repository_name`
 - `ocir_repository_id`
