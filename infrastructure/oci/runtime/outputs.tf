@@ -12,3 +12,13 @@ output "deployed_image_url" {
   description = "Resolved container image URL used by the Container Instance."
   value       = local.image_url
 }
+
+output "public_ip" {
+  description = "Public IP assigned to the Container Instance VNIC."
+  value       = try(data.oci_core_vnic.wort_werk.public_ip_address, null)
+}
+
+output "access_url" {
+  description = "Direct HTTP URL for accessing Wort-Werk."
+  value       = try("http://${data.oci_core_vnic.wort_werk.public_ip_address}:8080", null)
+}

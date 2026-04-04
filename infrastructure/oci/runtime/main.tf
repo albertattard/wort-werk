@@ -10,6 +10,10 @@ data "oci_identity_availability_domains" "this" {
   compartment_id = var.tenancy_ocid
 }
 
+data "oci_core_vnic" "wort_werk" {
+  vnic_id = oci_container_instances_container_instance.wort_werk.vnics[0].vnic_id
+}
+
 resource "oci_container_instances_container_instance" "wort_werk" {
   compartment_id      = var.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.this.availability_domains[var.availability_domain_index].name

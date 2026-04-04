@@ -49,6 +49,7 @@ Use one of these `category` values for new tasks:
 - [TASK-009: Automate OCI Build Push and Runtime Deploy](./infrastructure/TASK-009-automate-build-push-runtime-deploy.md)
 - [TASK-010: Support Private OCIR Pull Credentials for Runtime](./infrastructure/TASK-010-support-private-ocir-pull-credentials.md)
 - [TASK-011: Harden Release Cleanup with OCIR Repository ID](./infrastructure/TASK-011-harden-release-cleanup-with-ocir-repository-id.md)
+- [TASK-012: Add Runtime Access URL Output](./infrastructure/TASK-012-add-runtime-access-url-output.md)
 
 ## Pending
 
@@ -71,6 +72,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-009: Automate OCI Build Push and Runtime Deploy](./infrastructure/TASK-009-automate-build-push-runtime-deploy.md)
 - [x] [TASK-010: Support Private OCIR Pull Credentials for Runtime](./infrastructure/TASK-010-support-private-ocir-pull-credentials.md)
 - [x] [TASK-011: Harden Release Cleanup with OCIR Repository ID](./infrastructure/TASK-011-harden-release-cleanup-with-ocir-repository-id.md)
+- [x] [TASK-012: Add Runtime Access URL Output](./infrastructure/TASK-012-add-runtime-access-url-output.md)
 
 ## Blocked
 

@@ -56,6 +56,7 @@ Expected lifecycle:
 - [x] Deployment script supports safe image cleanup policy (retention-based) instead of deleting all previous images.
 - [x] Deployment script cleanup does not fail a successful runtime deployment if repository lookup is unavailable.
 - [x] Runtime supports private OCIR image pulls via explicit registry credentials.
+- [x] Runtime outputs include direct HTTP access details (public IP and URL) after deploy.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals
