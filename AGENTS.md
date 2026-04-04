@@ -72,3 +72,10 @@ When changing workflow or engineering standards:
 1. Add/update an ADR in `docs/decisions/`.
 2. Update indexes/readmes (`docs/decisions/README.md`, `README.md`, `docs/tasks/README.md`) as needed.
 3. Keep examples and commands aligned with current tooling.
+
+## Trigger Phrases
+
+- `update assets`
+  - Run `./tools/update-assets`
+  - Then run `./mvnw clean verify`
+  - If `tools/update-assets` reports missing metadata, update `assets/articles-overrides.csv` and re-run
