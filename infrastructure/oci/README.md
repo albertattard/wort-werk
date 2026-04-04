@@ -26,8 +26,14 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation output
 - `compartment_ocid`
 - `subnet_id`
 - `nsg_id`
+- `load_balancer_nsg_id`
+- `load_balancer_public_ip_id`
 - `image_repository`
 - `image_registry_endpoint`
+- `app_port`
+- `lb_listener_port`
+- `load_balancer_min_bandwidth_mbps`
+- `load_balancer_max_bandwidth_mbps`
 
 Release mode requires:
 - `OCI_USERNAME`

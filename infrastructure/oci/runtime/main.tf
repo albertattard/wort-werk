@@ -10,10 +10,6 @@ data "oci_identity_availability_domains" "this" {
   compartment_id = var.tenancy_ocid
 }
 
-data "oci_core_vnic" "wort_werk" {
-  vnic_id = oci_container_instances_container_instance.wort_werk.vnics[0].vnic_id
-}
-
 resource "oci_container_instances_container_instance" "wort_werk" {
   compartment_id      = var.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.this.availability_domains[var.availability_domain_index].name
@@ -48,4 +44,48 @@ resource "oci_container_instances_container_instance" "wort_werk" {
       vcpus_limit         = var.ocpus
     }
   }
+}
+
+resource "oci_load_balancer_load_balancer" "wort_werk" {
+  compartment_id             = var.compartment_ocid
+  display_name               = "wort-werk"
+  shape                      = "flexible"
+  subnet_ids                 = [var.subnet_id]
+  network_security_group_ids = [var.load_balancer_nsg_id]
+
+  shape_details {
+    minimum_bandwidth_in_mbps = var.load_balancer_min_bandwidth_mbps
+    maximum_bandwidth_in_mbps = var.load_balancer_max_bandwidth_mbps
+  }
+
+  reserved_ips {
+    id = var.load_balancer_public_ip_id
+  }
+}
+
+resource "oci_load_balancer_backend_set" "wort_werk" {
+  name             = "wort-werk-backend-set"
+  load_balancer_id = oci_load_balancer_load_balancer.wort_werk.id
+  policy           = "ROUND_ROBIN"
+
+  health_checker {
+    protocol = "TCP"
+    port     = var.app_port
+  }
+}
+
+resource "oci_load_balancer_backend" "wort_werk" {
+  load_balancer_id = oci_load_balancer_load_balancer.wort_werk.id
+  backendset_name  = oci_load_balancer_backend_set.wort_werk.name
+  ip_address       = oci_container_instances_container_instance.wort_werk.vnics[0].private_ip
+  port             = var.app_port
+  weight           = 1
+}
+
+resource "oci_load_balancer_listener" "http" {
+  load_balancer_id         = oci_load_balancer_load_balancer.wort_werk.id
+  name                     = "http"
+  default_backend_set_name = oci_load_balancer_backend_set.wort_werk.name
+  port                     = var.lb_listener_port
+  protocol                 = "HTTP"
 }

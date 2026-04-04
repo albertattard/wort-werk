@@ -48,6 +48,24 @@ variable "app_port" {
   default     = 8080
 }
 
+variable "lb_listener_port" {
+  description = "Public HTTP listener port on the OCI Load Balancer."
+  type        = number
+  default     = 80
+}
+
+variable "load_balancer_min_bandwidth_mbps" {
+  description = "Minimum flexible load balancer bandwidth in Mbps."
+  type        = number
+  default     = 10
+}
+
+variable "load_balancer_max_bandwidth_mbps" {
+  description = "Maximum flexible load balancer bandwidth in Mbps."
+  type        = number
+  default     = 10
+}
+
 variable "ocir_repository_name" {
   description = "OCIR repository name."
   type        = string

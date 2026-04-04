@@ -11,6 +11,8 @@ Foundation Terraform stack for Wort-Werk OCI environment setup.
 - NSG + ingress/egress rules
 - subnet for Container Instance
 - OCIR repository
+- reserved public IP for Load Balancer
+- NSG for Load Balancer ingress/egress
 
 ## Does Not Provision
 
@@ -39,6 +41,9 @@ The Wort-Werk compartment is created under `parent_compartment_ocid`.
 - `compartment_ocid`
 - `subnet_id`
 - `nsg_id`
+- `load_balancer_nsg_id`
+- `load_balancer_public_ip_id`
+- `load_balancer_public_ip`
 - `ocir_namespace`
 - `ocir_repository_name`
 - `ocir_repository_id`

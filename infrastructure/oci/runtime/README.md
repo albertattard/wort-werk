@@ -4,7 +4,8 @@ Runtime Terraform stack for Wort-Werk Container Instance rollout.
 
 ## Provisions
 
-- OCI Container Instance only
+- OCI Container Instance
+- OCI Load Balancer with stable reserved public IP endpoint
 
 ## Depends On
 
@@ -14,6 +15,8 @@ Outputs from `infrastructure/oci/foundation`:
 - `compartment_ocid`
 - `subnet_id`
 - `nsg_id`
+- `load_balancer_nsg_id`
+- `load_balancer_public_ip_id`
 - `image_repository`
 - `image_registry_endpoint`
 
@@ -39,7 +42,8 @@ Private registry credentials (`image_registry_username`, `image_registry_passwor
 ## Key Outputs
 
 - `container_instance_id`
+- `load_balancer_id`
 - `selected_availability_domain`
 - `deployed_image_url`
-- `public_ip`
+- `public_ip` (stable reserved LB public IP)
 - `access_url`

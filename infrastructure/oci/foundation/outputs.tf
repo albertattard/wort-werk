@@ -28,6 +28,41 @@ output "nsg_id" {
   value       = oci_core_network_security_group.wort_werk.id
 }
 
+output "load_balancer_nsg_id" {
+  description = "Load Balancer Network Security Group OCID."
+  value       = oci_core_network_security_group.load_balancer.id
+}
+
+output "load_balancer_public_ip_id" {
+  description = "Reserved public IP OCID used by the Load Balancer."
+  value       = oci_core_public_ip.load_balancer.id
+}
+
+output "load_balancer_public_ip" {
+  description = "Reserved public IP address used by the Load Balancer."
+  value       = oci_core_public_ip.load_balancer.ip_address
+}
+
+output "app_port" {
+  description = "Application port exposed by the container backend."
+  value       = var.app_port
+}
+
+output "lb_listener_port" {
+  description = "Public listener port exposed by the OCI Load Balancer."
+  value       = var.lb_listener_port
+}
+
+output "load_balancer_min_bandwidth_mbps" {
+  description = "Minimum flexible load balancer bandwidth in Mbps."
+  value       = var.load_balancer_min_bandwidth_mbps
+}
+
+output "load_balancer_max_bandwidth_mbps" {
+  description = "Maximum flexible load balancer bandwidth in Mbps."
+  value       = var.load_balancer_max_bandwidth_mbps
+}
+
 output "ocir_namespace" {
   description = "Object Storage/OCIR namespace."
   value       = data.oci_objectstorage_namespace.this.namespace

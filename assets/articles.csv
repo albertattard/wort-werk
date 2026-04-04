@@ -7,6 +7,7 @@ Banane,die,assets/images/Banane.png,assets/audio/Banane.mp3,assets/audio/die Ban
 Baum,der,assets/images/Baum.png,assets/audio/Baum.mp3,assets/audio/der Baum.mp3
 Bett,das,assets/images/Bett.png,assets/audio/Bett.mp3,assets/audio/das Bett.mp3
 Brötchen,das,assets/images/Broetchen.png,assets/audio/Broetchen.mp3,assets/audio/das Broetchen.mp3
+Buch,das,assets/images/Buch.png,assets/audio/Buch.mp3,assets/audio/das Buch.mp3
 Chamäleon,das,assets/images/Chamaeleon.png,assets/audio/Chamaeleon.mp3,assets/audio/das Chamaeleon.mp3
 Delphin,der,assets/images/Delphin.png,assets/audio/Delphin.mp3,assets/audio/der Delphin.mp3
 Elefant,der,assets/images/Elefant.png,assets/audio/Elefant.mp3,assets/audio/der Elefant.mp3
@@ -19,6 +20,7 @@ Gabel,die,assets/images/Gabel.png,assets/audio/Gabel.mp3,assets/audio/die Gabel.
 Geige,die,assets/images/Geige.png,assets/audio/Geige.mp3,assets/audio/die Geige.mp3
 Gepäck,das,assets/images/Gepaeck.png,assets/audio/Gepaeck.mp3,assets/audio/das Gepaeck.mp3
 Gitarre,die,assets/images/Gitarre.png,assets/audio/Gitarre.mp3,assets/audio/die Gitarre.mp3
+Handy,das,assets/images/Handy.png,assets/audio/Handy.mp3,assets/audio/das Handy.mp3
 Hund,der,assets/images/Hund.png,assets/audio/Hund.mp3,assets/audio/der Hund.mp3
 Käse,der,assets/images/Kaese.png,assets/audio/Kaese.mp3,assets/audio/der Kaese.mp3
 Kaffee,der,assets/images/Kaffee.png,assets/audio/Kaffee.mp3,assets/audio/der Kaffee.mp3
@@ -37,6 +39,7 @@ Pfeffer,der,assets/images/Pfeffer.png,assets/audio/Pfeffer.mp3,assets/audio/der 
 Pferd,das,assets/images/Pferd.png,assets/audio/Pferd.mp3,assets/audio/das Pferd.mp3
 Pflanze,die,assets/images/Pflanze.png,assets/audio/Pflanze.mp3,assets/audio/die Pflanze.mp3
 Pizza,die,assets/images/Pizza.png,assets/audio/Pizza.mp3,assets/audio/die Pizza.mp3
+Regal,das,assets/images/Regal.png,assets/audio/Regal.mp3,assets/audio/das Regal.mp3
 Salz,das,assets/images/Salz.png,assets/audio/Salz.mp3,assets/audio/das Salz.mp3
 Schinken,der,assets/images/Schinken.png,assets/audio/Schinken.mp3,assets/audio/der Schinken.mp3
 Sessel,der,assets/images/Sessel.png,assets/audio/Sessel.mp3,assets/audio/der Sessel.mp3

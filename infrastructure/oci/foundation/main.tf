@@ -48,15 +48,21 @@ resource "oci_core_route_table" "public" {
 resource "oci_core_network_security_group" "wort_werk" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
-  display_name   = "wort-werk"
+  display_name   = "wort-werk-container"
+}
+
+resource "oci_core_network_security_group" "load_balancer" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = "wort-werk-load-balancer"
 }
 
 resource "oci_core_network_security_group_security_rule" "ingress_http" {
   network_security_group_id = oci_core_network_security_group.wort_werk.id
   direction                 = "INGRESS"
   protocol                  = "6"
-  source                    = var.allowed_ingress_cidr
-  source_type               = "CIDR_BLOCK"
+  source                    = oci_core_network_security_group.load_balancer.id
+  source_type               = "NETWORK_SECURITY_GROUP"
 
   tcp_options {
     destination_port_range {
@@ -74,6 +80,36 @@ resource "oci_core_network_security_group_security_rule" "egress_all" {
   destination_type          = "CIDR_BLOCK"
 }
 
+resource "oci_core_network_security_group_security_rule" "lb_ingress_http" {
+  network_security_group_id = oci_core_network_security_group.load_balancer.id
+  direction                 = "INGRESS"
+  protocol                  = "6"
+  source                    = var.allowed_ingress_cidr
+  source_type               = "CIDR_BLOCK"
+
+  tcp_options {
+    destination_port_range {
+      min = var.lb_listener_port
+      max = var.lb_listener_port
+    }
+  }
+}
+
+resource "oci_core_network_security_group_security_rule" "lb_egress_to_container" {
+  network_security_group_id = oci_core_network_security_group.load_balancer.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = oci_core_network_security_group.wort_werk.id
+  destination_type          = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = var.app_port
+      max = var.app_port
+    }
+  }
+}
+
 resource "oci_core_subnet" "container" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
@@ -88,4 +124,16 @@ resource "oci_artifacts_container_repository" "wort_werk" {
   compartment_id = oci_identity_compartment.wort_werk.id
   display_name   = var.ocir_repository_name
   is_public      = false
+}
+
+resource "oci_core_public_ip" "load_balancer" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  display_name   = "wort-werk-load-balancer"
+  lifetime       = "RESERVED"
+
+  lifecycle {
+    # OCI updates this when the reserved IP is attached to LB-managed private IPs.
+    # Ignore drift so Terraform does not try to unassign it.
+    ignore_changes = [private_ip_id]
+  }
 }

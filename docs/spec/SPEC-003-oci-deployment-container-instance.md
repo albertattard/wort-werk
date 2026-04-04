@@ -36,8 +36,8 @@ Output:
 ## Deployment Model
 
 Two-stack Terraform model:
-- `foundation`: compartment, VCN, subnet, NSG, route table, internet gateway, OCIR repository
-- `runtime`: Container Instance only, parameterized by `image_repository` + `image_tag`
+- `foundation`: compartment, VCN, subnet, NSG, route table, internet gateway, OCIR repository, reserved public IP for Load Balancer
+- `runtime`: Container Instance + public Load Balancer, parameterized by `image_repository` + `image_tag`
 
 Expected lifecycle:
 - foundation apply: infrequent (environment setup/change)
@@ -57,6 +57,7 @@ Expected lifecycle:
 - [x] Deployment script cleanup does not fail a successful runtime deployment if repository lookup is unavailable.
 - [x] Runtime supports private OCIR image pulls via explicit registry credentials.
 - [x] Runtime outputs include direct HTTP access details (public IP and URL) after deploy.
+- [x] Deployment exposes a stable public endpoint through OCI Load Balancer with reserved public IP.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

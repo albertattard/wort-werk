@@ -24,7 +24,6 @@ Explicitly out of scope:
 - Container Instance
 
 Optional (later):
-- OCI Load Balancer
 - TLS certificate
 - DNS record
 - OCI monitoring/alarms
@@ -145,9 +144,10 @@ Availability Domain is resolved automatically from your tenancy; use `availabili
 
 - Open OCI Console -> Container Instances -> Wort-Werk instance.
 - Confirm container state is `RUNNING`.
-- Open `http://<public-ip>:8080` and verify quiz page loads.
+- Read runtime output `access_url` and open that URL.
+- Verify quiz page loads through the Load Balancer endpoint.
 
-No domain is required for initial testing. Public-IP HTTP is acceptable until TLS/domain are added.
+No domain is required for initial testing. Load-Balancer HTTP is acceptable until TLS/domain are added.
 
 ## 6) Update Strategy (New Image Versions)
 
@@ -184,12 +184,10 @@ To switch to AMD64, set Terraform variable `container_instance_shape` in
 - configuring private OCIR image pull credentials for Container Instance runtime
 - pruning only older images beyond a safe retention window (default keep 2)
 
-## 7) Optional Load Balancer + TLS Later
+## 7) Optional TLS + DNS Later
 
-When domain/TLS is ready:
+Load Balancer is now part of the runtime stack. When domain/TLS is ready:
 
-1. Provision OCI Load Balancer in public subnet.
-2. Point backend set to Container Instance private endpoint/port `8080`.
-3. Attach certificate to HTTPS listener (`443`).
-4. Add DNS `A`/`CNAME` record to LB public endpoint.
-5. Restrict direct Container Instance ingress to LB subnet only.
+1. Attach certificate to HTTPS listener (`443`).
+2. Add DNS `A`/`CNAME` record to LB reserved public endpoint.
+3. Redirect HTTP to HTTPS if required.

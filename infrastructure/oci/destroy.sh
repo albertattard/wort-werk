@@ -13,18 +13,51 @@ fi
 
 write_runtime_foundation_vars_if_possible() {
   if terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid >/dev/null 2>&1; then
+    local region
+    local tenancy_ocid
     local compartment_ocid
     local subnet_id
     local nsg_id
+    local load_balancer_nsg_id
+    local load_balancer_public_ip_id
+    local load_balancer_public_ip
+    local image_repository
+    local image_registry_endpoint
+    local app_port
+    local lb_listener_port
+    local load_balancer_min_bandwidth_mbps
+    local load_balancer_max_bandwidth_mbps
 
+    region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
+    tenancy_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw tenancy_ocid)"
     compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
     subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw subnet_id)"
     nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw nsg_id)"
+    load_balancer_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_nsg_id)"
+    load_balancer_public_ip_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_public_ip_id)"
+    load_balancer_public_ip="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_public_ip)"
+    image_repository="$(terraform -chdir="${FOUNDATION_DIR}" output -raw image_repository)"
+    image_registry_endpoint="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_registry)"
+    app_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw app_port)"
+    lb_listener_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw lb_listener_port)"
+    load_balancer_min_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_min_bandwidth_mbps)"
+    load_balancer_max_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_max_bandwidth_mbps)"
 
     cat > "${RUNTIME_DIR}/foundation.auto.tfvars" <<EOF
+region = "${region}"
+tenancy_ocid = "${tenancy_ocid}"
 compartment_ocid = "${compartment_ocid}"
 subnet_id        = "${subnet_id}"
 nsg_id           = "${nsg_id}"
+load_balancer_nsg_id = "${load_balancer_nsg_id}"
+load_balancer_public_ip_id = "${load_balancer_public_ip_id}"
+load_balancer_public_ip = "${load_balancer_public_ip}"
+image_repository = "${image_repository}"
+image_registry_endpoint = "${image_registry_endpoint}"
+app_port = ${app_port}
+lb_listener_port = ${lb_listener_port}
+load_balancer_min_bandwidth_mbps = ${load_balancer_min_bandwidth_mbps}
+load_balancer_max_bandwidth_mbps = ${load_balancer_max_bandwidth_mbps}
 EOF
   fi
 }

@@ -23,6 +23,21 @@ variable "nsg_id" {
   type        = string
 }
 
+variable "load_balancer_nsg_id" {
+  description = "Load Balancer NSG OCID from foundation stack."
+  type        = string
+}
+
+variable "load_balancer_public_ip_id" {
+  description = "Reserved public IP OCID for OCI Load Balancer."
+  type        = string
+}
+
+variable "load_balancer_public_ip" {
+  description = "Reserved public IP value for OCI Load Balancer."
+  type        = string
+}
+
 variable "availability_domain_index" {
   description = "Availability Domain index to use from the tenancy AD list (0-based)."
   type        = number
@@ -78,4 +93,28 @@ variable "memory_in_gbs" {
   description = "Container Instance memory allocation in GB."
   type        = number
   default     = 2
+}
+
+variable "app_port" {
+  description = "Container application port."
+  type        = number
+  default     = 8080
+}
+
+variable "lb_listener_port" {
+  description = "Public HTTP listener port on the Load Balancer."
+  type        = number
+  default     = 80
+}
+
+variable "load_balancer_min_bandwidth_mbps" {
+  description = "Minimum flexible load balancer bandwidth in Mbps."
+  type        = number
+  default     = 10
+}
+
+variable "load_balancer_max_bandwidth_mbps" {
+  description = "Maximum flexible load balancer bandwidth in Mbps."
+  type        = number
+  default     = 10
 }

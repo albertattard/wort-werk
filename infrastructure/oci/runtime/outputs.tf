@@ -14,11 +14,16 @@ output "deployed_image_url" {
 }
 
 output "public_ip" {
-  description = "Public IP assigned to the Container Instance VNIC."
-  value       = try(data.oci_core_vnic.wort_werk.public_ip_address, null)
+  description = "Stable reserved public IP assigned to the Load Balancer."
+  value       = var.load_balancer_public_ip
 }
 
 output "access_url" {
-  description = "Direct HTTP URL for accessing Wort-Werk."
-  value       = try("http://${data.oci_core_vnic.wort_werk.public_ip_address}:8080", null)
+  description = "Stable HTTP URL for accessing Wort-Werk through the Load Balancer."
+  value       = "http://${var.load_balancer_public_ip}:${var.lb_listener_port}"
+}
+
+output "load_balancer_id" {
+  description = "OCI Load Balancer OCID."
+  value       = oci_load_balancer_load_balancer.wort_werk.id
 }
