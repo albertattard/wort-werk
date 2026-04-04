@@ -184,10 +184,109 @@ To switch to AMD64, set Terraform variable `container_instance_shape` in
 - configuring private OCIR image pull credentials for Container Instance runtime
 - pruning only older images beyond a safe retention window (default keep 2)
 
-## 7) Optional TLS + DNS Later
+## 7) TLS with Let's Encrypt (Manual DNS Challenge)
 
-Load Balancer is now part of the runtime stack. When domain/TLS is ready:
+Use this when you want HTTPS for `wortwerk.xyz` without buying a certificate.
 
-1. Attach certificate to HTTPS listener (`443`).
-2. Add DNS `A`/`CNAME` record to LB reserved public endpoint.
-3. Redirect HTTP to HTTPS if required.
+Important:
+- Certificate and private key material are not managed by Terraform in this project.
+- Keep certificate files outside this repository.
+- Terraform manages infrastructure wiring (LB/network/listeners), while certificate issuance/upload stays operational.
+
+### 7.1 Point DNS to OCI Load Balancer
+
+Get your stable Load Balancer IP from runtime output:
+
+```bash
+terraform -chdir="infrastructure/oci/runtime" output -raw public_ip
+```
+
+Create DNS records at your registrar/DNS provider:
+- `A` record: `wortwerk.xyz` -> `<load-balancer-public-ip>`
+- `A` record: `www.wortwerk.xyz` -> `<load-balancer-public-ip>` (optional but recommended)
+
+### 7.2 Issue Certificate (manual, from your laptop)
+
+Install Certbot locally (for example with Homebrew on macOS):
+
+```bash
+brew install certbot
+```
+
+Prepare writable Certbot directories (avoids root/system path permission issues):
+
+```bash
+mkdir -p "${HOME}/.certbot/config" "${HOME}/.certbot/work" "${HOME}/.certbot/logs"
+```
+
+Run manual DNS challenge issuance:
+
+```bash
+certbot certonly \
+  --manual \
+  --preferred-challenges dns \
+  --server https://acme-v02.api.letsencrypt.org/directory \
+  --key-type rsa \
+  --cert-name wortwerk.xyz \
+  -d wortwerk.xyz \
+  -d www.wortwerk.xyz \
+  --agree-tos \
+  -m <your-email> \
+  --config-dir "${HOME}/.certbot/config" \
+  --work-dir "${HOME}/.certbot/work" \
+  --logs-dir "${HOME}/.certbot/logs"
+```
+
+Certbot will print one or more TXT records to create (for example under `_acme-challenge.wortwerk.xyz`).  
+Create exactly what Certbot prints, then verify propagation before pressing Enter:
+
+```bash
+dig +short TXT _acme-challenge.wortwerk.xyz
+dig +short TXT _acme-challenge.www.wortwerk.xyz
+```
+
+When issuance succeeds, certificate files are under:
+- `${HOME}/.certbot/config/live/wortwerk.xyz/fullchain.pem`
+- `${HOME}/.certbot/config/live/wortwerk.xyz/privkey.pem`
+
+### 7.3 Upload Certificate to OCI and Enable HTTPS
+
+In OCI Console:
+
+1. Open your Load Balancer.
+2. Go to **Certificates** and import:
+   - Certificate: `fullchain.pem`
+   - Private key: `privkey.pem`
+3. Create/add HTTPS listener on port `443`:
+   - Protocol: `HTTP` (terminated TLS at LB)
+   - Backend set: `wort-werk-backend-set`
+   - SSL enabled with uploaded certificate
+4. Keep backend port `8080` to Container Instance.
+
+### 7.4 Force HTTPS
+
+Configure HTTP listener (`:80`) redirect to HTTPS (`:443`) in Load Balancer rule sets:
+- condition: all paths
+- action: redirect to `https://wortwerk.xyz`
+- status code: `301`
+
+## 8) Manual Renewal Every 90 Days
+
+Let’s Encrypt certificates are valid for 90 days. With manual DNS challenge, renew before expiry (recommended at day ~60).
+
+Renewal procedure:
+
+1. Re-run the same `certbot certonly --manual ...` command in section 7.2.
+2. Create fresh `_acme-challenge` TXT record(s) shown by Certbot.
+3. Wait for DNS propagation and complete challenge.
+4. Re-import new `fullchain.pem` + `privkey.pem` into OCI Load Balancer certificate.
+5. Attach the new certificate to the HTTPS listener if OCI created a new certificate object.
+6. Validate HTTPS and expiry:
+
+```bash
+curl -I https://wortwerk.xyz
+openssl s_client -connect wortwerk.xyz:443 -servername wortwerk.xyz 2>/dev/null | openssl x509 -noout -dates -issuer -subject
+```
+
+Operational recommendation:
+- set a recurring calendar reminder every 60 days named `Renew wortwerk.xyz Let's Encrypt certificate`.

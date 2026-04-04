@@ -59,3 +59,9 @@ Cleanup behavior:
 To change runtime shape, set Terraform variable `container_instance_shape` in:
 - `infrastructure/oci/runtime/terraform.tfvars`
 - or another `*.auto.tfvars` file in `infrastructure/oci/runtime/`
+
+## TLS Ownership
+
+- Terraform in this repository does not manage Let’s Encrypt certificate/private key material.
+- TLS certificate issuance and renewal are manual operational steps documented in [`container/OCI-DEPLOYMENT.md`](../../container/OCI-DEPLOYMENT.md).
+- This avoids storing private keys in Terraform state.

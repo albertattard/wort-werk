@@ -39,6 +39,10 @@ Two-stack Terraform model:
 - `foundation`: compartment, VCN, subnet, NSG, route table, internet gateway, OCIR repository, reserved public IP for Load Balancer
 - `runtime`: Container Instance + public Load Balancer, parameterized by `image_repository` + `image_tag`
 
+TLS model:
+- Terraform manages LB and network wiring.
+- Let's Encrypt certificate/private key material is handled manually outside Terraform state.
+
 Expected lifecycle:
 - foundation apply: infrequent (environment setup/change)
 - runtime apply: frequent (release/update/rollback)
@@ -49,6 +53,8 @@ Expected lifecycle:
 - [x] Deployment docs include networking and ingress requirements.
 - [x] Deployment docs include update strategy for new image versions.
 - [x] Deployment docs include optional load balancer/TLS step.
+- [x] Deployment docs include a concrete Let’s Encrypt manual issuance and manual 90-day renewal runbook.
+- [x] Deployment docs clearly separate Terraform-managed infrastructure from manual certificate/private-key handling.
 - [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
 - [x] Infrastructure is split into foundation/runtime stacks.
 - [x] Runtime stack consumes foundation outputs and deploys by immutable image tag.
