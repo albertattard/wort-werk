@@ -6,6 +6,8 @@ Runtime Terraform stack for Wort-Werk Container Instance rollout.
 
 - OCI Container Instance
 - OCI Load Balancer with stable reserved public IP endpoint
+- OCI Load Balancer certificate (from local PEM files)
+- HTTPS listener and HTTP to HTTPS redirect
 
 ## Depends On
 
@@ -30,6 +32,13 @@ terraform plan
 terraform apply
 ```
 
+For Terraform-managed TLS, place certificate files in:
+
+- `infrastructure/oci/runtime/tls/wortwerk.xyz/fullchain.pem`
+- `infrastructure/oci/runtime/tls/wortwerk.xyz/privkey.pem`
+
+Then apply runtime to install/update HTTPS resources from these files.
+
 Use immutable image tags (git commit hash recommended) for repeatable rollouts and rollback.
 Use `container_instance_shape` to switch between Arm and AMD64 when needed.
 Examples:
@@ -47,3 +56,4 @@ Private registry credentials (`image_registry_username`, `image_registry_passwor
 - `deployed_image_url`
 - `public_ip` (stable reserved LB public IP)
 - `access_url`
+- `https_access_url`

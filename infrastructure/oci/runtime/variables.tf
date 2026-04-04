@@ -107,6 +107,43 @@ variable "lb_listener_port" {
   default     = 80
 }
 
+variable "https_listener_port" {
+  description = "Public HTTPS listener port on the Load Balancer."
+  type        = number
+  default     = 443
+}
+
+variable "tls_certificate_name" {
+  description = "Certificate name stored on the OCI Load Balancer."
+  type        = string
+  default     = "wortwerk_xyz_terraform"
+}
+
+variable "tls_public_certificate_path" {
+  description = "Path to PEM public certificate file (fullchain) managed by Terraform."
+  type        = string
+  default     = "tls/wortwerk.xyz/fullchain.pem"
+}
+
+variable "tls_private_key_path" {
+  description = "Path to PEM private key file managed by Terraform."
+  type        = string
+  sensitive   = true
+  default     = "tls/wortwerk.xyz/privkey.pem"
+}
+
+variable "tls_ca_certificate_path" {
+  description = "Optional path to CA certificate chain PEM file."
+  type        = string
+  default     = ""
+}
+
+variable "tls_redirect_host" {
+  description = "Host used by HTTP to HTTPS redirect rule."
+  type        = string
+  default     = "wortwerk.xyz"
+}
+
 variable "load_balancer_min_bandwidth_mbps" {
   description = "Minimum flexible load balancer bandwidth in Mbps."
   type        = number

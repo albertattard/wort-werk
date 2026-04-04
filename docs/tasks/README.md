@@ -55,6 +55,7 @@ Use one of these `category` values for new tasks:
 - [TASK-012: Add Runtime Access URL Output](./infrastructure/TASK-012-add-runtime-access-url-output.md)
 - [TASK-015: Add Stable Endpoint via OCI Load Balancer](./infrastructure/TASK-015-add-stable-endpoint-via-oci-load-balancer.md)
 - [TASK-017: Document Manual Let's Encrypt TLS Issuance and Renewal](./infrastructure/TASK-017-document-manual-lets-encrypt-renewal.md)
+- [TASK-018: Manage TLS Certificate and HTTPS Listener Through Terraform](./infrastructure/TASK-018-manage-tls-certificate-through-terraform.md)
 
 ## Pending
 
@@ -83,6 +84,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-012: Add Runtime Access URL Output](./infrastructure/TASK-012-add-runtime-access-url-output.md)
 - [x] [TASK-015: Add Stable Endpoint via OCI Load Balancer](./infrastructure/TASK-015-add-stable-endpoint-via-oci-load-balancer.md)
 - [x] [TASK-017: Document Manual Let's Encrypt TLS Issuance and Renewal](./infrastructure/TASK-017-document-manual-lets-encrypt-renewal.md)
+- [x] [TASK-018: Manage TLS Certificate and HTTPS Listener Through Terraform](./infrastructure/TASK-018-manage-tls-certificate-through-terraform.md)
 
 ## Blocked
 

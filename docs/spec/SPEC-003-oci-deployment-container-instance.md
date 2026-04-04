@@ -41,7 +41,8 @@ Two-stack Terraform model:
 
 TLS model:
 - Terraform manages LB and network wiring.
-- Let's Encrypt certificate/private key material is handled manually outside Terraform state.
+- Let's Encrypt certificate/private key material is sourced from project-local certificate files and managed by Terraform.
+- HTTPS is always enabled in runtime Terraform (no HTTP-only mode).
 
 Expected lifecycle:
 - foundation apply: infrequent (environment setup/change)
@@ -54,7 +55,9 @@ Expected lifecycle:
 - [x] Deployment docs include update strategy for new image versions.
 - [x] Deployment docs include optional load balancer/TLS step.
 - [x] Deployment docs include a concrete Let’s Encrypt manual issuance and manual 90-day renewal runbook.
-- [x] Deployment docs clearly separate Terraform-managed infrastructure from manual certificate/private-key handling.
+- [x] Runtime Terraform manages OCI LB certificate, HTTPS listener and HTTP to HTTPS redirect.
+- [x] Runtime docs define project-local certificate file paths consumed by Terraform.
+- [x] Runtime Terraform assumes TLS is mandatory and always configures HTTPS + HTTP to HTTPS redirect.
 - [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
 - [x] Infrastructure is split into foundation/runtime stacks.
 - [x] Runtime stack consumes foundation outputs and deploys by immutable image tag.

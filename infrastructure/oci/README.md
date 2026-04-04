@@ -62,6 +62,6 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 
 ## TLS Ownership
 
-- Terraform in this repository does not manage Let’s Encrypt certificate/private key material.
-- TLS certificate issuance and renewal are manual operational steps documented in [`container/OCI-DEPLOYMENT.md`](../../container/OCI-DEPLOYMENT.md).
-- This avoids storing private keys in Terraform state.
+- Terraform runtime manages load balancer certificate and HTTPS listener resources.
+- Certificate issuance and renewal remain manual (Let's Encrypt DNS challenge), then certificate files are copied to `infrastructure/oci/runtime/tls/wortwerk.xyz/`.
+- Runtime Terraform reads these files during `terraform apply`.

@@ -2,3 +2,10 @@ target/
 .DS_Store
 .idea/
 .oca/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+infrastructure/oci/runtime/foundation.auto.tfvars
+infrastructure/oci/runtime/release.auto.tfvars
+infrastructure/oci/runtime/tls/**/*.pem

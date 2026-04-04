@@ -1,0 +1,8 @@
+# Never commit TLS certificate/key material
+*.pem
+**/*.pem
+
+# Keep documentation and placeholders
+!.gitignore
+!README.md
+!**/.gitkeep

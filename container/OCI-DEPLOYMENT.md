@@ -189,9 +189,8 @@ To switch to AMD64, set Terraform variable `container_instance_shape` in
 Use this when you want HTTPS for `wortwerk.xyz` without buying a certificate.
 
 Important:
-- Certificate and private key material are not managed by Terraform in this project.
-- Keep certificate files outside this repository.
-- Terraform manages infrastructure wiring (LB/network/listeners), while certificate issuance/upload stays operational.
+- Certificate issuance is still manual (Let's Encrypt DNS challenge).
+- Certificate installation is managed by Terraform using project-local PEM files.
 
 ### 7.1 Point DNS to OCI Load Balancer
 
@@ -249,26 +248,28 @@ When issuance succeeds, certificate files are under:
 - `${HOME}/.certbot/config/live/wortwerk.xyz/fullchain.pem`
 - `${HOME}/.certbot/config/live/wortwerk.xyz/privkey.pem`
 
-### 7.3 Upload Certificate to OCI and Enable HTTPS
+### 7.3 Copy Certificate Files Into Runtime Terraform Directory
 
-In OCI Console:
+```bash
+mkdir -p infrastructure/oci/runtime/tls/wortwerk.xyz
+cp "${HOME}/.certbot/config/live/wortwerk.xyz/fullchain.pem" infrastructure/oci/runtime/tls/wortwerk.xyz/fullchain.pem
+cp "${HOME}/.certbot/config/live/wortwerk.xyz/privkey.pem" infrastructure/oci/runtime/tls/wortwerk.xyz/privkey.pem
+```
 
-1. Open your Load Balancer.
-2. Go to **Certificates** and import:
-   - Certificate: `fullchain.pem`
-   - Private key: `privkey.pem`
-3. Create/add HTTPS listener on port `443`:
-   - Protocol: `HTTP` (terminated TLS at LB)
-   - Backend set: `wort-werk-backend-set`
-   - SSL enabled with uploaded certificate
-4. Keep backend port `8080` to Container Instance.
+### 7.4 Apply Runtime Terraform for HTTPS + Redirect
 
-### 7.4 Force HTTPS
+```bash
+terraform -chdir="infrastructure/oci/runtime" apply \
+  -var "tls_certificate_name=wortwerk_xyz_$(date +%Y%m%d)" \
+  -var "tls_public_certificate_path=tls/wortwerk.xyz/fullchain.pem" \
+  -var "tls_private_key_path=tls/wortwerk.xyz/privkey.pem" \
+  -var "tls_redirect_host=wortwerk.xyz"
+```
 
-Configure HTTP listener (`:80`) redirect to HTTPS (`:443`) in Load Balancer rule sets:
-- condition: all paths
-- action: redirect to `https://wortwerk.xyz`
-- status code: `301`
+This runtime apply performs all TLS infrastructure changes:
+- uploads/updates OCI LB certificate bundle
+- creates/updates HTTPS listener on `443`
+- configures HTTP (`80`) to HTTPS redirect (`301`)
 
 ## 8) Manual Renewal Every 90 Days
 
@@ -279,8 +280,8 @@ Renewal procedure:
 1. Re-run the same `certbot certonly --manual ...` command in section 7.2.
 2. Create fresh `_acme-challenge` TXT record(s) shown by Certbot.
 3. Wait for DNS propagation and complete challenge.
-4. Re-import new `fullchain.pem` + `privkey.pem` into OCI Load Balancer certificate.
-5. Attach the new certificate to the HTTPS listener if OCI created a new certificate object.
+4. Copy the renewed `fullchain.pem` + `privkey.pem` into `infrastructure/oci/runtime/tls/wortwerk.xyz/`.
+5. Re-run runtime apply with a new `tls_certificate_name` value.
 6. Validate HTTPS and expiry:
 
 ```bash

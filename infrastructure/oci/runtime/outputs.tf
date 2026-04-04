@@ -19,8 +19,13 @@ output "public_ip" {
 }
 
 output "access_url" {
-  description = "Stable HTTP URL for accessing Wort-Werk through the Load Balancer."
-  value       = "http://${var.load_balancer_public_ip}:${var.lb_listener_port}"
+  description = "Primary URL for accessing Wort-Werk through the Load Balancer."
+  value       = "https://${var.tls_redirect_host}:${var.https_listener_port}"
+}
+
+output "https_access_url" {
+  description = "HTTPS endpoint."
+  value       = "https://${var.tls_redirect_host}:${var.https_listener_port}"
 }
 
 output "load_balancer_id" {
