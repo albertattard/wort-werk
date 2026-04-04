@@ -22,3 +22,5 @@
 - Expand content categories (food, home, travel)
 - Add plural training mode
 - Add Akkusativ/Dativ drills after nominative mastery
+- Make OCI deploy profile configurable with explicit environment/tenant mapping instead of defaulting to `FRANKFURT`
+- Replace runtime registry password in Terraform state with OCI-managed secret integration for private OCIR pulls
