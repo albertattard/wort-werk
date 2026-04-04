@@ -1,5 +1,7 @@
 #!/usr/bin/env -S java --source 25
 
+import org.jspecify.annotations.Nullable;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -35,20 +37,7 @@ class TtsScript {
             Files.createDirectories(parent);
         }
 
-        final Path apiKeyFile = Path.of(System.getProperty("user.home"), ".chatgpt", "api.key");
-        final String apiKey;
-        try {
-            apiKey = Files.readString(apiKeyFile, StandardCharsets.UTF_8).trim();
-        } catch (final IOException e) {
-            System.err.println("Unable to read API key from " + apiKeyFile + ": " + e.getMessage());
-            System.exit(1);
-            return;
-        }
-
-        if (apiKey.isBlank()) {
-            System.err.println("API key is empty in " + apiKeyFile);
-            System.exit(1);
-        }
+        final String apiKey = readApiKey();
 
         final String requestBody = """
                 {"model":"%s","voice":"%s","input":"%s","instructions":"%s"}
@@ -76,6 +65,32 @@ class TtsScript {
 
             System.out.println("Saved to " + response.body());
         }
+    }
+
+    private static String readApiKey() {
+        final Path apiKeyFile = Path.of(System.getProperty("user.home"), ".chatgpt", "api.key");
+
+        if (!Files.isRegularFile(apiKeyFile)) {
+            System.err.println("File " + apiKeyFile + " not found");
+            System.exit(1);
+            return null;
+        }
+
+        final String apiKey;
+        try {
+            apiKey = Files.readString(apiKeyFile, StandardCharsets.UTF_8).trim();
+        } catch (final IOException e) {
+            System.err.println("Unable to read API key from " + apiKeyFile + ": " + e.getMessage());
+            System.exit(1);
+            return null;
+        }
+
+        if (apiKey.isBlank()) {
+            System.err.println("API key is empty in " + apiKeyFile);
+            System.exit(1);
+        }
+
+        return apiKey;
     }
 
     private static String defaultFileName(final String text) {
