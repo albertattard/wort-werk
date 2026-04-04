@@ -17,6 +17,7 @@ A single operator trigger phrase (`update assets`) runs a deterministic workflow
 - syncs `assets/articles.csv` with `assets/images`
 - keeps one CSV row per image
 - generates missing noun/answer audio files
+- maintains resized image copies under `assets/images/420` with fixed height `420px`
 
 ## Inputs/Outputs
 
@@ -37,6 +38,7 @@ Output:
 - [x] Trigger phrase `update assets` is documented in `AGENTS.md`.
 - [x] Automation fails fast when new images are missing article metadata.
 - [x] Automation generates missing noun and answer audio via `tools/tts`.
+- [x] Repository includes resized image variants in `assets/images/420` while keeping originals unchanged.
 
 ## Non-goals
 
