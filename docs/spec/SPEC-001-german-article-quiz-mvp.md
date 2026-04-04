@@ -4,7 +4,7 @@ title: German Article Quiz MVP
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-02
+last_updated: 2026-04-04
 ---
 
 ## Problem
@@ -68,6 +68,8 @@ Output:
 - [x] A final score is shown at the end of the session.
 - [x] Question and audio path data are loaded from `assets/articles.csv`.
 - [x] Functional tests validate article selection via real button clicks.
+- [x] Nouns with umlauts use ASCII-safe image/audio asset paths to avoid Unicode path normalization issues.
+- [x] Every image in `assets/images` has a corresponding entry in `assets/articles.csv`.
 
 ## Non-goals
 
