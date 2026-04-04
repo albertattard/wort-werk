@@ -21,20 +21,35 @@ Apply order:
 - `./infrastructure/oci/destroy.sh foundation`: destroy foundation only.
 
 The deploy script writes `runtime/foundation.auto.tfvars` from foundation outputs:
+- `region`
+- `tenancy_ocid`
 - `compartment_ocid`
 - `subnet_id`
 - `nsg_id`
+- `image_repository`
+- `image_registry_endpoint`
 
 Release mode requires:
-- `OCI_PROFILE`
 - `OCI_USERNAME`
 - `OCI_AUTH_TOKEN`
 
 Optional release variables:
-- `OCI_REGION` (default `fra`)
+- `OCI_PROFILE` (default `FRANKFURT`)
 - `IMAGE_TAG` (default current git short SHA)
-- `OCIR_NAMESPACE` (auto-resolved if omitted)
-- `OCIR_REPOSITORY` (default from foundation output)
+- `OCIR_REPOSITORY` (optional fallback override for cleanup lookup)
 - `DOCKER_PLATFORM` (default `linux/amd64,linux/arm64`)
 - `PRUNE_OLD_IMAGES` (`true` by default)
 - `KEEP_IMAGE_COUNT` (`2` by default; minimum enforced to 2)
+
+Cleanup behavior:
+- release cleanup uses foundation output `ocir_repository_id` when available
+- if repository resolution fails, deployment still succeeds and cleanup is skipped with a warning
+
+`release.auto.tfvars` is generated with:
+- `image_tag`
+- `image_registry_username`
+- `image_registry_password`
+
+To change runtime shape, set Terraform variable `container_instance_shape` in:
+- `infrastructure/oci/runtime/terraform.tfvars`
+- or another `*.auto.tfvars` file in `infrastructure/oci/runtime/`

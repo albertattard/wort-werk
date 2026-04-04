@@ -23,8 +23,7 @@ Foundation Terraform stack for Wort-Werk OCI environment setup.
 
 ```bash
 cd infrastructure/oci/foundation
-cp terraform.tfvars.example terraform.tfvars
-# edit with real tenancy OCID, parent compartment OCID, workload region and home region
+# create terraform.tfvars with real tenancy OCID, parent compartment OCID, workload region and home region
 terraform init
 terraform plan
 terraform apply
@@ -35,8 +34,12 @@ The Wort-Werk compartment is created under `parent_compartment_ocid`.
 
 ## Key Outputs
 
+- `region`
+- `tenancy_ocid`
 - `compartment_ocid`
 - `subnet_id`
 - `nsg_id`
 - `ocir_namespace`
 - `ocir_repository_name`
+- `ocir_repository_id`
+- `image_repository`

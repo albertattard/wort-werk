@@ -4,7 +4,7 @@ title: OCI Deployment via Container Instance
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-03
+last_updated: 2026-04-04
 ---
 
 ## Problem
@@ -54,6 +54,8 @@ Expected lifecycle:
 - [x] Runtime stack consumes foundation outputs and deploys by immutable image tag.
 - [x] Repository includes deployment script that builds, pushes and applies runtime stack.
 - [x] Deployment script supports safe image cleanup policy (retention-based) instead of deleting all previous images.
+- [x] Deployment script cleanup does not fail a successful runtime deployment if repository lookup is unavailable.
+- [x] Runtime supports private OCIR image pulls via explicit registry credentials.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

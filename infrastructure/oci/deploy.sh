@@ -35,23 +35,47 @@ apply_foundation() {
 }
 
 write_runtime_foundation_vars() {
+  local region
+  local tenancy_ocid
   local compartment_ocid
   local subnet_id
   local nsg_id
+  local image_repository
+  local image_registry_endpoint
 
+  region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
+  tenancy_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw tenancy_ocid)"
   compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
   subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw subnet_id)"
   nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw nsg_id)"
+  image_repository="$(terraform -chdir="${FOUNDATION_DIR}" output -raw image_repository)"
+  image_registry_endpoint="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_registry)"
 
   cat > "${RUNTIME_DIR}/foundation.auto.tfvars" <<EOF
+region           = "${region}"
+tenancy_ocid     = "${tenancy_ocid}"
 compartment_ocid = "${compartment_ocid}"
 subnet_id        = "${subnet_id}"
 nsg_id           = "${nsg_id}"
+image_repository = "${image_repository}"
+image_registry_endpoint = "${image_registry_endpoint}"
 EOF
 }
 
 apply_runtime() {
   write_runtime_foundation_vars
+  if [[ -n "${OCI_USERNAME:-}" && -n "${OCI_AUTH_TOKEN:-}" ]]; then
+    local ocir_namespace
+    ocir_namespace="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace)"
+    cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOF
+image_registry_username = "${ocir_namespace}/${OCI_USERNAME}"
+image_registry_password = "${OCI_AUTH_TOKEN}"
+EOF
+  elif [[ ! -f "${RUNTIME_DIR}/release.auto.tfvars" ]]; then
+    echo "Missing runtime registry credentials. Set OCI_USERNAME and OCI_AUTH_TOKEN or provide runtime/release.auto.tfvars." >&2
+    exit 1
+  fi
+
   terraform -chdir="${RUNTIME_DIR}" init -upgrade
   terraform -chdir="${RUNTIME_DIR}" fmt
   terraform -chdir="${RUNTIME_DIR}" apply -auto-approve -input=false
@@ -108,10 +132,11 @@ delete_old_images() {
 }
 
 deploy_release() {
-  local oci_region
   local oci_repository
-  local image_tag
+  local ocir_namespace
   local image_repository
+  local registry_host
+  local image_tag
   local image
   local compartment_ocid
   local keep_count
@@ -120,24 +145,24 @@ deploy_release() {
   require_command docker
   require_command git
   require_command oci
-  require_var OCI_PROFILE
   require_var OCI_USERNAME
   require_var OCI_AUTH_TOKEN
 
-  oci_region="${OCI_REGION:-fra}"
+  OCI_PROFILE="${OCI_PROFILE:-FRANKFURT}"
   image_tag="${IMAGE_TAG:-$(git -C "${REPO_ROOT}" rev-parse --short=12 HEAD)}"
   keep_count="${KEEP_IMAGE_COUNT:-2}"
 
   compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
   oci_repository="${OCIR_REPOSITORY:-$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_repository_name)}"
-  OCIR_NAMESPACE="${OCIR_NAMESPACE:-$(oci os ns get --profile "${OCI_PROFILE}" --query 'data' --raw-output)}"
+  ocir_namespace="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace)"
+  image_repository="$(terraform -chdir="${FOUNDATION_DIR}" output -raw image_repository)"
+  registry_host="${image_repository%%/*}"
 
-  image_repository="${oci_region}.ocir.io/${OCIR_NAMESPACE}/${oci_repository}"
   image="${image_repository}:${image_tag}"
 
-  echo "Logging into OCIR: ${oci_region}.ocir.io"
-  printf '%s' "${OCI_AUTH_TOKEN}" | docker login "${oci_region}.ocir.io" \
-    --username "${OCIR_NAMESPACE}/${OCI_USERNAME}" \
+  echo "Logging into OCIR: ${registry_host}"
+  printf '%s' "${OCI_AUTH_TOKEN}" | docker login "${registry_host}" \
+    --username "${ocir_namespace}/${OCI_USERNAME}" \
     --password-stdin
 
   echo "Building and pushing image: ${image}"
@@ -150,11 +175,13 @@ deploy_release() {
 
   write_runtime_foundation_vars
   cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOF
-image_repository = "${image_repository}"
-image_tag        = "${image_tag}"
+image_tag               = "${image_tag}"
+image_registry_username = "${ocir_namespace}/${OCI_USERNAME}"
+image_registry_password = "${OCI_AUTH_TOKEN}"
 EOF
 
   terraform -chdir="${RUNTIME_DIR}" init -upgrade
+  terraform -chdir="${RUNTIME_DIR}" fmt
   terraform -chdir="${RUNTIME_DIR}" apply -auto-approve -input=false
 
   if [[ "${PRUNE_OLD_IMAGES:-true}" == "true" ]]; then

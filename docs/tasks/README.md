@@ -47,6 +47,8 @@ Use one of these `category` values for new tasks:
 - [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 - [TASK-008: Split OCI IaC into Foundation and Runtime Stacks](./infrastructure/TASK-008-split-oci-iac-foundation-and-runtime.md)
 - [TASK-009: Automate OCI Build Push and Runtime Deploy](./infrastructure/TASK-009-automate-build-push-runtime-deploy.md)
+- [TASK-010: Support Private OCIR Pull Credentials for Runtime](./infrastructure/TASK-010-support-private-ocir-pull-credentials.md)
+- [TASK-011: Harden Release Cleanup with OCIR Repository ID](./infrastructure/TASK-011-harden-release-cleanup-with-ocir-repository-id.md)
 
 ## Pending
 
@@ -67,6 +69,8 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 - [x] [TASK-008: Split OCI IaC into Foundation and Runtime Stacks](./infrastructure/TASK-008-split-oci-iac-foundation-and-runtime.md)
 - [x] [TASK-009: Automate OCI Build Push and Runtime Deploy](./infrastructure/TASK-009-automate-build-push-runtime-deploy.md)
+- [x] [TASK-010: Support Private OCIR Pull Credentials for Runtime](./infrastructure/TASK-010-support-private-ocir-pull-credentials.md)
+- [x] [TASK-011: Harden Release Cleanup with OCIR Repository ID](./infrastructure/TASK-011-harden-release-cleanup-with-ocir-repository-id.md)
 
 ## Blocked
 

@@ -15,7 +15,7 @@ resource "oci_container_instances_container_instance" "wort_werk" {
   availability_domain = data.oci_identity_availability_domains.this.availability_domains[var.availability_domain_index].name
   display_name        = var.container_instance_name
 
-  shape = "CI.Standard.A1.Flex"
+  shape = var.container_instance_shape
 
   shape_config {
     ocpus         = var.ocpus
@@ -26,6 +26,13 @@ resource "oci_container_instances_container_instance" "wort_werk" {
     subnet_id             = var.subnet_id
     is_public_ip_assigned = true
     nsg_ids               = [var.nsg_id]
+  }
+
+  image_pull_secrets {
+    secret_type       = "BASIC"
+    registry_endpoint = var.image_registry_endpoint
+    username          = base64encode(var.image_registry_username)
+    password          = base64encode(var.image_registry_password)
   }
 
   containers {
