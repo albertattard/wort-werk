@@ -39,6 +39,16 @@ For Terraform-managed TLS, place certificate files in:
 
 Then apply runtime to install/update HTTPS resources from these files.
 
+## Deploy 502 Mitigation
+
+Runtime applies use two mechanisms to reduce transient `502` during image replacement:
+
+- Container Instance resource uses `create_before_destroy`.
+- Load Balancer backend resource uses `create_before_destroy`.
+
+Backend health checks use HTTP readiness (`/` expecting `200`) instead of TCP-only socket checks.
+This reduces premature routing, but single-instance rollouts can still show brief disruption in worst-case timing.
+
 Use immutable image tags (git commit hash recommended) for repeatable rollouts and rollback.
 Use `container_instance_shape` to switch between Arm and AMD64 when needed.
 Examples:

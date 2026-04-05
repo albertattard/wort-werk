@@ -44,6 +44,10 @@ resource "oci_container_instances_container_instance" "wort_werk" {
       vcpus_limit         = var.ocpus
     }
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "oci_load_balancer_load_balancer" "wort_werk" {
@@ -69,8 +73,10 @@ resource "oci_load_balancer_backend_set" "wort_werk" {
   policy           = "ROUND_ROBIN"
 
   health_checker {
-    protocol = "TCP"
-    port     = var.app_port
+    protocol    = "HTTP"
+    port        = var.app_port
+    url_path    = var.lb_healthcheck_path
+    return_code = var.lb_healthcheck_return_code
   }
 }
 
@@ -80,6 +86,10 @@ resource "oci_load_balancer_backend" "wort_werk" {
   ip_address       = oci_container_instances_container_instance.wort_werk.vnics[0].private_ip
   port             = var.app_port
   weight           = 1
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "oci_load_balancer_listener" "http" {

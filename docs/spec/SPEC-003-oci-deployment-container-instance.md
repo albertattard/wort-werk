@@ -68,6 +68,8 @@ Expected lifecycle:
 - [x] Runtime supports private OCIR image pulls via explicit registry credentials.
 - [x] Runtime outputs include direct HTTP access details (public IP and URL) after deploy.
 - [x] Deployment exposes a stable public endpoint through OCI Load Balancer with reserved public IP.
+- [x] Runtime deploy strategy minimizes 502 windows by keeping old backend alive until replacement backend is registered.
+- [x] Load balancer health checks use HTTP readiness instead of raw TCP to reduce premature traffic routing.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

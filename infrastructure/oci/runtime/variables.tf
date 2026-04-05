@@ -155,3 +155,15 @@ variable "load_balancer_max_bandwidth_mbps" {
   type        = number
   default     = 10
 }
+
+variable "lb_healthcheck_path" {
+  description = "HTTP path used by load balancer backend health checks."
+  type        = string
+  default     = "/"
+}
+
+variable "lb_healthcheck_return_code" {
+  description = "Expected HTTP status code for backend health checks."
+  type        = number
+  default     = 200
+}

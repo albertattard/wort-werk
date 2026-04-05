@@ -57,6 +57,7 @@ Use one of these `category` values for new tasks:
 - [TASK-015: Add Stable Endpoint via OCI Load Balancer](./infrastructure/TASK-015-add-stable-endpoint-via-oci-load-balancer.md)
 - [TASK-017: Document Manual Let's Encrypt TLS Issuance and Renewal](./infrastructure/TASK-017-document-manual-lets-encrypt-renewal.md)
 - [TASK-018: Manage TLS Certificate and HTTPS Listener Through Terraform](./infrastructure/TASK-018-manage-tls-certificate-through-terraform.md)
+- [TASK-020: Reduce Deploy 502 with Overlap and Readiness Health Checks](./infrastructure/TASK-020-reduce-deploy-502-with-overlap-and-readiness-health-checks.md)
 
 ## Pending
 
@@ -87,6 +88,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-015: Add Stable Endpoint via OCI Load Balancer](./infrastructure/TASK-015-add-stable-endpoint-via-oci-load-balancer.md)
 - [x] [TASK-017: Document Manual Let's Encrypt TLS Issuance and Renewal](./infrastructure/TASK-017-document-manual-lets-encrypt-renewal.md)
 - [x] [TASK-018: Manage TLS Certificate and HTTPS Listener Through Terraform](./infrastructure/TASK-018-manage-tls-certificate-through-terraform.md)
+- [x] [TASK-020: Reduce Deploy 502 with Overlap and Readiness Health Checks](./infrastructure/TASK-020-reduce-deploy-502-with-overlap-and-readiness-health-checks.md)
 
 ## Blocked
 

@@ -185,6 +185,14 @@ To switch to AMD64, set Terraform variable `container_instance_shape` in
 - configuring private OCIR image pull credentials for Container Instance runtime
 - pruning only older images beyond a safe retention window (default keep 2)
 
+Runtime deploys reduce `502` during replacement by:
+- creating replacement Container Instance before destroying previous one
+- creating replacement LB backend before removing previous one
+- using HTTP readiness health checks (`/` returns `200`) instead of TCP-only checks
+
+Residual risk:
+- with single-instance architecture, transient disruption is reduced but not mathematically eliminated
+
 ## 7) TLS with Let's Encrypt (Manual DNS Challenge)
 
 Use this when you want HTTPS for `wortwerk.xyz` without buying a certificate.
