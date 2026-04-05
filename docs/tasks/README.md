@@ -45,6 +45,7 @@ Use one of these `category` values for new tasks:
 - [TASK-005: Add Audio Cues for Prompt and Correct Answer](./quiz/TASK-005-add-audio-cues-for-prompt-and-correct-answer.md)
 - [TASK-013: Support Umlaut Asset Path Normalization](./quiz/TASK-013-support-umlaut-asset-path-normalization.md)
 - [TASK-014: Sync CSV with Image Catalog and Generate Audio](./quiz/TASK-014-sync-csv-with-image-catalog-and-generate-audio.md)
+- [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
 - [TASK-016: Add Update Assets Trigger Workflow](./repo-process/TASK-016-add-update-assets-trigger-workflow.md)
 - [TASK-019: Generate 420px Image Variants While Preserving Originals](./content/TASK-019-generate-420px-image-variants.md)
 - [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
@@ -61,7 +62,7 @@ Use one of these `category` values for new tasks:
 
 ## Pending
 
-- (none)
+- [ ] [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
 
 ## In Progress
 

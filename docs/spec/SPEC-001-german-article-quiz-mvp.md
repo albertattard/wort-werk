@@ -36,6 +36,8 @@ The quiz advances to the next entry only after the full article+noun audio playb
 
 At the end of 10 rounds, the app displays the final score.
 
+Quiz interactions (`answer`, `next`, `restart`) use HTMX partial updates and replace only the quiz interaction fragment instead of reloading the full page.
+
 ## Inputs/Outputs
 
 Input:
@@ -70,6 +72,7 @@ Output:
 - [x] Functional tests validate article selection via real button clicks.
 - [x] Nouns with umlauts use ASCII-safe image/audio asset paths to avoid Unicode path normalization issues.
 - [x] Every image in `assets/images` has a corresponding entry in `assets/articles.csv`.
+- [ ] Quiz answer/next/restart interactions use HTMX (`HX-Request`) and return only the interaction fragment.
 
 ## Non-goals
 
