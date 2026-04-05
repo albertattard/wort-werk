@@ -25,7 +25,7 @@ class UpdateAssetsScript {
 
     public static void main(final String[] args) throws Exception {
         final Path root = resolveRootDirectory();
-        final Path imagesDir = root.resolve("assets/images");
+        final Path imagesDir = root.resolve("assets/images/original");
         final Path csvPath = root.resolve("assets/articles.csv");
         final Path overridesPath = root.resolve("assets/articles-overrides.csv");
         final Path ttsScript = root.resolve("tools/tts");
@@ -57,7 +57,7 @@ class UpdateAssetsScript {
             }
             validateArticle(article, imageName);
 
-            final String imagePath = "assets/images/" + imageName;
+            final String imagePath = existing != null ? existing.imagePath : "assets/images/420/" + imageName;
             final String audioPath = existing != null ? existing.audioPath : "assets/audio/" + stem + ".mp3";
             final String answerAudioPath = existing != null
                     ? existing.answerAudioPath

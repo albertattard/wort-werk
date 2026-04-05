@@ -71,7 +71,7 @@ Output:
 - [x] Question and audio path data are loaded from `assets/articles.csv`.
 - [x] Functional tests validate article selection via real button clicks.
 - [x] Nouns with umlauts use ASCII-safe image/audio asset paths to avoid Unicode path normalization issues.
-- [x] Every image in `assets/images` has a corresponding entry in `assets/articles.csv`.
+- [x] Every source image in `assets/images/original` has a corresponding entry in `assets/articles.csv`.
 - [ ] Quiz answer/next/restart interactions use HTMX (`HX-Request`) and return only the interaction fragment.
 
 ## Non-goals

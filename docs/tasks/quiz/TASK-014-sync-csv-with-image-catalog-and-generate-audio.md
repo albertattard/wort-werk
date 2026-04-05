@@ -12,7 +12,7 @@ updated: 2026-04-04
 
 ## Summary
 
-Ensure `assets/articles.csv` contains one row per image in `assets/images` and generate noun + answer audio files for newly added nouns.
+Ensure `assets/articles.csv` contains one row per image in `assets/images/original` and generate noun + answer audio files for newly added nouns.
 
 ## Scope
 
@@ -29,7 +29,7 @@ Ensure `assets/articles.csv` contains one row per image in `assets/images` and g
 
 ## Acceptance Criteria
 
-- [x] CSV includes all images from `assets/images`.
+- [x] CSV includes all images from `assets/images/original`.
 - [x] Missing noun and answer audio files are generated for newly added nouns.
 - [x] Automated test enforces CSV/image coverage.
 - [x] `./mvnw clean verify` passes.

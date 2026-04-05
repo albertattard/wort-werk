@@ -77,7 +77,7 @@ class ArticleRepositoryTest {
                 .map(Path::toString)
                 .collect(Collectors.toSet());
 
-        Set<String> imageCatalog = Files.list(Path.of("assets/images"))
+        Set<String> imageCatalog = Files.list(Path.of("assets/images/original"))
                 .filter(Files::isRegularFile)
                 .map(Path::getFileName)
                 .map(Path::toString)

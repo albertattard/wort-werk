@@ -14,15 +14,17 @@ Image assets are added frequently and `assets/articles.csv` plus audio files can
 ## User-facing Behavior
 
 A single operator trigger phrase (`update assets`) runs a deterministic workflow that:
-- syncs `assets/articles.csv` with `assets/images`
+- syncs `assets/articles.csv` with source images in `assets/images/original`
 - keeps one CSV row per image
 - generates missing noun/answer audio files
-- maintains resized image copies under `assets/images/420` with fixed height `420px`
+- maintains derivative image copies under:
+  - `assets/images/420` with fixed height `420px`
+  - originals preserved under `assets/images/original`
 
 ## Inputs/Outputs
 
 Input:
-- image files under `assets/images`
+- source image files under `assets/images/original`
 - existing `assets/articles.csv`
 - optional overrides file `assets/articles-overrides.csv` for new nouns/articles
 
@@ -39,6 +41,7 @@ Output:
 - [x] Automation fails fast when new images are missing article metadata.
 - [x] Automation generates missing noun and answer audio via `tools/tts`.
 - [x] Repository includes resized image variants in `assets/images/420` while keeping originals unchanged.
+- [x] Repository stores source and derivative image sets in separate directories (`original` and `420`).
 
 ## Non-goals
 
