@@ -78,4 +78,5 @@ When changing workflow or engineering standards:
 - `update assets`
   - Run `./tools/update-assets`
   - Then run `./mvnw clean verify`
-  - If `tools/update-assets` reports missing metadata, update `assets/articles-overrides.csv` and re-run
+  - If `tools/update-assets` reports missing metadata, add the missing rows directly to `assets/articles.csv` and re-run
+  - Place new source images in `assets/images/new`; the sync moves them to `assets/images/original` after success

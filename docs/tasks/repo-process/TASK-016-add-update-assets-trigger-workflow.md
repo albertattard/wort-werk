@@ -7,7 +7,7 @@ related_features:
   - SPEC-004
 owner: @aattard
 created: 2026-04-04
-updated: 2026-04-04
+updated: 2026-04-05
 ---
 
 ## Summary
@@ -18,7 +18,8 @@ Add a triggerable workflow (`update assets`) that synchronizes CSV rows with ima
 
 - Add `tools/update-assets` automation command.
 - Implement `tools/update-assets` as Java shebang script.
-- Add optional `assets/articles-overrides.csv` for new image metadata.
+- Keep `assets/articles.csv` as the metadata source (no overrides file).
+- Support drop-in new source images via `assets/images/new`.
 - Update `AGENTS.md` with trigger phrase mapping.
 - Document behavior and failure mode for missing metadata.
 

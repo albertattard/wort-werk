@@ -4,7 +4,7 @@ title: Asset Sync Automation
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-04
+last_updated: 2026-04-05
 ---
 
 ## Problem
@@ -14,23 +14,25 @@ Image assets are added frequently and `assets/articles.csv` plus audio files can
 ## User-facing Behavior
 
 A single operator trigger phrase (`update assets`) runs a deterministic workflow that:
-- syncs `assets/articles.csv` with source images in `assets/images/original`
+- syncs `assets/articles.csv` with source images in `assets/images/original` and `assets/images/new`
 - keeps one CSV row per image
 - generates missing noun/answer audio files
 - maintains derivative image copies under:
   - `assets/images/420` with fixed height `420px`
   - originals preserved under `assets/images/original`
+  - images dropped in `assets/images/new` are processed and moved to `assets/images/original`
 
 ## Inputs/Outputs
 
 Input:
-- source image files under `assets/images/original`
+- source image files under `assets/images/original` and `assets/images/new`
 - existing `assets/articles.csv`
-- optional overrides file `assets/articles-overrides.csv` for new nouns/articles
 
 Output:
 - updated `assets/articles.csv`
 - missing audio files created in `assets/audio`
+- missing resized images created in `assets/images/420` from `assets/images/original`
+- images moved from `assets/images/new` to `assets/images/original` after successful sync
 - explicit failure listing images that are missing article metadata
 
 ## Acceptance Criteria
@@ -42,6 +44,7 @@ Output:
 - [x] Automation generates missing noun and answer audio via `tools/tts`.
 - [x] Repository includes resized image variants in `assets/images/420` while keeping originals unchanged.
 - [x] Repository stores source and derivative image sets in separate directories (`original` and `420`).
+- [x] Automation generates missing resized `420px` image variants from source images.
 
 ## Non-goals
 
