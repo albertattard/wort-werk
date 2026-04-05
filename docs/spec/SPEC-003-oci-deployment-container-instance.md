@@ -48,6 +48,12 @@ Expected lifecycle:
 - foundation apply: infrequent (environment setup/change)
 - runtime apply: frequent (release/update/rollback)
 
+Repeatable operator flow:
+- one command should support a full end-to-end rollout by running, in order: `foundation`, `runtime`, `release`
+- this flow is the recommended repeatable path when operators want deterministic refresh + deploy behavior
+- rollout should fail fast when the workspace has pending changes outside `assets/images/new`, unless explicitly overridden for exceptional runs
+- a repository-local wrapper command should exist so operators can run rollout without manually typing environment bootstrap + deploy invocation
+
 ## Acceptance Criteria
 
 - [x] Deployment documentation exists for OCIR push + OCI Container Instance run.
@@ -71,6 +77,9 @@ Expected lifecycle:
 - [x] Runtime deploy strategy minimizes 502 windows by keeping old backend alive until replacement backend is registered.
 - [x] Load balancer health checks use HTTP readiness instead of raw TCP to reduce premature traffic routing.
 - [x] Release automation executes `./mvnw clean verify` and then re-tags/pushes the verified local image to prevent stale or unverified artifacts.
+- [x] Deployment script provides a single repeatable command that runs `foundation -> runtime -> release` in order.
+- [x] Rollout preflight blocks deployment when git working tree is dirty outside `assets/images/new`, with an explicit override knob for intentional exceptions.
+- [x] Repository includes `tools/rollout` wrapper that sources OCI secrets file and triggers `deploy.sh rollout`.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

@@ -64,6 +64,9 @@ Use one of these `category` values for new tasks:
 - [TASK-017: Document Manual Let's Encrypt TLS Issuance and Renewal](./infrastructure/TASK-017-document-manual-lets-encrypt-renewal.md)
 - [TASK-018: Manage TLS Certificate and HTTPS Listener Through Terraform](./infrastructure/TASK-018-manage-tls-certificate-through-terraform.md)
 - [TASK-020: Reduce Deploy 502 with Overlap and Readiness Health Checks](./infrastructure/TASK-020-reduce-deploy-502-with-overlap-and-readiness-health-checks.md)
+- [TASK-027: Add Repeatable OCI Full Rollout Command](./infrastructure/TASK-027-add-repeatable-oci-full-rollout-command.md)
+- [TASK-028: Enforce Clean Worktree for OCI Rollout](./infrastructure/TASK-028-enforce-clean-rollout-worktree.md)
+- [TASK-029: Add tools/rollout Wrapper for OCI Rollout](./infrastructure/TASK-029-add-tools-rollout-wrapper.md)
 
 ## Pending
 
@@ -100,6 +103,9 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-017: Document Manual Let's Encrypt TLS Issuance and Renewal](./infrastructure/TASK-017-document-manual-lets-encrypt-renewal.md)
 - [x] [TASK-018: Manage TLS Certificate and HTTPS Listener Through Terraform](./infrastructure/TASK-018-manage-tls-certificate-through-terraform.md)
 - [x] [TASK-020: Reduce Deploy 502 with Overlap and Readiness Health Checks](./infrastructure/TASK-020-reduce-deploy-502-with-overlap-and-readiness-health-checks.md)
+- [x] [TASK-027: Add Repeatable OCI Full Rollout Command](./infrastructure/TASK-027-add-repeatable-oci-full-rollout-command.md)
+- [x] [TASK-028: Enforce Clean Worktree for OCI Rollout](./infrastructure/TASK-028-enforce-clean-rollout-worktree.md)
+- [x] [TASK-029: Add tools/rollout Wrapper for OCI Rollout](./infrastructure/TASK-029-add-tools-rollout-wrapper.md)
 
 ## Blocked
 

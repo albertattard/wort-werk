@@ -7,8 +7,8 @@ FOUNDATION_DIR="${SCRIPT_DIR}/foundation"
 RUNTIME_DIR="${SCRIPT_DIR}/runtime"
 MODE="${1:-all}"
 
-if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "runtime" && "${MODE}" != "release" ]]; then
-  echo "Usage: $0 [all|foundation|runtime|release]" >&2
+if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
+  echo "Usage: $0 [all|foundation|runtime|release|rollout]" >&2
   exit 1
 fi
 
@@ -24,6 +24,22 @@ require_var() {
   local var_name="$1"
   if [[ -z "${!var_name:-}" ]]; then
     echo "Missing required environment variable: ${var_name}" >&2
+    exit 1
+  fi
+}
+
+ensure_clean_rollout_worktree() {
+  if [[ "${ALLOW_DIRTY_ROLLOUT:-false}" == "true" ]]; then
+    echo "Skipping rollout clean-worktree preflight because ALLOW_DIRTY_ROLLOUT=true."
+    return
+  fi
+
+  local pending
+  pending="$(git -C "${REPO_ROOT}" status --short -- . ':(exclude)assets/images/new')"
+  if [[ -n "${pending}" ]]; then
+    echo "Rollout aborted: pending git changes detected outside assets/images/new." >&2
+    echo "${pending}" >&2
+    echo "Commit or stash these changes, or set ALLOW_DIRTY_ROLLOUT=true for an intentional one-off rollout." >&2
     exit 1
   fi
 }
@@ -233,6 +249,12 @@ case "${MODE}" in
     apply_runtime
     ;;
   release)
+    deploy_release
+    ;;
+  rollout)
+    ensure_clean_rollout_worktree
+    apply_foundation
+    apply_runtime
     deploy_release
     ;;
   all)

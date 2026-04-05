@@ -8,6 +8,7 @@ Wort-Werk OCI Terraform is split into two stacks.
 Apply order:
 1. foundation
 2. runtime
+3. release (for image publication and runtime rollout)
 
 ## Helper Scripts
 
@@ -15,6 +16,10 @@ Apply order:
 - `./infrastructure/oci/deploy.sh foundation`: apply foundation only.
 - `./infrastructure/oci/deploy.sh runtime`: apply runtime only.
 - `./infrastructure/oci/deploy.sh release`: run `./mvnw clean verify`, then re-tag/push the verified image and deploy runtime with a new image tag.
+- `./infrastructure/oci/deploy.sh rollout`: repeatable full rollout (`foundation` then `runtime` then `release`).
+  - preflight: fails if git has pending changes outside `assets/images/new`
+  - override: set `ALLOW_DIRTY_ROLLOUT=true` for intentional exception runs
+- `./tools/rollout`: sources `~/.oci/oci.secrets.env` and runs `deploy.sh rollout` from repo root.
 
 - `./infrastructure/oci/destroy.sh all`: destroy runtime then foundation (default).
 - `./infrastructure/oci/destroy.sh runtime`: destroy runtime only.
