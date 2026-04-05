@@ -62,7 +62,7 @@ Use one of these `category` values for new tasks:
 
 ## Pending
 
-- [ ] [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
+- (none)
 
 ## In Progress
 
@@ -79,6 +79,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-014: Sync CSV with Image Catalog and Generate Audio](./quiz/TASK-014-sync-csv-with-image-catalog-and-generate-audio.md)
 - [x] [TASK-016: Add Update Assets Trigger Workflow](./repo-process/TASK-016-add-update-assets-trigger-workflow.md)
 - [x] [TASK-019: Generate 420px Image Variants While Preserving Originals](./content/TASK-019-generate-420px-image-variants.md)
+- [x] [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
 - [x] [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 - [x] [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 - [x] [TASK-008: Split OCI IaC into Foundation and Runtime Stacks](./infrastructure/TASK-008-split-oci-iac-foundation-and-runtime.md)

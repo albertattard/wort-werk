@@ -4,7 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
-import com.microsoft.playwright.options.LoadState;
+import com.microsoft.playwright.Request;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -102,7 +102,11 @@ class QuizFunctionalTest {
             clickArticle(page, correctArticle);
             assertThat(page.getByTestId("question-noun").textContent()).isEqualTo(noun);
 
-            page.evaluate("() => document.querySelector('[data-testid=\"audio-correct\"]').dispatchEvent(new Event('ended'))");
+            page.waitForFunction("() => document.querySelector('[data-testid=\"next-form\"]') !== null");
+            page.waitForResponse(
+                    response -> response.url().endsWith("/next")
+                            && "POST".equalsIgnoreCase(response.request().method()),
+                    () -> page.evaluate("() => document.querySelector('[data-testid=\"audio-correct\"]').dispatchEvent(new Event('ended'))"));
             page.waitForFunction(
                     "previousNoun => document.querySelector('[data-testid=\"question-noun\"]')?.textContent !== previousNoun",
                     noun);
@@ -135,9 +139,57 @@ class QuizFunctionalTest {
         }
     }
 
+    @Test
+    void shouldSubmitAnswerViaHtmxRequest() {
+        try (Page page = browser.newPage()) {
+            page.navigate(baseUrl());
+
+            String noun = page.getByTestId("question-noun").textContent();
+            assertThat(noun).isNotNull();
+            String correctArticle = articleByNoun.get(noun);
+            assertThat(correctArticle).isNotBlank();
+            String wrongArticle = pickWrongArticle(correctArticle);
+
+            Request request = page.waitForRequest(
+                    req -> req.url().endsWith("/answer") && "POST".equalsIgnoreCase(req.method()),
+                    () -> clickArticle(page, wrongArticle));
+
+            assertThat(request.headerValue("HX-Request")).isEqualToIgnoringCase("true");
+        }
+    }
+
+    @Test
+    void shouldSubmitNextViaHtmxRequestAfterCorrectAudioCompletes() {
+        try (Page page = browser.newPage()) {
+            page.addInitScript("""
+                    HTMLMediaElement.prototype.play = function() {
+                      return Promise.resolve();
+                    };
+                    """);
+            page.navigate(baseUrl());
+
+            String noun = page.getByTestId("question-noun").textContent();
+            assertThat(noun).isNotNull();
+            String correctArticle = articleByNoun.get(noun);
+            assertThat(correctArticle).isNotBlank();
+
+            clickArticle(page, correctArticle);
+            page.waitForFunction("() => document.querySelector('[data-testid=\"next-form\"]') !== null");
+
+            Request request = page.waitForRequest(
+                    req -> req.url().endsWith("/next") && "POST".equalsIgnoreCase(req.method()),
+                    () -> page.evaluate("() => document.querySelector('[data-testid=\"audio-correct\"]').dispatchEvent(new Event('ended'))"));
+
+            assertThat(request.headerValue("HX-Request")).isEqualToIgnoringCase("true");
+        }
+    }
+
     private void clickArticle(Page page, String article) {
-        page.getByTestId("answer-" + article).click();
-        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+        page.waitForResponse(
+                response -> response.url().endsWith("/answer")
+                        && "POST".equalsIgnoreCase(response.request().method()),
+                () -> page.getByTestId("answer-" + article).click());
+        page.waitForSelector("[data-testid='question-noun']");
     }
 
     private String pickWrongArticle(String correctArticle) {

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
 <body>
-<div th:fragment="interaction(state)">
+<div id="quiz-interaction" th:fragment="interaction(state)">
     <style>
         .status {
             display: flex;
@@ -141,19 +141,28 @@
         </div>
 
         <div class="choices">
-            <form method="post" action="/answer">
+            <form method="post" action="/answer"
+                  hx-post="/answer"
+                  hx-target="#quiz-interaction"
+                  hx-swap="outerHTML">
                 <input type="hidden" name="article" value="der">
                 <button data-testid="answer-der" type="submit"
                         th:disabled="${state.awaitingCorrectAudioCompletion}"
                         th:classappend="${state.isCorrectHighlighted('der')} ? ' correct-answer' : (${state.isWrongSelection('der')} ? ' wrong-answer' : '')">der</button>
             </form>
-            <form method="post" action="/answer">
+            <form method="post" action="/answer"
+                  hx-post="/answer"
+                  hx-target="#quiz-interaction"
+                  hx-swap="outerHTML">
                 <input type="hidden" name="article" value="die">
                 <button data-testid="answer-die" type="submit"
                         th:disabled="${state.awaitingCorrectAudioCompletion}"
                         th:classappend="${state.isCorrectHighlighted('die')} ? ' correct-answer' : (${state.isWrongSelection('die')} ? ' wrong-answer' : '')">die</button>
             </form>
-            <form method="post" action="/answer">
+            <form method="post" action="/answer"
+                  hx-post="/answer"
+                  hx-target="#quiz-interaction"
+                  hx-swap="outerHTML">
                 <input type="hidden" name="article" value="das">
                 <button data-testid="answer-das" type="submit"
                         th:disabled="${state.awaitingCorrectAudioCompletion}"
@@ -163,7 +172,10 @@
 
         <audio data-testid="audio-noun" preload="auto" th:src="@{${'/' + state.nounAudioPath}}"></audio>
         <audio data-testid="audio-correct" preload="auto" th:src="@{${'/' + state.correctPhraseAudioPath}}"></audio>
-        <form th:if="${state.awaitingCorrectAudioCompletion}" method="post" action="/next" data-testid="next-form"></form>
+        <form th:if="${state.awaitingCorrectAudioCompletion}" method="post" action="/next" data-testid="next-form"
+              hx-post="/next"
+              hx-target="#quiz-interaction"
+              hx-swap="outerHTML"></form>
 
         <script th:inline="javascript">
             (() => {
@@ -212,7 +224,10 @@
 
     <div th:if="${state.finished}" class="results" data-testid="results">
         <p class="score" data-testid="final-score" th:text="|Endstand: ${state.score} / ${state.totalRounds}|">Endstand: 0 / 10</p>
-        <form method="post" action="/restart">
+        <form method="post" action="/restart"
+              hx-post="/restart"
+              hx-target="#quiz-interaction"
+              hx-swap="outerHTML">
             <button data-testid="restart-button" type="submit">Neu starten</button>
         </form>
     </div>

@@ -1,7 +1,7 @@
 ---
 id: TASK-021
 title: Use HTMX Fragment Updates for Quiz Actions
-status: pending
+status: done
 category: quiz
 related_features:
   - SPEC-001
@@ -28,9 +28,9 @@ Wire quiz actions to HTMX so `answer`, `next`, and `restart` update only the int
 
 ## Acceptance Criteria
 
-- [ ] Clicking `der/die/das` sends HTMX request and updates only the interaction fragment.
-- [ ] Automatic `/next` submission after correct-audio completion uses HTMX fragment update.
-- [ ] Restart action uses HTMX fragment update.
-- [ ] Full-page non-HTMX fallback still works.
-- [ ] Functional tests cover HTMX interaction flow.
-- [ ] `./mvnw clean verify` passes after implementation.
+- [x] Clicking `der/die/das` sends HTMX request and updates only the interaction fragment.
+- [x] Automatic `/next` submission after correct-audio completion uses HTMX fragment update.
+- [x] Restart action uses HTMX fragment update.
+- [x] Full-page non-HTMX fallback still works.
+- [x] Functional tests cover HTMX interaction flow.
+- [x] `./mvnw clean verify` passes after implementation.
