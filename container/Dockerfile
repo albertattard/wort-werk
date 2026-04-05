@@ -9,18 +9,9 @@ RUN jlink \
       --add-modules java.base,java.desktop,java.instrument,java.management,java.naming,java.sql,java.security.jgss,jdk.unsupported,jdk.crypto.ec,java.logging,jdk.charsets \
       --compress=zip-9
 
-# Build the application jar.
-WORKDIR /opt/app
-COPY .mvn .mvn/
-COPY src src/
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw
-RUN ./mvnw --quiet -DskipTests clean package
-
-# Extract layered Spring Boot jar.
-WORKDIR /opt
-RUN cp /opt/app/target/*.jar app.jar \
- && java -Djarmode=tools -jar app.jar extract --layers --destination extracted
+# Extract layered Spring Boot jar from the Maven-built artifact.
+COPY target/*.jar /opt/app.jar
+RUN java -Djarmode=tools -jar /opt/app.jar extract --layers --destination /opt/extracted
 
 FROM container-registry.oracle.com/os/oraclelinux:9-slim
 WORKDIR /opt/app

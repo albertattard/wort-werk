@@ -37,7 +37,7 @@ If a request arrives without a spec/task update, stop implementation and create/
 - Unit/integration tests (excluding e2e):
   - `./mvnw test`
 - Full pipeline including e2e:
-  - `./mvnw verify`
+  - `./mvnw clean verify`
 - E2E tests:
   - must be tagged with `@Tag("e2e")`
   - run only in integration-test/verify phase (Failsafe)

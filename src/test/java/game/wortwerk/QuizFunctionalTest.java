@@ -6,8 +6,6 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Request;
 import org.junit.jupiter.api.*;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,21 +18,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("e2e")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class QuizFunctionalTest {
-
-    @LocalServerPort
-    private int port;
 
     private Playwright playwright;
     private Browser browser;
     private Map<String, String> articleByNoun;
+    private String baseUrl;
 
     @BeforeAll
     void setUpBrowser() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
         articleByNoun = loadArticleByNoun(Path.of("assets/articles.csv"));
+        baseUrl = resolveBaseUrl();
     }
 
     @AfterAll
@@ -50,7 +46,7 @@ class QuizFunctionalTest {
     @Test
     void shouldLoadQuizAndShowArticleChoices() {
         try (Page page = browser.newPage()) {
-            page.navigate(baseUrl());
+            page.navigate(baseUrl);
 
             assertThat(page.getByTestId("question-image").isVisible()).isTrue();
             assertThat(page.getByTestId("question-noun").isVisible()).isTrue();
@@ -64,7 +60,7 @@ class QuizFunctionalTest {
     @Test
     void shouldKeepSameObjectAndHighlightCorrectArticleWhenWrongSelected() {
         try (Page page = browser.newPage()) {
-            page.navigate(baseUrl());
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -88,7 +84,7 @@ class QuizFunctionalTest {
                       return Promise.resolve();
                     };
                     """);
-            page.navigate(baseUrl());
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -128,7 +124,7 @@ class QuizFunctionalTest {
                       return Promise.resolve();
                     };
                     """);
-            page.navigate(baseUrl());
+            page.navigate(baseUrl);
 
             int before = ((Number) page.evaluate("() => window.__playCount")).intValue();
             page.getByTestId("noun-replay").click();
@@ -142,7 +138,7 @@ class QuizFunctionalTest {
     @Test
     void shouldSubmitAnswerViaHtmxRequest() {
         try (Page page = browser.newPage()) {
-            page.navigate(baseUrl());
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -166,7 +162,7 @@ class QuizFunctionalTest {
                       return Promise.resolve();
                     };
                     """);
-            page.navigate(baseUrl());
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -199,11 +195,15 @@ class QuizFunctionalTest {
         return "die";
     }
 
-    private String baseUrl() {
-        return "http://127.0.0.1:" + port + "/";
+    private static String resolveBaseUrl() {
+        String externalBaseUrl = System.getProperty("test.base-url", "").trim();
+        if (externalBaseUrl.isEmpty()) {
+            throw new IllegalStateException("Missing required system property: test.base-url");
+        }
+        return externalBaseUrl.endsWith("/") ? externalBaseUrl : externalBaseUrl + "/";
     }
 
-    private Map<String, String> loadArticleByNoun(final Path csvPath) {
+    private static Map<String, String> loadArticleByNoun(final Path csvPath) {
         try {
             var lines = Files.readAllLines(csvPath, StandardCharsets.UTF_8);
             if (lines.isEmpty()) {
@@ -227,7 +227,7 @@ class QuizFunctionalTest {
         }
     }
 
-    private int indexOf(String[] header, String column) {
+    private static int indexOf(String[] header, String column) {
         for (int i = 0; i < header.length; i++) {
             if (column.equals(header[i].trim())) {
                 return i;

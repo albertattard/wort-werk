@@ -1,7 +1,7 @@
 ---
 id: TASK-025
 title: Adopt Container-First Verification Workflow
-status: pending
+status: done
 category: repo-process
 related_features:
   - SPEC-006
@@ -12,7 +12,7 @@ updated: 2026-04-05
 
 ## Summary
 
-Adopt and document a Maven-driven container-first pre-commit verification flow where `./mvnw verify` builds, runs, and tests the container image for current code.
+Adopt and document a Maven-driven container-first pre-commit verification flow where `./mvnw clean verify` builds, runs, and tests the container image for current code.
 
 ## Scope
 
@@ -28,13 +28,11 @@ Adopt and document a Maven-driven container-first pre-commit verification flow w
 
 ## Acceptance Criteria
 
-- [ ] Workflow order is documented exactly as:
-  1. `./mvnw test`
-  2. `./mvnw verify` (container build + run + e2e + stop)
-  3. commit on success
-- [ ] `verify` builds container image from current code and tags it uniquely.
-- [ ] `verify` starts container from that tag and runs existing Playwright e2e against it.
-- [ ] `verify` always stops/removes test container.
-- [ ] `AGENTS.md` commit/verification flow is updated to match this workflow.
-- [ ] Conflicting workflow statements are updated.
-- [ ] `./mvnw test` passes.
+- [x] Workflow order is documented exactly as:
+  1. `./mvnw clean verify` (container build + run + e2e + stop)
+  2. commit on success
+- [x] `verify` builds container image from current code and tags it uniquely.
+- [x] `verify` starts container from that tag and runs existing Playwright e2e against it.
+- [x] `verify` always stops/removes test container.
+- [x] `AGENTS.md` commit/verification flow is updated to match this workflow.
+- [x] Conflicting workflow statements are updated.

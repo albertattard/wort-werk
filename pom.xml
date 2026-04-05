@@ -20,6 +20,11 @@
         <java.version>25</java.version>
         <required.maven.version>3.6.3</required.maven.version>
         <playwright.version>1.58.0</playwright.version>
+        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+        <verify.container.port>18080</verify.container.port>
+        <verify.container.name>${project.artifactId}-verify</verify.container.name>
+        <verify.container.image>${project.artifactId}:verify-${maven.build.timestamp}</verify.container.image>
+        <verify.container.base-url>http://127.0.0.1:${verify.container.port}</verify.container.base-url>
     </properties>
 
     <dependencies>
@@ -68,7 +73,98 @@
                     <includes>
                         <include>**/*Test.java</include>
                     </includes>
+                    <systemPropertyVariables>
+                        <test.base-url>${verify.container.base-url}</test.base-url>
+                    </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>docker-build-verify-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>--file</argument>
+                                <argument>${project.basedir}/container/Dockerfile</argument>
+                                <argument>--load</argument>
+                                <argument>--tag</argument>
+                                <argument>${verify.container.image}</argument>
+                                <argument>${project.basedir}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>docker-stop-stale-verify-container</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sh</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>docker rm --force '${verify.container.name}' >/dev/null 2&gt;&amp;1 || true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>docker-run-verify-container</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>--detach</argument>
+                                <argument>--rm</argument>
+                                <argument>--name</argument>
+                                <argument>${verify.container.name}</argument>
+                                <argument>--publish</argument>
+                                <argument>${verify.container.port}:8080</argument>
+                                <argument>${verify.container.image}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>docker-wait-verify-container</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sh</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>for i in $(seq 1 6); do curl --silent --show-error --fail --connect-timeout 1 --max-time 1 '${verify.container.base-url}/' >/dev/null &amp;&amp; exit 0; sleep 2; done; docker logs '${verify.container.name}'; exit 1</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>docker-stop-verify-container</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sh</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>docker rm --force '${verify.container.name}' >/dev/null 2&gt;&amp;1 || true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
