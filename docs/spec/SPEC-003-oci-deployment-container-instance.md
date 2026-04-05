@@ -4,7 +4,7 @@ title: OCI Deployment via Container Instance
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-04
+last_updated: 2026-04-05
 ---
 
 ## Problem
@@ -70,6 +70,7 @@ Expected lifecycle:
 - [x] Deployment exposes a stable public endpoint through OCI Load Balancer with reserved public IP.
 - [x] Runtime deploy strategy minimizes 502 windows by keeping old backend alive until replacement backend is registered.
 - [x] Load balancer health checks use HTTP readiness instead of raw TCP to reduce premature traffic routing.
+- [x] Release automation executes `./mvnw clean verify` and then re-tags/pushes the verified local image to prevent stale or unverified artifacts.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

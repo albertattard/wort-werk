@@ -14,7 +14,7 @@ Apply order:
 - `./infrastructure/oci/deploy.sh all`: apply foundation then runtime (default).
 - `./infrastructure/oci/deploy.sh foundation`: apply foundation only.
 - `./infrastructure/oci/deploy.sh runtime`: apply runtime only.
-- `./infrastructure/oci/deploy.sh release`: build, push and deploy runtime with a new image tag.
+- `./infrastructure/oci/deploy.sh release`: run `./mvnw clean verify`, then re-tag/push the verified image and deploy runtime with a new image tag.
 
 - `./infrastructure/oci/destroy.sh all`: destroy runtime then foundation (default).
 - `./infrastructure/oci/destroy.sh runtime`: destroy runtime only.
@@ -43,8 +43,8 @@ Release mode requires:
 Optional release variables:
 - `OCI_PROFILE` (default `FRANKFURT`)
 - `IMAGE_TAG` (default current git short SHA)
+- `VERIFY_IMAGE_TAG` (default `<repo-name>:verify-release`; must match the image built by `clean verify`)
 - `OCIR_REPOSITORY` (optional fallback override for cleanup lookup)
-- `DOCKER_PLATFORM` (default `linux/amd64,linux/arm64`)
 - `PRUNE_OLD_IMAGES` (`true` by default)
 - `KEEP_IMAGE_COUNT` (`2` by default; minimum enforced to 2)
 

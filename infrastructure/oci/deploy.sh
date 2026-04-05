@@ -162,6 +162,8 @@ deploy_release() {
   local registry_host
   local image_tag
   local image
+  local verify_image
+  local verify_image_repository
   local compartment_ocid
   local keep_count
 
@@ -169,12 +171,15 @@ deploy_release() {
   require_command docker
   require_command git
   require_command oci
+  require_command "${REPO_ROOT}/mvnw"
   require_var OCI_USERNAME
   require_var OCI_AUTH_TOKEN
 
   OCI_PROFILE="${OCI_PROFILE:-FRANKFURT}"
   image_tag="${IMAGE_TAG:-$(git -C "${REPO_ROOT}" rev-parse --short=12 HEAD)}"
   keep_count="${KEEP_IMAGE_COUNT:-2}"
+  verify_image_repository="$(basename "${REPO_ROOT}")"
+  verify_image="${VERIFY_IMAGE_TAG:-${verify_image_repository}:verify-release}"
 
   compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
   oci_repository="${OCIR_REPOSITORY:-$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_repository_name)}"
@@ -184,18 +189,23 @@ deploy_release() {
 
   image="${image_repository}:${image_tag}"
 
+  echo "Running pre-release verification: ./mvnw clean verify -Dverify.container.image=${verify_image}"
+  "${REPO_ROOT}/mvnw" clean verify "-Dverify.container.image=${verify_image}"
+
   echo "Logging into OCIR: ${registry_host}"
   printf '%s' "${OCI_AUTH_TOKEN}" | docker login "${registry_host}" \
     --username "${ocir_namespace}/${OCI_USERNAME}" \
     --password-stdin
 
-  echo "Building and pushing image: ${image}"
-  docker buildx build \
-    --file "${REPO_ROOT}/container/Dockerfile" \
-    --platform "${DOCKER_PLATFORM:-linux/amd64,linux/arm64}" \
-    --tag "${image}" \
-    --push \
-    "${REPO_ROOT}"
+  echo "Tagging verified image '${verify_image}' as release image '${image}'"
+  docker image inspect "${verify_image}" >/dev/null 2>&1 || {
+    echo "Verified image not found locally: ${verify_image}" >&2
+    exit 1
+  }
+  docker tag "${verify_image}" "${image}"
+
+  echo "Pushing release image: ${image}"
+  docker push "${image}"
 
   write_runtime_foundation_vars
   cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOF
