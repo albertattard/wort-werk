@@ -47,6 +47,7 @@ Use one of these `category` values for new tasks:
 - [TASK-014: Sync CSV with Image Catalog and Generate Audio](./quiz/TASK-014-sync-csv-with-image-catalog-and-generate-audio.md)
 - [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
 - [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
+- [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
 - [TASK-016: Add Update Assets Trigger Workflow](./repo-process/TASK-016-add-update-assets-trigger-workflow.md)
 - [TASK-025: Adopt Container-First Verification Workflow](./repo-process/TASK-025-adopt-container-first-verification-workflow.md)
 - [TASK-019: Generate 420px Image Variants While Preserving Originals](./content/TASK-019-generate-420px-image-variants.md)
@@ -74,6 +75,7 @@ Use one of these `category` values for new tasks:
 ## Pending
 
 - [ ] [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
+- [ ] [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
 
 ## In Progress
 

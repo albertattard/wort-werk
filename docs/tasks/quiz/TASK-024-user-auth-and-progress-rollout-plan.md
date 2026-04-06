@@ -7,12 +7,12 @@ related_features:
   - SPEC-005
 owner: @aattard
 created: 2026-04-05
-updated: 2026-04-05
+updated: 2026-04-06
 ---
 
 ## Summary
 
-Introduce user login and per-user learning progress in ordered vertical slices, starting with database foundation.
+Introduce user login and per-user learning progress in ordered vertical slices. Auth foundation is split out first into `TASK-033`; progress/attempt logic stays in this deferred stream.
 
 ## Scope
 
@@ -24,7 +24,7 @@ Introduce user login and per-user learning progress in ordered vertical slices, 
 
 1. Database Foundation
 - Add PostgreSQL support, local/dev profile, Flyway, baseline schema.
-- Tables: `users`, `sessions`/auth state, `answer_attempts`, `noun_progress`.
+- Tables for this stream: `answer_attempts`, `noun_progress` (auth-only `users` work is covered by `TASK-033`).
 
 2. Authentication Slice
 - Add login/register/logout flows and protected quiz session.
