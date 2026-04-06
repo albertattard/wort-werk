@@ -7,19 +7,22 @@ Wort-Werk OCI Terraform is split into two stacks.
 
 Apply order:
 1. foundation
-2. runtime
-3. release (for image publication and runtime rollout)
+2. release (image publication and runtime rollout)
 
 ## Helper Scripts
 
 - `./infrastructure/oci/deploy.sh all`: apply foundation then runtime (default).
 - `./infrastructure/oci/deploy.sh foundation`: apply foundation only.
 - `./infrastructure/oci/deploy.sh runtime`: apply runtime only.
-- `./infrastructure/oci/deploy.sh release`: run `./mvnw clean verify`, then re-tag/push the verified image and deploy runtime with a new image tag.
-- `./infrastructure/oci/deploy.sh rollout`: repeatable full rollout (`foundation` then `runtime` then `release`).
+- `./infrastructure/oci/deploy.sh release`: run `./mvnw clean verify` (local single-platform image), then publish multi-arch image and deploy runtime with a new image tag.
+- `./infrastructure/oci/deploy.sh rollout`: repeatable full rollout (`foundation` then `release`).
   - preflight: fails if git has pending changes outside `assets/images/new`
   - override: set `ALLOW_DIRTY_ROLLOUT=true` for intentional exception runs
 - `./tools/rollout`: sources `~/.oci/oci.secrets.env` and runs `deploy.sh rollout` from repo root.
+
+Runtime `image_tag` behavior:
+- `runtime` resolves tag in this order: `IMAGE_TAG` env var, existing `runtime/release.auto.tfvars:image_tag`, current runtime Terraform output `deployed_image_url` tag.
+- If no previous runtime deployment exists and `IMAGE_TAG` is not provided, runtime apply fails with an actionable message.
 
 - `./infrastructure/oci/destroy.sh all`: destroy runtime then foundation (default).
 - `./infrastructure/oci/destroy.sh runtime`: destroy runtime only.
@@ -48,7 +51,9 @@ Release mode requires:
 Optional release variables:
 - `OCI_PROFILE` (default `FRANKFURT`)
 - `IMAGE_TAG` (default current git short SHA)
-- `VERIFY_IMAGE_TAG` (default `<repo-name>:verify-release`; must match the image built by `clean verify`)
+- `IMAGE_TAG` is also honored by `runtime`/`rollout` when you want to pin runtime apply to a specific tag.
+- `VERIFY_IMAGE_TAG` (default `<repo-name>:verify-release`; local image tag used by `clean verify`)
+- `DOCKER_PLATFORM` (default `linux/amd64,linux/arm64`; release publish platforms)
 - `OCIR_REPOSITORY` (optional fallback override for cleanup lookup)
 - `PRUNE_OLD_IMAGES` (`true` by default)
 - `KEEP_IMAGE_COUNT` (`2` by default; minimum enforced to 2)

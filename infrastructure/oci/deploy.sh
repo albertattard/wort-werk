@@ -28,6 +28,88 @@ require_var() {
   fi
 }
 
+read_tfvars_string() {
+  local file="$1"
+  local key="$2"
+  if [[ ! -f "${file}" ]]; then
+    return 0
+  fi
+
+  awk -F= -v key="${key}" '
+    $1 ~ "^[[:space:]]*" key "[[:space:]]*$" {
+      value = $2
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      gsub(/^"|"$/, "", value)
+      print value
+      exit 0
+    }
+  ' "${file}"
+}
+
+escape_tfvars_string() {
+  local raw="$1"
+  raw="${raw//\\/\\\\}"
+  raw="${raw//\"/\\\"}"
+  printf '%s' "${raw}"
+}
+
+upsert_tfvars_string() {
+  local file="$1"
+  local key="$2"
+  local value="$3"
+  local escaped
+  local tmp
+  escaped="$(escape_tfvars_string "${value}")"
+  tmp="$(mktemp)"
+
+  if [[ -f "${file}" ]]; then
+    awk -v key="${key}" -v val="${escaped}" '
+      BEGIN { found = 0 }
+      $0 ~ "^[[:space:]]*" key "[[:space:]]*=" {
+        print key " = \"" val "\""
+        found = 1
+        next
+      }
+      { print }
+      END {
+        if (!found) {
+          print key " = \"" val "\""
+        }
+      }
+    ' "${file}" > "${tmp}"
+  else
+    printf '%s = "%s"\n' "${key}" "${escaped}" > "${tmp}"
+  fi
+
+  mv "${tmp}" "${file}"
+}
+
+resolve_runtime_image_tag() {
+  local existing_tag
+  local deployed_image_url
+  local release_vars_file="${RUNTIME_DIR}/release.auto.tfvars"
+
+  if [[ -n "${IMAGE_TAG:-}" ]]; then
+    printf '%s' "${IMAGE_TAG}"
+    return 0
+  fi
+
+  existing_tag="$(read_tfvars_string "${release_vars_file}" "image_tag")"
+  if [[ -n "${existing_tag}" ]]; then
+    printf '%s' "${existing_tag}"
+    return 0
+  fi
+
+  deployed_image_url="$(terraform -chdir="${RUNTIME_DIR}" output -raw deployed_image_url 2>/dev/null || true)"
+  if [[ -n "${deployed_image_url}" && "${deployed_image_url}" == *:* ]]; then
+    printf '%s' "${deployed_image_url##*:}"
+    return 0
+  fi
+
+  echo "Missing image_tag for runtime apply. Set IMAGE_TAG or run release first so runtime state has deployed_image_url." >&2
+  exit 1
+}
+
 ensure_clean_rollout_worktree() {
   if [[ "${ALLOW_DIRTY_ROLLOUT:-false}" == "true" ]]; then
     echo "Skipping rollout clean-worktree preflight because ALLOW_DIRTY_ROLLOUT=true."
@@ -103,20 +185,29 @@ EOF
 }
 
 apply_runtime() {
+  local release_vars_file="${RUNTIME_DIR}/release.auto.tfvars"
+  local image_tag
+
+  terraform -chdir="${RUNTIME_DIR}" init -upgrade
+
   write_runtime_foundation_vars
+  image_tag="$(resolve_runtime_image_tag)"
+
   if [[ -n "${OCI_USERNAME:-}" && -n "${OCI_AUTH_TOKEN:-}" ]]; then
     local ocir_namespace
     ocir_namespace="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace)"
-    cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOF
+    cat > "${release_vars_file}" <<EOF
+image_tag               = "${image_tag}"
 image_registry_username = "${ocir_namespace}/${OCI_USERNAME}"
 image_registry_password = "${OCI_AUTH_TOKEN}"
 EOF
-  elif [[ ! -f "${RUNTIME_DIR}/release.auto.tfvars" ]]; then
+  elif [[ ! -f "${release_vars_file}" ]]; then
     echo "Missing runtime registry credentials. Set OCI_USERNAME and OCI_AUTH_TOKEN or provide runtime/release.auto.tfvars." >&2
     exit 1
+  else
+    upsert_tfvars_string "${release_vars_file}" "image_tag" "${image_tag}"
   fi
 
-  terraform -chdir="${RUNTIME_DIR}" init -upgrade
   terraform -chdir="${RUNTIME_DIR}" fmt
   terraform -chdir="${RUNTIME_DIR}" apply -auto-approve -input=false
 }
@@ -180,6 +271,7 @@ deploy_release() {
   local image
   local verify_image
   local verify_image_repository
+  local release_platforms
   local compartment_ocid
   local keep_count
 
@@ -196,6 +288,7 @@ deploy_release() {
   keep_count="${KEEP_IMAGE_COUNT:-2}"
   verify_image_repository="$(basename "${REPO_ROOT}")"
   verify_image="${VERIFY_IMAGE_TAG:-${verify_image_repository}:verify-release}"
+  release_platforms="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
 
   compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
   oci_repository="${OCIR_REPOSITORY:-$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_repository_name)}"
@@ -213,15 +306,18 @@ deploy_release() {
     --username "${ocir_namespace}/${OCI_USERNAME}" \
     --password-stdin
 
-  echo "Tagging verified image '${verify_image}' as release image '${image}'"
   docker image inspect "${verify_image}" >/dev/null 2>&1 || {
     echo "Verified image not found locally: ${verify_image}" >&2
     exit 1
   }
-  docker tag "${verify_image}" "${image}"
 
-  echo "Pushing release image: ${image}"
-  docker push "${image}"
+  echo "Publishing multi-architecture release image '${image}' for platforms '${release_platforms}'"
+  docker buildx build \
+    --file "${REPO_ROOT}/container/Dockerfile" \
+    --platform "${release_platforms}" \
+    --tag "${image}" \
+    --push \
+    "${REPO_ROOT}"
 
   write_runtime_foundation_vars
   cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOF
@@ -254,7 +350,6 @@ case "${MODE}" in
   rollout)
     ensure_clean_rollout_worktree
     apply_foundation
-    apply_runtime
     deploy_release
     ;;
   all)

@@ -4,7 +4,7 @@ title: OCI Deployment via Container Instance
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-05
+last_updated: 2026-04-06
 ---
 
 ## Problem
@@ -49,10 +49,11 @@ Expected lifecycle:
 - runtime apply: frequent (release/update/rollback)
 
 Repeatable operator flow:
-- one command should support a full end-to-end rollout by running, in order: `foundation`, `runtime`, `release`
+- one command should support a full end-to-end rollout by running `foundation` then `release` (`release` includes runtime apply after image publication)
 - this flow is the recommended repeatable path when operators want deterministic refresh + deploy behavior
 - rollout should fail fast when the workspace has pending changes outside `assets/images/new`, unless explicitly overridden for exceptional runs
 - a repository-local wrapper command should exist so operators can run rollout without manually typing environment bootstrap + deploy invocation
+- runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
 
 ## Acceptance Criteria
 
@@ -76,10 +77,11 @@ Repeatable operator flow:
 - [x] Deployment exposes a stable public endpoint through OCI Load Balancer with reserved public IP.
 - [x] Runtime deploy strategy minimizes 502 windows by keeping old backend alive until replacement backend is registered.
 - [x] Load balancer health checks use HTTP readiness instead of raw TCP to reduce premature traffic routing.
-- [x] Release automation executes `./mvnw clean verify` and then re-tags/pushes the verified local image to prevent stale or unverified artifacts.
-- [x] Deployment script provides a single repeatable command that runs `foundation -> runtime -> release` in order.
+- [x] Release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
+- [x] Deployment script provides a single repeatable command that runs `foundation -> release` in order, where `release` performs runtime apply after publishing the image.
 - [x] Rollout preflight blocks deployment when git working tree is dirty outside `assets/images/new`, with an explicit override knob for intentional exceptions.
 - [x] Repository includes `tools/rollout` wrapper that sources OCI secrets file and triggers `deploy.sh rollout`.
+- [x] Runtime stage resolves `image_tag` automatically (existing deployed tag) when not explicitly provided, and only fails when no prior runtime tag exists.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

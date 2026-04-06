@@ -67,6 +67,9 @@ Use one of these `category` values for new tasks:
 - [TASK-027: Add Repeatable OCI Full Rollout Command](./infrastructure/TASK-027-add-repeatable-oci-full-rollout-command.md)
 - [TASK-028: Enforce Clean Worktree for OCI Rollout](./infrastructure/TASK-028-enforce-clean-rollout-worktree.md)
 - [TASK-029: Add tools/rollout Wrapper for OCI Rollout](./infrastructure/TASK-029-add-tools-rollout-wrapper.md)
+- [TASK-030: Resolve Runtime image_tag Automatically in Rollout](./infrastructure/TASK-030-resolve-runtime-image-tag-for-rollout.md)
+- [TASK-031: Split Verify Local Build and Release Multi-Arch Publish](./infrastructure/TASK-031-split-verify-local-build-and-release-multiarch-publish.md)
+- [TASK-032: Fix Rollout Order for Multi-Arch Release](./infrastructure/TASK-032-fix-rollout-order-for-multiarch-release.md)
 
 ## Pending
 
@@ -106,6 +109,9 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-027: Add Repeatable OCI Full Rollout Command](./infrastructure/TASK-027-add-repeatable-oci-full-rollout-command.md)
 - [x] [TASK-028: Enforce Clean Worktree for OCI Rollout](./infrastructure/TASK-028-enforce-clean-rollout-worktree.md)
 - [x] [TASK-029: Add tools/rollout Wrapper for OCI Rollout](./infrastructure/TASK-029-add-tools-rollout-wrapper.md)
+- [x] [TASK-030: Resolve Runtime image_tag Automatically in Rollout](./infrastructure/TASK-030-resolve-runtime-image-tag-for-rollout.md)
+- [x] [TASK-031: Split Verify Local Build and Release Multi-Arch Publish](./infrastructure/TASK-031-split-verify-local-build-and-release-multiarch-publish.md)
+- [x] [TASK-032: Fix Rollout Order for Multi-Arch Release](./infrastructure/TASK-032-fix-rollout-order-for-multiarch-release.md)
 
 ## Blocked
 
