@@ -2,10 +2,12 @@ Noun,Article,Image,Audio,AnswerAudio
 Ärztin,die,assets/images/420/Aerztin.png,assets/audio/Aerztin.mp3,assets/audio/die Aerztin.mp3
 Affe,der,assets/images/420/Affe.png,assets/audio/Affe.mp3,assets/audio/der Affe.mp3
 Apfel,der,assets/images/420/Apfel.png,assets/audio/Apfel.mp3,assets/audio/der Apfel.mp3
+Arbeitsbuch,das,assets/images/420/Arbeitsbuch.png,assets/audio/Arbeitsbuch.mp3,assets/audio/das Arbeitsbuch.mp3
 Arzt,der,assets/images/420/Arzt.png,assets/audio/Arzt.mp3,assets/audio/der Arzt.mp3
 Banane,die,assets/images/420/Banane.png,assets/audio/Banane.mp3,assets/audio/die Banane.mp3
 Baum,der,assets/images/420/Baum.png,assets/audio/Baum.mp3,assets/audio/der Baum.mp3
 Bett,das,assets/images/420/Bett.png,assets/audio/Bett.mp3,assets/audio/das Bett.mp3
+Bleistift,der,assets/images/420/Bleistift.png,assets/audio/Bleistift.mp3,assets/audio/der Bleistift.mp3
 Brötchen,das,assets/images/420/Broetchen.png,assets/audio/Broetchen.mp3,assets/audio/das Broetchen.mp3
 Buch,das,assets/images/420/Buch.png,assets/audio/Buch.mp3,assets/audio/das Buch.mp3
 Chamäleon,das,assets/images/420/Chamaeleon.png,assets/audio/Chamaeleon.mp3,assets/audio/das Chamaeleon.mp3
@@ -32,6 +34,7 @@ Kellnerin,die,assets/images/420/Kellnerin.png,assets/audio/Kellnerin.mp3,assets/
 Kissen,das,assets/images/420/Kissen.png,assets/audio/Kissen.mp3,assets/audio/das Kissen.mp3
 Kuh,die,assets/images/420/Kuh.png,assets/audio/Kuh.mp3,assets/audio/die Kuh.mp3
 Lampe,die,assets/images/420/Lampe.png,assets/audio/Lampe.mp3,assets/audio/die Lampe.mp3
+Lineal,das,assets/images/420/Lineal.png,assets/audio/Lineal.mp3,assets/audio/das Lineal.mp3
 Löffel,der,assets/images/420/Loeffel.png,assets/audio/Loeffel.mp3,assets/audio/der Loeffel.mp3
 Maus,die,assets/images/420/Maus.png,assets/audio/Maus.mp3,assets/audio/die Maus.mp3
 Messer,das,assets/images/420/Messer.png,assets/audio/Messer.mp3,assets/audio/das Messer.mp3
@@ -41,8 +44,10 @@ Pfeffer,der,assets/images/420/Pfeffer.png,assets/audio/Pfeffer.mp3,assets/audio/
 Pferd,das,assets/images/420/Pferd.png,assets/audio/Pferd.mp3,assets/audio/das Pferd.mp3
 Pflanze,die,assets/images/420/Pflanze.png,assets/audio/Pflanze.mp3,assets/audio/die Pflanze.mp3
 Pizza,die,assets/images/420/Pizza.png,assets/audio/Pizza.mp3,assets/audio/die Pizza.mp3
+Radiergummi,das,assets/images/420/Radiergummi.png,assets/audio/Radiergummi.mp3,assets/audio/das Radiergummi.mp3
 Regal,das,assets/images/420/Regal.png,assets/audio/Regal.mp3,assets/audio/das Regal.mp3
 Restaurant,das,assets/images/420/Restaurant.png,assets/audio/Restaurant.mp3,assets/audio/das Restaurant.mp3
+Rucksack,der,assets/images/420/Rucksack.png,assets/audio/Rucksack.mp3,assets/audio/der Rucksack.mp3
 Salz,das,assets/images/420/Salz.png,assets/audio/Salz.mp3,assets/audio/das Salz.mp3
 Schinken,der,assets/images/420/Schinken.png,assets/audio/Schinken.mp3,assets/audio/der Schinken.mp3
 Schreibtisch,der,assets/images/420/Schreibtisch.png,assets/audio/Schreibtisch.mp3,assets/audio/der Schreibtisch.mp3
@@ -50,6 +55,7 @@ Sessel,der,assets/images/420/Sessel.png,assets/audio/Sessel.mp3,assets/audio/der
 Sofa,das,assets/images/420/Sofa.png,assets/audio/Sofa.mp3,assets/audio/das Sofa.mp3
 Speck,der,assets/images/420/Speck.png,assets/audio/Speck.mp3,assets/audio/der Speck.mp3
 Stier,der,assets/images/420/Stier.png,assets/audio/Stier.mp3,assets/audio/der Stier.mp3
+Stift,der,assets/images/420/Stift.png,assets/audio/Stift.mp3,assets/audio/der Stift.mp3
 Stuhl,der,assets/images/420/Stuhl.png,assets/audio/Stuhl.mp3,assets/audio/der Stuhl.mp3
 Tee,der,assets/images/420/Tee.png,assets/audio/Tee.mp3,assets/audio/der Tee.mp3
 Teller,der,assets/images/420/Teller.png,assets/audio/Teller.mp3,assets/audio/der Teller.mp3

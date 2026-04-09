@@ -4,7 +4,7 @@ title: Asset Sync Automation
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-05
+last_updated: 2026-04-09
 ---
 
 ## Problem
@@ -27,6 +27,7 @@ A single operator trigger phrase (`update assets`) runs a deterministic workflow
 Input:
 - source image files under `assets/images/original` and `assets/images/new`
 - existing `assets/articles.csv`
+- manual noun/article metadata updates in `assets/articles.csv` for newly added source images
 
 Output:
 - updated `assets/articles.csv`
