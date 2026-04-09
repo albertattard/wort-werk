@@ -36,10 +36,41 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -62,6 +93,9 @@
                 <configuration>
                     <argLine>-XX:+EnableDynamicAgentLoading</argLine>
                     <excludedGroups>e2e</excludedGroups>
+                    <systemPropertyVariables>
+                        <spring.profiles.active>test</spring.profiles.active>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
@@ -75,6 +109,7 @@
                     </includes>
                     <systemPropertyVariables>
                         <test.base-url>${verify.container.base-url}</test.base-url>
+                        <spring.profiles.active>test</spring.profiles.active>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -127,11 +162,12 @@
                             <arguments>
                                 <argument>run</argument>
                                 <argument>--detach</argument>
-                                <argument>--rm</argument>
                                 <argument>--name</argument>
                                 <argument>${verify.container.name}</argument>
                                 <argument>--publish</argument>
                                 <argument>${verify.container.port}:8080</argument>
+                                <argument>--env</argument>
+                                <argument>SPRING_PROFILES_ACTIVE=test</argument>
                                 <argument>${verify.container.image}</argument>
                             </arguments>
                         </configuration>
@@ -146,7 +182,7 @@
                             <executable>sh</executable>
                             <arguments>
                                 <argument>-c</argument>
-                                <argument>for i in $(seq 1 6); do curl --silent --show-error --fail --connect-timeout 1 --max-time 1 '${verify.container.base-url}/' >/dev/null &amp;&amp; exit 0; sleep 2; done; docker logs '${verify.container.name}'; exit 1</argument>
+                                <argument>ok=0; for i in $(seq 1 10); do if curl --silent --show-error --fail --connect-timeout 1 --max-time 1 '${verify.container.base-url}/login' >/dev/null; then ok=$((ok+1)); [ $ok -ge 2 ] &amp;&amp; exit 0; else ok=0; fi; sleep 2; done; docker logs '${verify.container.name}'; exit 1</argument>
                             </arguments>
                         </configuration>
                     </execution>

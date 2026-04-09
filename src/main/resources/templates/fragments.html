@@ -145,6 +145,7 @@
                   hx-post="/answer"
                   hx-target="#quiz-interaction"
                   hx-swap="outerHTML">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <input type="hidden" name="article" value="der">
                 <button data-testid="answer-der" type="submit"
                         th:disabled="${state.awaitingCorrectAudioCompletion}"
@@ -154,6 +155,7 @@
                   hx-post="/answer"
                   hx-target="#quiz-interaction"
                   hx-swap="outerHTML">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <input type="hidden" name="article" value="die">
                 <button data-testid="answer-die" type="submit"
                         th:disabled="${state.awaitingCorrectAudioCompletion}"
@@ -163,6 +165,7 @@
                   hx-post="/answer"
                   hx-target="#quiz-interaction"
                   hx-swap="outerHTML">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <input type="hidden" name="article" value="das">
                 <button data-testid="answer-das" type="submit"
                         th:disabled="${state.awaitingCorrectAudioCompletion}"
@@ -175,7 +178,9 @@
         <form th:if="${state.awaitingCorrectAudioCompletion}" method="post" action="/next" data-testid="next-form"
               hx-post="/next"
               hx-target="#quiz-interaction"
-              hx-swap="outerHTML"></form>
+              hx-swap="outerHTML">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        </form>
 
         <script th:inline="javascript">
             (() => {
@@ -205,9 +210,26 @@
                     playFromStart(nounAudio);
                 });
 
+                const submitNextRound = () => {
+                    if (!nextForm) {
+                        return;
+                    }
+                    if (window.htmx) {
+                        const formValues = Object.fromEntries(new FormData(nextForm).entries());
+                        htmx.ajax("POST", nextForm.getAttribute("hx-post") || nextForm.action || "/next", {
+                            source: nextForm,
+                            target: nextForm.getAttribute("hx-target") || "#quiz-interaction",
+                            swap: nextForm.getAttribute("hx-swap") || "outerHTML",
+                            values: formValues
+                        });
+                        return;
+                    }
+                    nextForm.requestSubmit();
+                };
+
                 if (awaitingCorrectAudio) {
                     correctAudio?.addEventListener("ended", () => {
-                        nextForm?.requestSubmit();
+                        submitNextRound();
                     }, { once: true });
                     playFromStart(correctAudio);
                     return;
@@ -228,6 +250,7 @@
               hx-post="/restart"
               hx-target="#quiz-interaction"
               hx-swap="outerHTML">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button data-testid="restart-button" type="submit">Neu starten</button>
         </form>
     </div>

@@ -1,13 +1,13 @@
 ---
 id: TASK-033
 title: Implement Auth Foundation with PostgreSQL
-status: pending
+status: done
 category: quiz
 related_features:
   - SPEC-005
 owner: @aattard
 created: 2026-04-06
-updated: 2026-04-06
+updated: 2026-04-07
 ---
 
 ## Summary
@@ -32,9 +32,9 @@ Implement the auth-only foundation using PostgreSQL and Spring Security, while e
 
 ## Acceptance Criteria
 
-- [ ] App starts with PostgreSQL configuration and Flyway migrations applied.
-- [ ] Register/login/logout flow works end-to-end.
-- [ ] Credentials are stored as hashes (no plaintext passwords).
-- [ ] Existing quiz behavior remains functionally intact for authenticated users.
-- [ ] Progress/attempt/adaptive logic remains out of this task.
-- [ ] `./mvnw clean verify` passes.
+- [x] App starts with PostgreSQL configuration and Flyway migrations applied.
+- [x] Register/login/logout flow works end-to-end.
+- [x] Credentials are stored as hashes (no plaintext passwords).
+- [x] Existing quiz behavior remains functionally intact for authenticated users.
+- [x] Progress/attempt/adaptive logic remains out of this task.
+- [x] `./mvnw clean verify` passes.
