@@ -6,7 +6,7 @@ RUN jlink \
       --output './jre' \
       --no-header-files \
       --no-man-pages \
-      --add-modules java.base,java.desktop,java.instrument,java.management,java.naming,java.sql,java.security.jgss,jdk.unsupported,jdk.crypto.ec,java.logging,jdk.charsets,java.compiler \
+      --add-modules java.base,java.desktop,java.instrument,java.management,java.naming,java.sql,java.security.jgss,jdk.unsupported,jdk.crypto.ec,java.logging,jdk.charsets \
       --compress=zip-9
 
 # Extract layered Spring Boot jar from the Maven-built artifact.

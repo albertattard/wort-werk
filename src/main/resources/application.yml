@@ -1,39 +1,7 @@
 spring:
-  profiles:
-    default: postgres
   application:
     name: wort-werk
-  jpa:
-    hibernate:
-      ddl-auto: validate
 
 wortwerk:
   articles-csv: assets/articles.csv
   assets-dir: assets
-
----
-spring:
-  config:
-    activate:
-      on-profile: postgres
-  datasource:
-    url: ${WORTWERK_DB_URL:jdbc:postgresql://localhost:5432/wortwerk}
-    username: ${WORTWERK_DB_USERNAME:wortwerk}
-    password: ${WORTWERK_DB_PASSWORD:wortwerk}
-    driver-class-name: org.postgresql.Driver
-
----
-spring:
-  config:
-    activate:
-      on-profile: test
-  datasource:
-    url: jdbc:h2:mem:wortwerk;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  flyway:
-    enabled: false
-  jpa:
-    hibernate:
-      ddl-auto: create-drop

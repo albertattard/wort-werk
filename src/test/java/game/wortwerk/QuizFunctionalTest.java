@@ -44,42 +44,9 @@ class QuizFunctionalTest {
     }
 
     @Test
-    void shouldRequireLoginBeforeAccessingQuiz() {
-        try (Page page = browser.newPage()) {
-            page.navigate(baseUrl);
-            page.waitForURL(url -> url.contains("/login"));
-
-            assertThat(page.getByTestId("login-title").isVisible()).isTrue();
-            assertThat(page.getByTestId("login-username").isVisible()).isTrue();
-            assertThat(page.getByTestId("login-password").isVisible()).isTrue();
-        }
-    }
-
-    @Test
-    void shouldAllowRegisterAndThenLogin() {
-        try (Page page = browser.newPage()) {
-            String username = "user_" + System.currentTimeMillis();
-            String password = "secret123";
-
-            page.navigate(baseUrl + "register");
-            page.getByTestId("register-username").fill(username);
-            page.getByTestId("register-password").fill(password);
-            page.getByTestId("register-submit").click();
-            page.waitForURL(url -> url.contains("/login"));
-
-            page.getByTestId("login-username").fill(username);
-            page.getByTestId("login-password").fill(password);
-            page.getByTestId("login-submit").click();
-            page.waitForURL(url -> !url.contains("/login"));
-
-            assertThat(page.getByTestId("question-image").isVisible()).isTrue();
-        }
-    }
-
-    @Test
     void shouldLoadQuizAndShowArticleChoices() {
         try (Page page = browser.newPage()) {
-            login(page);
+            page.navigate(baseUrl);
 
             assertThat(page.getByTestId("question-image").isVisible()).isTrue();
             assertThat(page.getByTestId("question-noun").isVisible()).isTrue();
@@ -93,7 +60,7 @@ class QuizFunctionalTest {
     @Test
     void shouldKeepSameObjectAndHighlightCorrectArticleWhenWrongSelected() {
         try (Page page = browser.newPage()) {
-            login(page);
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -117,7 +84,7 @@ class QuizFunctionalTest {
                       return Promise.resolve();
                     };
                     """);
-            login(page);
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -132,24 +99,10 @@ class QuizFunctionalTest {
             assertThat(page.getByTestId("question-noun").textContent()).isEqualTo(noun);
 
             page.waitForFunction("() => document.querySelector('[data-testid=\"next-form\"]') !== null");
-            page.evaluate("""
-                    () => {
-                      const nextForm = document.querySelector('[data-testid="next-form"]');
-                      if (!nextForm) {
-                        throw new Error("next form not found");
-                      }
-                      if (window.htmx) {
-                        htmx.ajax('POST', nextForm.getAttribute('hx-post') || '/next', {
-                          source: nextForm,
-                          target: nextForm.getAttribute('hx-target') || '#quiz-interaction',
-                          swap: nextForm.getAttribute('hx-swap') || 'outerHTML',
-                          values: Object.fromEntries(new FormData(nextForm).entries())
-                        });
-                        return;
-                      }
-                      nextForm.requestSubmit();
-                    }
-                    """);
+            page.waitForResponse(
+                    response -> response.url().endsWith("/next")
+                            && "POST".equalsIgnoreCase(response.request().method()),
+                    () -> page.evaluate("() => document.querySelector('[data-testid=\"audio-correct\"]').dispatchEvent(new Event('ended'))"));
             page.waitForFunction(
                     "previousNoun => document.querySelector('[data-testid=\"question-noun\"]')?.textContent !== previousNoun",
                     noun);
@@ -171,7 +124,7 @@ class QuizFunctionalTest {
                       return Promise.resolve();
                     };
                     """);
-            login(page);
+            page.navigate(baseUrl);
 
             int before = ((Number) page.evaluate("() => window.__playCount")).intValue();
             page.getByTestId("noun-replay").click();
@@ -185,7 +138,7 @@ class QuizFunctionalTest {
     @Test
     void shouldSubmitAnswerViaHtmxRequest() {
         try (Page page = browser.newPage()) {
-            login(page);
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -209,7 +162,7 @@ class QuizFunctionalTest {
                       return Promise.resolve();
                     };
                     """);
-            login(page);
+            page.navigate(baseUrl);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
@@ -233,22 +186,6 @@ class QuizFunctionalTest {
                         && "POST".equalsIgnoreCase(response.request().method()),
                 () -> page.getByTestId("answer-" + article).click());
         page.waitForSelector("[data-testid='question-noun']");
-    }
-
-    private void login(Page page) {
-        String username = "user_" + System.nanoTime();
-        String password = "secret123";
-
-        page.navigate(baseUrl + "register");
-        page.getByTestId("register-username").fill(username);
-        page.getByTestId("register-password").fill(password);
-        page.getByTestId("register-submit").click();
-        page.waitForURL(url -> url.contains("/login"));
-
-        page.getByTestId("login-username").fill(username);
-        page.getByTestId("login-password").fill(password);
-        page.getByTestId("login-submit").click();
-        page.waitForURL(url -> !url.contains("/login"));
     }
 
     private String pickWrongArticle(String correctArticle) {
