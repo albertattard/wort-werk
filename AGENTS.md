@@ -34,10 +34,14 @@ If a request arrives without a spec/task update, stop implementation and create/
 ## Testing Standards
 
 - Assertion framework: **AssertJ** (`org.assertj.core.api.Assertions.assertThat`).
-- Unit/integration tests (excluding e2e):
+- Fast tests:
   - `./mvnw test`
-- Full pipeline including e2e:
+- Full pipeline including DB-backed and browser-backed verification:
+  - ensure `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` are set in the current environment
   - `./mvnw clean verify`
+- DB integration tests:
+  - must be tagged with `@Tag("db")`
+  - run only in integration-test/verify phase (Failsafe)
 - E2E tests:
   - must be tagged with `@Tag("e2e")`
   - run only in integration-test/verify phase (Failsafe)
@@ -47,6 +51,8 @@ If a request arrives without a spec/task update, stop implementation and create/
 Before committing, run:
 
 ```bash
+export VERIFY_DB_USERNAME='<username>'
+export VERIFY_DB_PASSWORD='<password>'
 ./mvnw clean verify
 ```
 
@@ -77,6 +83,10 @@ When changing workflow or engineering standards:
 
 - `update assets`
   - Run `./tools/update-assets`
+  - Ensure `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` are set before the verification step
   - Then run `./mvnw clean verify`
   - If `tools/update-assets` reports missing metadata, add the missing rows directly to `assets/articles.csv` and re-run
-  - Place new source images in `assets/images/new`; the sync moves them to `assets/images/original` after success
+  - Place new source images in `assets/images/new`; treat it as an inbox-only staging directory
+  - Add stable `Id` and `Category` values in `assets/articles.csv` for newly added rows
+  - Source images are stored under `assets/images/original/<category>/` and resized outputs under `assets/images/420/<category>/`
+  - The sync moves processed inbox files into `assets/images/original/<category>/` after success

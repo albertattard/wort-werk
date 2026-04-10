@@ -8,3 +8,5 @@ Store ADRs here to capture technical decisions and the tradeoffs behind them.
 - [ADR-0002: Use AssertJ for Test Assertions](./ADR-0002-use-assertj-for-test-assertions.md)
 - [ADR-0003: Require TDD and `./mvnw clean verify` Before Commit](./ADR-0003-require-tdd-and-clean-verify-before-commit.md)
 - [ADR-0004: Use PostgreSQL for Auth Foundation](./ADR-0004-use-postgresql-for-auth-foundation.md)
+- [ADR-0005: Use PostgreSQL for All DB-Backed Verification](./ADR-0005-use-postgresql-for-all-db-backed-verification.md)
+- [ADR-0006: Use Stable Asset IDs and Category Directories](./ADR-0006-use-stable-asset-ids-and-category-directories.md)

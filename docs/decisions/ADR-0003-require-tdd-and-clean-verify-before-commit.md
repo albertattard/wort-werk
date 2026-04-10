@@ -15,13 +15,15 @@ Adopt the following mandatory workflow:
    - run functional tests and confirm the new test fails,
    - implement the change,
    - run tests and confirm the new test passes.
-3. Before committing, run `./mvnw clean verify` and require a passing result.
+3. Before committing, ensure `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` are set for the current shell or automation environment.
+4. Before committing, run `./mvnw clean verify` and require a passing result.
 
 ## Consequences
 Positive:
 - Behavior changes are documented in tests before implementation.
 - Regressions are detected earlier through full pipeline verification.
 - Collaboration across threads becomes more predictable and auditable.
+- Verification prerequisites are explicit instead of being discovered through a failing Maven step.
 
 Negative:
 - Slightly longer local iteration due to stricter validation steps.

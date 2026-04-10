@@ -32,11 +32,28 @@ docs/
     TASK-001-*.md
 ```
 
+## Asset Catalog
+
+- `assets/images/new/` is an inbox-only staging directory for newly dropped source images.
+- `assets/images/original/<category>/` stores categorized source images.
+- `assets/images/420/<category>/` stores categorized resized variants used by the app.
+- `assets/articles.csv` is the asset catalog source of truth and includes a stable `Id` plus `Category` for each row.
+- Technical filenames remain ASCII-safe; learner-facing noun/article text comes from CSV metadata.
+
 ## Testing Conventions
 
 - Use AssertJ as the default assertion library for all tests.
-- Use `./mvnw test` for unit/integration tests (excluding `@Tag("e2e")`).
-- Use `./mvnw verify` to run the full pipeline, including `@Tag("e2e")` tests.
+- Use untagged tests for fast unit tests.
+- Use `@Tag("db")` for PostgreSQL-backed JVM integration tests.
+- Use `@Tag("e2e")` for browser-driven end-to-end tests.
+- Use `./mvnw test` for fast tests only; it excludes both `@Tag("db")` and `@Tag("e2e")`.
+- Use `./mvnw clean verify` to run the full pipeline, including `@Tag("db")` and `@Tag("e2e")` tests.
+- Maven uses Docker Compose to orchestrate the local verification `app` + PostgreSQL stack during `verify`.
+- Set `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` in the environment before `./mvnw clean verify`; verification fails fast if either is missing.
+- Recommended pre-commit order:
+  1. `export VERIFY_DB_USERNAME='<username>'`
+  2. `export VERIFY_DB_PASSWORD='<password>'`
+  3. `./mvnw clean verify`
 - Use `./mvnw clean verify` as the required pre-commit validation command.
 
 ## Container

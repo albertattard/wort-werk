@@ -7,7 +7,7 @@ related_features:
   - SPEC-006
 owner: @aattard
 created: 2026-04-05
-updated: 2026-04-05
+updated: 2026-04-10
 ---
 
 ## Summary
@@ -18,6 +18,7 @@ Adopt and document a Maven-driven container-first pre-commit verification flow w
 
 - Document the ordered verification workflow from SPEC-006.
 - Wire Maven lifecycle so `verify` orchestrates container build/run/e2e/stop.
+- Keep pre-test stale-container cleanup minimal and move current-run log capture to post-test cleanup.
 - Align workflow docs (`AGENTS.md`, task/spec indexes, and related guidance) to avoid conflicting gate requirements.
 - Ensure image freshness by deriving a unique tag for current build (recommended: git SHA).
 
@@ -29,8 +30,9 @@ Adopt and document a Maven-driven container-first pre-commit verification flow w
 ## Acceptance Criteria
 
 - [x] Workflow order is documented exactly as:
-  1. `./mvnw clean verify` (container build + run + e2e + stop)
-  2. commit on success
+  1. set `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD`
+  2. `./mvnw clean verify` (container build + run + e2e + stop)
+  3. commit on success
 - [x] `verify` builds container image from current code and tags it uniquely.
 - [x] `verify` starts container from that tag and runs existing Playwright e2e against it.
 - [x] `verify` always stops/removes test container.
