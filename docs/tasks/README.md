@@ -51,6 +51,7 @@ Use one of these `category` values for new tasks:
 - [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
 - [TASK-034: Implement Passkey Auth Foundation](./quiz/TASK-034-implement-passkey-auth-foundation.md)
 - [TASK-043: Add Repo-Local Codex Review Skills](./agentic/TASK-043-add-repo-local-codex-review-skills.md)
+- [TASK-044: Adopt Review Skills in Repository Workflow](./agentic/TASK-044-adopt-review-skills-in-repository-workflow.md)
 - [TASK-016: Add Update Assets Trigger Workflow](./repo-process/TASK-016-add-update-assets-trigger-workflow.md)
 - [TASK-025: Adopt Container-First Verification Workflow](./repo-process/TASK-025-adopt-container-first-verification-workflow.md)
 - [TASK-038: Adopt PostgreSQL-only Verification and DB Test Tag](./repo-process/TASK-038-adopt-postgresql-only-verification-and-db-test-tag.md)
@@ -94,6 +95,7 @@ Use one of these `category` values for new tasks:
 
 ## Done
 
+- [x] [TASK-044: Adopt Review Skills in Repository Workflow](./agentic/TASK-044-adopt-review-skills-in-repository-workflow.md)
 - [x] [TASK-043: Add Repo-Local Codex Review Skills](./agentic/TASK-043-add-repo-local-codex-review-skills.md)
 - [x] [TASK-001: Implement SPEC-001 Quiz Vertical Slice](./quiz/TASK-001-implement-spec-001-quiz-vertical-slice.md)
 - [x] [TASK-002: Enforce Correct Selection Before Advancing and Show Noun](./quiz/TASK-002-enforce-correct-before-advance-and-show-noun.md)

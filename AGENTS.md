@@ -79,6 +79,19 @@ When changing workflow or engineering standards:
 2. Update indexes/readmes (`docs/decisions/README.md`, `README.md`, `docs/tasks/README.md`) as needed.
 3. Keep examples and commands aligned with current tooling.
 
+## Review Skills
+
+Use repo-local review skills as explicit workflow checkpoints when the change justifies them:
+
+- `architecture-review`
+  - use before implementation for design proposals, ADR-impacting changes, larger refactors, and repository-direction questions
+- `project-coherence-review`
+  - use before commit for non-trivial code changes that should be checked against repository patterns and surrounding code
+- `security-analysis`
+  - use for authentication, sessions, CSRF, database access, containers, deployment, secrets, OCI, and similar security-sensitive changes
+
+Do not force all three skills onto every small change. These are conditional review gates, not replacements for specs, tasks, or ADRs.
+
 ## Trigger Phrases
 
 - `update assets`

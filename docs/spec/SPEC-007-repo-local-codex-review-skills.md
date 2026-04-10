@@ -37,6 +37,22 @@ The first slice must define three review skills:
 - Skills must complement, not replace, the mandatory spec/task/ADR workflow.
 - Skill boundaries must be explicit enough to avoid overlap between architecture and project-coherence reviews.
 - The initial slice may defer optional UI metadata such as `agents/openai.yaml`.
+- Skill usage must be documented as explicit workflow checkpoints rather than assumed tribal knowledge.
+- Skill usage must remain conditional; not every small change should require all skills.
+
+## Workflow Checkpoints
+
+Use the review skills at these points in the workflow:
+
+1. `architecture-review`
+   - use before implementation for design-heavy work,
+   - especially for design proposals, ADR-impacting changes, refactors, and repository-direction questions.
+2. `project-coherence-review`
+   - use before commit for non-trivial code changes where consistency with repository patterns matters.
+3. `security-analysis`
+   - use for authentication, session, CSRF, database, container, deployment, secret, and OCI-related changes.
+
+Small, local, low-risk changes do not need all three skills by default.
 
 ## Storage and Naming
 
@@ -61,3 +77,5 @@ The first slice must define three review skills:
 - [x] Each skill uses a distinct review lens and output structure.
 - [x] Skill docs explicitly state that specs, tasks, and ADRs remain the source of truth.
 - [x] Specification and task indexes reference this spec and its implementation task.
+- [x] Repository workflow docs explain when to use the skills.
+- [x] Skill usage remains conditional rather than mandatory on every task.
