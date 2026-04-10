@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Registrierung | Wort-Werk</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: linear-gradient(160deg, #faf6ef, #e6f2f1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: min(420px, 92vw);
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+            padding: 24px;
+        }
+
+        h1 {
+            margin: 0 0 16px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #b6b6b6;
+            margin-top: 4px;
+        }
+
+        button {
+            margin-top: 16px;
+            width: 100%;
+            border: 0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            background: #0f766e;
+            color: #fff;
+        }
+
+        button:hover {
+            background: #115e59;
+        }
+
+        .msg {
+            margin-top: 12px;
+            font-weight: 600;
+            color: #b71c1c;
+        }
+
+        .small {
+            margin-top: 14px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+<section class="card">
+    <h1 data-testid="register-title">Registrierung</h1>
+    <label for="username">Benutzername</label>
+    <input id="username" type="text" autocomplete="username" required data-testid="register-username">
+
+    <label for="label">Passkey-Label</label>
+    <input id="label" type="text" value="Mein Gerät" required data-testid="register-passkey-label">
+
+    <button type="button" data-testid="register-submit" id="register-passkey">Passkey registrieren</button>
+    <p class="msg" data-testid="register-error" id="register-error" style="display: none;"></p>
+    <p class="small">Bereits registriert? <a href="/login">Zur Anmeldung</a></p>
+</section>
+<script>
+    (() => {
+        const csrf = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+        const headers = csrf && csrfHeader ? { [csrfHeader]: csrf } : {};
+        const usernameInput = document.querySelector("#username");
+        const labelInput = document.querySelector("#label");
+        const button = document.querySelector("#register-passkey");
+        const errorNode = document.querySelector("#register-error");
+
+        const encode = (buffer) => {
+            const base64 = window.btoa(String.fromCharCode(...new Uint8Array(buffer)));
+            return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+        };
+
+        const decode = (base64url) => {
+            const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+            const binStr = window.atob(base64);
+            const bin = new Uint8Array(binStr.length);
+            for (let i = 0; i < binStr.length; i++) {
+                bin[i] = binStr.charCodeAt(i);
+            }
+            return bin.buffer;
+        };
+
+        const postJson = async (url, body) => {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...headers
+                },
+                body: JSON.stringify(body)
+            });
+            if (!response.ok) {
+                let message = `HTTP ${response.status}`;
+                try {
+                    const payload = await response.json();
+                    message = payload.error || message;
+                } catch (e) {
+                    // Keep default message.
+                }
+                throw new Error(message);
+            }
+            return response.json();
+        };
+
+        const showError = (message) => {
+            errorNode.textContent = message;
+            errorNode.style.display = "block";
+        };
+
+        const clearError = () => {
+            errorNode.textContent = "";
+            errorNode.style.display = "none";
+        };
+
+        button.addEventListener("click", async () => {
+            clearError();
+            const username = usernameInput.value.trim();
+            const label = labelInput.value.trim();
+            if (!username) {
+                showError("Benutzername fehlt.");
+                return;
+            }
+            if (!label) {
+                showError("Passkey-Label fehlt.");
+                return;
+            }
+            if (!window.PublicKeyCredential) {
+                showError("WebAuthn wird von diesem Browser nicht unterstützt.");
+                return;
+            }
+
+            try {
+                await postJson("/passkey/register/session", { username });
+
+                const optionsResponse = await fetch("/webauthn/register/options", {
+                    method: "POST",
+                    headers: headers
+                });
+                if (!optionsResponse.ok) {
+                    throw new Error(`Konnte Registrierungsoptionen nicht laden (HTTP ${optionsResponse.status}).`);
+                }
+
+                const options = await optionsResponse.json();
+                const decodedExcludeCredentials = !options.excludeCredentials ? [] : options.excludeCredentials.map((cred) => ({
+                    ...cred,
+                    id: decode(cred.id)
+                }));
+
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        ...options,
+                        user: {
+                            ...options.user,
+                            id: decode(options.user.id)
+                        },
+                        challenge: decode(options.challenge),
+                        excludeCredentials: decodedExcludeCredentials
+                    }
+                });
+
+                const attestationResponse = credential.response;
+                const payload = {
+                    publicKey: {
+                        credential: {
+                            id: credential.id,
+                            rawId: encode(credential.rawId),
+                            response: {
+                                attestationObject: encode(attestationResponse.attestationObject),
+                                clientDataJSON: encode(attestationResponse.clientDataJSON),
+                                transports: attestationResponse.getTransports ? attestationResponse.getTransports() : []
+                            },
+                            type: credential.type,
+                            clientExtensionResults: credential.getClientExtensionResults(),
+                            authenticatorAttachment: credential.authenticatorAttachment
+                        },
+                        label: label
+                    }
+                };
+
+                await postJson("/webauthn/register", payload);
+                window.location.href = "/login?registered";
+            } catch (error) {
+                showError(error.message || "Registrierung fehlgeschlagen.");
+            }
+        });
+    })();
+</script>
+</body>
+</html>

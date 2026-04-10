@@ -22,12 +22,17 @@
         <playwright.version>1.58.0</playwright.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <verify.container.port>18080</verify.container.port>
-        <verify.container.name>${project.artifactId}-verify</verify.container.name>
         <verify.container.image>${project.artifactId}:verify-${maven.build.timestamp}</verify.container.image>
-        <verify.container.base-url>http://127.0.0.1:${verify.container.port}</verify.container.base-url>
+        <verify.container.base-url>http://localhost:${verify.container.port}</verify.container.base-url>
+        <verify.compose.file>${project.basedir}/container/compose.verify.yml</verify.compose.file>
+        <verify.compose.project>${project.artifactId}-verify</verify.compose.project>
+        <verify.db.port>15432</verify.db.port>
+        <verify.db.name>wortwerk_verify</verify.db.name>
+        <verify.db.host.port.url>jdbc:postgresql://localhost:${verify.db.port}/${verify.db.name}</verify.db.host.port.url>
     </properties>
 
     <dependencies>
+        <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -37,9 +42,44 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
+        <!-- Auth -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-webauthn</artifactId>
+        </dependency>
+
+        <!-- Data -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -61,7 +101,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>-XX:+EnableDynamicAgentLoading</argLine>
-                    <excludedGroups>e2e</excludedGroups>
+                    <excludedGroups>e2e | db</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>
@@ -69,12 +109,15 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <argLine>-XX:+EnableDynamicAgentLoading</argLine>
-                    <groups>e2e</groups>
+                    <groups>e2e | db</groups>
                     <includes>
                         <include>**/*Test.java</include>
                     </includes>
                     <systemPropertyVariables>
                         <test.base-url>${verify.container.base-url}</test.base-url>
+                        <spring.datasource.url>${verify.db.host.port.url}</spring.datasource.url>
+                        <spring.datasource.username>${env.VERIFY_DB_USERNAME}</spring.datasource.username>
+                        <spring.datasource.password>${env.VERIFY_DB_PASSWORD}</spring.datasource.password>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -83,6 +126,20 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
                 <executions>
+                    <execution>
+                        <id>verify-require-db-credentials</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sh</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>test -n "${VERIFY_DB_USERNAME:-}" &amp;&amp; test -n "${VERIFY_DB_PASSWORD:-}" || { echo "Missing required environment variables: VERIFY_DB_USERNAME and VERIFY_DB_PASSWORD"; exit 1; }</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>docker-build-verify-image</id>
                         <phase>pre-integration-test</phase>
@@ -103,36 +160,51 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>docker-stop-stale-verify-container</id>
+                        <id>docker-stop-stale-verify-environment</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
                             <executable>sh</executable>
+                            <environmentVariables>
+                                <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
+                                <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
+                                <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
+                                <VERIFY_DB_NAME>${verify.db.name}</VERIFY_DB_NAME>
+                                <VERIFY_DB_USERNAME>${env.VERIFY_DB_USERNAME}</VERIFY_DB_USERNAME>
+                                <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
+                            </environmentVariables>
                             <arguments>
                                 <argument>-c</argument>
-                                <argument>docker rm --force '${verify.container.name}' >/dev/null 2&gt;&amp;1 || true</argument>
+                                <argument>docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' down --volumes --remove-orphans >/dev/null 2&gt;&amp;1 || true</argument>
                             </arguments>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>docker-run-verify-container</id>
+                        <id>docker-run-verify-environment</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
                             <executable>docker</executable>
+                            <environmentVariables>
+                                <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
+                                <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
+                                <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
+                                <VERIFY_DB_NAME>${verify.db.name}</VERIFY_DB_NAME>
+                                <VERIFY_DB_USERNAME>${env.VERIFY_DB_USERNAME}</VERIFY_DB_USERNAME>
+                                <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
+                            </environmentVariables>
                             <arguments>
-                                <argument>run</argument>
+                                <argument>compose</argument>
+                                <argument>--file</argument>
+                                <argument>${verify.compose.file}</argument>
+                                <argument>--project-name</argument>
+                                <argument>${verify.compose.project}</argument>
+                                <argument>up</argument>
                                 <argument>--detach</argument>
-                                <argument>--rm</argument>
-                                <argument>--name</argument>
-                                <argument>${verify.container.name}</argument>
-                                <argument>--publish</argument>
-                                <argument>${verify.container.port}:8080</argument>
-                                <argument>${verify.container.image}</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -144,23 +216,39 @@
                         </goals>
                         <configuration>
                             <executable>sh</executable>
+                            <environmentVariables>
+                                <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
+                                <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
+                                <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
+                                <VERIFY_DB_NAME>${verify.db.name}</VERIFY_DB_NAME>
+                                <VERIFY_DB_USERNAME>${env.VERIFY_DB_USERNAME}</VERIFY_DB_USERNAME>
+                                <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
+                            </environmentVariables>
                             <arguments>
                                 <argument>-c</argument>
-                                <argument>for i in $(seq 1 6); do curl --silent --show-error --fail --connect-timeout 1 --max-time 1 '${verify.container.base-url}/' >/dev/null &amp;&amp; exit 0; sleep 2; done; docker logs '${verify.container.name}'; exit 1</argument>
+                                <argument>ok=0; for i in $(seq 1 10); do if curl --silent --show-error --fail --connect-timeout 1 --max-time 1 '${verify.container.base-url}/login' >/dev/null; then ok=$((ok+1)); [ $ok -ge 2 ] &amp;&amp; exit 0; else ok=0; fi; sleep 2; done; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' logs --no-color app db; exit 1</argument>
                             </arguments>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>docker-stop-verify-container</id>
+                        <id>docker-stop-verify-environment</id>
                         <phase>post-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
                             <executable>sh</executable>
+                            <environmentVariables>
+                                <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
+                                <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
+                                <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
+                                <VERIFY_DB_NAME>${verify.db.name}</VERIFY_DB_NAME>
+                                <VERIFY_DB_USERNAME>${env.VERIFY_DB_USERNAME}</VERIFY_DB_USERNAME>
+                                <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
+                            </environmentVariables>
                             <arguments>
                                 <argument>-c</argument>
-                                <argument>docker rm --force '${verify.container.name}' >/dev/null 2&gt;&amp;1 || true</argument>
+                                <argument>mkdir -p '${project.build.directory}'; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' logs --no-color app &gt; '${project.build.directory}/verify-container.log' 2&gt;&amp;1 || true; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' logs --no-color db &gt; '${project.build.directory}/verify-postgres.log' 2&gt;&amp;1 || true; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' down --volumes --remove-orphans >/dev/null 2&gt;&amp;1 || true</argument>
                             </arguments>
                         </configuration>
                     </execution>

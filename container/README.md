@@ -1,6 +1,15 @@
 # Container Build and Run
 
 This project ships a production image definition at `container/Dockerfile`.
+Local verification stack definition: `container/compose.verify.yml` (invoked by `./mvnw clean verify`).
+
+For local Maven verification, the required order is:
+
+```bash
+export VERIFY_DB_USERNAME='<username>'
+export VERIFY_DB_PASSWORD='<password>'
+./mvnw clean verify
+```
 
 OCI deployment runbook: [OCI-DEPLOYMENT.md](./OCI-DEPLOYMENT.md)
 

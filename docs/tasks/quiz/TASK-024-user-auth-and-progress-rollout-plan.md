@@ -7,7 +7,7 @@ related_features:
   - SPEC-005
 owner: @aattard
 created: 2026-04-05
-updated: 2026-04-06
+updated: 2026-04-10
 ---
 
 ## Summary
@@ -23,7 +23,7 @@ Introduce user login and per-user learning progress in ordered vertical slices. 
 ## Ordered Steps
 
 1. Database Foundation
-- Add PostgreSQL support, local/dev profile, Flyway, baseline schema.
+- Add PostgreSQL support, base datasource configuration, Flyway, baseline schema.
 - Tables for this stream: `answer_attempts`, `noun_progress` (auth-only `users` work is covered by `TASK-033`).
 
 2. Authentication Slice

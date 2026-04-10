@@ -1,10 +1,15 @@
 package game.wortwerk;
 
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.CDPSession;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Request;
+import com.microsoft.playwright.Response;
+import com.microsoft.playwright.TimeoutError;
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -22,14 +27,14 @@ class QuizFunctionalTest {
 
     private Playwright playwright;
     private Browser browser;
-    private Map<String, String> articleByNoun;
+    private Map<String, String> articleByImagePath;
     private String baseUrl;
 
     @BeforeAll
     void setUpBrowser() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
-        articleByNoun = loadArticleByNoun(Path.of("assets/articles.csv"));
+        articleByImagePath = loadArticleByImagePath(Path.of("assets/articles.csv"));
         baseUrl = resolveBaseUrl();
     }
 
@@ -44,9 +49,33 @@ class QuizFunctionalTest {
     }
 
     @Test
-    void shouldLoadQuizAndShowArticleChoices() {
-        try (Page page = browser.newPage()) {
+    void shouldRequireLoginBeforeAccessingQuiz() {
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
             page.navigate(baseUrl);
+            page.waitForURL(url -> url.contains("/login"));
+
+            assertThat(page.getByTestId("login-title").isVisible()).isTrue();
+            assertThat(page.getByTestId("login-passkey-submit").isVisible()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldAllowRegisterAndThenLogin() {
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
+            String username = "user_" + System.currentTimeMillis();
+            registerWithPasskey(page, username);
+            loginWithPasskey(page);
+
+            assertThat(page.getByTestId("question-image").isVisible()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldLoadQuizAndShowArticleChoices() {
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
+            login(page);
 
             assertThat(page.getByTestId("question-image").isVisible()).isTrue();
             assertThat(page.getByTestId("question-noun").isVisible()).isTrue();
@@ -59,12 +88,13 @@ class QuizFunctionalTest {
 
     @Test
     void shouldKeepSameObjectAndHighlightCorrectArticleWhenWrongSelected() {
-        try (Page page = browser.newPage()) {
-            page.navigate(baseUrl);
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
+            login(page);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
-            String correctArticle = articleByNoun.get(noun);
+            String correctArticle = articleByImagePath.get(currentImagePath(page));
             assertThat(correctArticle).isNotBlank();
 
             String wrongArticle = pickWrongArticle(correctArticle);
@@ -78,17 +108,18 @@ class QuizFunctionalTest {
 
     @Test
     void shouldAdvanceOnlyAfterCorrectSelection() {
-        try (Page page = browser.newPage()) {
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
             page.addInitScript("""
                     HTMLMediaElement.prototype.play = function() {
                       return Promise.resolve();
                     };
                     """);
-            page.navigate(baseUrl);
+            login(page);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
-            String correctArticle = articleByNoun.get(noun);
+            String correctArticle = articleByImagePath.get(currentImagePath(page));
             assertThat(correctArticle).isNotBlank();
             String wrongArticle = pickWrongArticle(correctArticle);
 
@@ -99,10 +130,24 @@ class QuizFunctionalTest {
             assertThat(page.getByTestId("question-noun").textContent()).isEqualTo(noun);
 
             page.waitForFunction("() => document.querySelector('[data-testid=\"next-form\"]') !== null");
-            page.waitForResponse(
-                    response -> response.url().endsWith("/next")
-                            && "POST".equalsIgnoreCase(response.request().method()),
-                    () -> page.evaluate("() => document.querySelector('[data-testid=\"audio-correct\"]').dispatchEvent(new Event('ended'))"));
+            page.evaluate("""
+                    () => {
+                      const nextForm = document.querySelector('[data-testid="next-form"]');
+                      if (!nextForm) {
+                        throw new Error("next form not found");
+                      }
+                      if (window.htmx) {
+                        htmx.ajax('POST', nextForm.getAttribute('hx-post') || '/next', {
+                          source: nextForm,
+                          target: nextForm.getAttribute('hx-target') || '#quiz-interaction',
+                          swap: nextForm.getAttribute('hx-swap') || 'outerHTML',
+                          values: Object.fromEntries(new FormData(nextForm).entries())
+                        });
+                        return;
+                      }
+                      nextForm.requestSubmit();
+                    }
+                    """);
             page.waitForFunction(
                     "previousNoun => document.querySelector('[data-testid=\"question-noun\"]')?.textContent !== previousNoun",
                     noun);
@@ -115,7 +160,8 @@ class QuizFunctionalTest {
 
     @Test
     void shouldReplayNounAudioWhenSpeakerClicked() {
-        try (Page page = browser.newPage()) {
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
             page.addInitScript("""
                     window.__playCount = 0;
                     const originalPlay = HTMLMediaElement.prototype.play;
@@ -124,7 +170,7 @@ class QuizFunctionalTest {
                       return Promise.resolve();
                     };
                     """);
-            page.navigate(baseUrl);
+            login(page);
 
             int before = ((Number) page.evaluate("() => window.__playCount")).intValue();
             page.getByTestId("noun-replay").click();
@@ -137,12 +183,13 @@ class QuizFunctionalTest {
 
     @Test
     void shouldSubmitAnswerViaHtmxRequest() {
-        try (Page page = browser.newPage()) {
-            page.navigate(baseUrl);
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
+            login(page);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
-            String correctArticle = articleByNoun.get(noun);
+            String correctArticle = articleByImagePath.get(currentImagePath(page));
             assertThat(correctArticle).isNotBlank();
             String wrongArticle = pickWrongArticle(correctArticle);
 
@@ -156,17 +203,18 @@ class QuizFunctionalTest {
 
     @Test
     void shouldSubmitNextViaHtmxRequestAfterCorrectAudioCompletes() {
-        try (Page page = browser.newPage()) {
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
             page.addInitScript("""
                     HTMLMediaElement.prototype.play = function() {
                       return Promise.resolve();
                     };
                     """);
-            page.navigate(baseUrl);
+            login(page);
 
             String noun = page.getByTestId("question-noun").textContent();
             assertThat(noun).isNotNull();
-            String correctArticle = articleByNoun.get(noun);
+            String correctArticle = articleByImagePath.get(currentImagePath(page));
             assertThat(correctArticle).isNotBlank();
 
             clickArticle(page, correctArticle);
@@ -188,6 +236,97 @@ class QuizFunctionalTest {
         page.waitForSelector("[data-testid='question-noun']");
     }
 
+    private void login(Page page) {
+        String username = "user_" + System.nanoTime();
+        registerWithPasskey(page, username);
+        loginWithPasskey(page);
+    }
+
+    private void registerWithPasskey(Page page, String username) {
+        page.navigate(baseUrl + "register");
+        page.getByTestId("register-username").fill(username);
+        page.getByTestId("register-passkey-label").fill("E2E Geraet");
+        Response sessionResponse;
+        Response optionsResponse;
+        Response registerResponse;
+
+        try {
+            sessionResponse = page.waitForResponse(
+                    response -> response.url().endsWith("/passkey/register/session"),
+                    new Page.WaitForResponseOptions().setTimeout(10_000),
+                    () -> page.getByTestId("register-submit").click());
+        } catch (TimeoutError timeoutError) {
+            String errorText = page.getByTestId("register-error").textContent();
+            throw new AssertionError("Passkey registration did not call /passkey/register/session. UI error: " + errorText, timeoutError);
+        }
+
+        try {
+            optionsResponse = page.waitForResponse(
+                    response -> response.url().endsWith("/webauthn/register/options"),
+                    new Page.WaitForResponseOptions().setTimeout(10_000),
+                    () -> {
+                    });
+        } catch (TimeoutError timeoutError) {
+            String errorText = page.getByTestId("register-error").textContent();
+            throw new AssertionError(
+                    "Passkey registration did not call /webauthn/register/options after session call (status "
+                            + sessionResponse.status() + "). UI error: " + errorText,
+                    timeoutError);
+        }
+
+        try {
+            registerResponse = page.waitForResponse(
+                    response -> response.url().endsWith("/webauthn/register"),
+                    new Page.WaitForResponseOptions().setTimeout(20_000),
+                    () -> {
+                    });
+        } catch (TimeoutError timeoutError) {
+            String errorText = page.getByTestId("register-error").textContent();
+            throw new AssertionError(
+                    "Passkey registration did not call /webauthn/register after options call (status "
+                            + optionsResponse.status() + "). UI error: " + errorText,
+                    timeoutError);
+        }
+
+        try {
+            page.waitForURL(url -> url.contains("/login?registered"), new Page.WaitForURLOptions().setTimeout(10_000));
+        } catch (TimeoutError timeoutError) {
+            String errorText = page.getByTestId("register-error").textContent();
+            String currentUrl = page.url();
+            String registerResponseBody = registerResponse.text();
+            throw new AssertionError(
+                    "Passkey registration did not redirect. URL: " + currentUrl
+                            + ", statuses: session=" + sessionResponse.status()
+                            + ", options=" + optionsResponse.status()
+                            + ", register=" + registerResponse.status()
+                            + ", registerBody=" + registerResponseBody
+                            + ", UI error: " + errorText,
+                    timeoutError);
+        }
+    }
+
+    private void loginWithPasskey(Page page) {
+        page.getByTestId("login-passkey-submit").click();
+        page.waitForURL(url -> !url.contains("/login"));
+    }
+
+    private void enableVirtualAuthenticator(BrowserContext context, Page page) {
+        CDPSession cdp = context.newCDPSession(page);
+        cdp.send("WebAuthn.enable");
+
+        JsonObject options = new JsonObject();
+        options.addProperty("protocol", "ctap2");
+        options.addProperty("transport", "internal");
+        options.addProperty("hasResidentKey", true);
+        options.addProperty("hasUserVerification", true);
+        options.addProperty("isUserVerified", true);
+        options.addProperty("automaticPresenceSimulation", true);
+
+        JsonObject payload = new JsonObject();
+        payload.add("options", options);
+        cdp.send("WebAuthn.addVirtualAuthenticator", payload);
+    }
+
     private String pickWrongArticle(String correctArticle) {
         if (!"der".equals(correctArticle)) {
             return "der";
@@ -203,15 +342,15 @@ class QuizFunctionalTest {
         return externalBaseUrl.endsWith("/") ? externalBaseUrl : externalBaseUrl + "/";
     }
 
-    private static Map<String, String> loadArticleByNoun(final Path csvPath) {
+    private static Map<String, String> loadArticleByImagePath(final Path csvPath) {
         try {
             var lines = Files.readAllLines(csvPath, StandardCharsets.UTF_8);
             if (lines.isEmpty()) {
                 throw new IllegalStateException("CSV is empty: " + csvPath);
             }
             String[] header = lines.getFirst().split(",", -1);
-            int nounIndex = indexOf(header, "Noun");
             int articleIndex = indexOf(header, "Article");
+            int imageIndex = indexOf(header, "Image");
 
             return lines.stream()
                     .skip(1)
@@ -219,12 +358,18 @@ class QuizFunctionalTest {
                     .filter(line -> !line.isEmpty())
                     .map(line -> line.split(",", -1))
                     .collect(Collectors.toMap(
-                            parts -> parts[nounIndex].trim(),
+                            parts -> "/" + parts[imageIndex].trim(),
                             parts -> parts[articleIndex].trim()
                     ));
         } catch (IOException e) {
             throw new IllegalStateException("Failed reading CSV: " + csvPath, e);
         }
+    }
+
+    private static String currentImagePath(final Page page) {
+        String imageSrc = page.getByTestId("question-image").getAttribute("src");
+        assertThat(imageSrc).isNotBlank();
+        return imageSrc;
     }
 
     private static int indexOf(String[] header, String column) {

@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${VERIFY_DB_NAME}
+      POSTGRES_USER: ${VERIFY_DB_USERNAME}
+      POSTGRES_PASSWORD: ${VERIFY_DB_PASSWORD}
+    ports:
+      - "${VERIFY_DB_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=${VERIFY_DB_USERNAME} --dbname=${VERIFY_DB_NAME}"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  app:
+    image: ${VERIFY_CONTAINER_IMAGE}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORTWERK_DB_URL: jdbc:postgresql://db:5432/${VERIFY_DB_NAME}
+      WORTWERK_DB_USERNAME: ${VERIFY_DB_USERNAME}
+      WORTWERK_DB_PASSWORD: ${VERIFY_DB_PASSWORD}
+    ports:
+      - "${VERIFY_CONTAINER_PORT}:8080"

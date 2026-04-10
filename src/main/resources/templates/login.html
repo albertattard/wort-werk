@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Anmeldung | Wort-Werk</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: linear-gradient(160deg, #faf6ef, #e6f2f1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: min(420px, 92vw);
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+            padding: 24px;
+        }
+
+        h1 {
+            margin: 0 0 16px;
+        }
+
+        button {
+            margin-top: 12px;
+            width: 100%;
+            border: 0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            background: #0f766e;
+            color: #fff;
+        }
+
+        button:hover {
+            background: #115e59;
+        }
+
+        .msg {
+            margin-top: 12px;
+            font-weight: 600;
+        }
+
+        .ok {
+            color: #2e7d32;
+        }
+
+        .err {
+            color: #b71c1c;
+        }
+
+        .small {
+            margin-top: 14px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+<section class="card">
+    <h1 data-testid="login-title">Anmeldung</h1>
+    <button type="button" data-testid="login-passkey-submit" id="passkey-login">Mit Passkey anmelden</button>
+    <p class="msg ok" th:if="${param.registered}" data-testid="login-registered">Registrierung erfolgreich. Jetzt mit Passkey anmelden.</p>
+    <p class="msg err" th:if="${param.error}" data-testid="login-error">Anmeldung fehlgeschlagen.</p>
+    <p class="msg err" data-testid="login-error-runtime" id="login-error-runtime" style="display: none;"></p>
+    <p class="msg ok" th:if="${param.logout}" data-testid="login-logout">Abgemeldet.</p>
+    <p class="small">Noch kein Konto? <a href="/register">Registrieren</a></p>
+</section>
+<script>
+    (() => {
+        const csrf = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+        const headers = csrf && csrfHeader ? { [csrfHeader]: csrf } : {};
+        const button = document.querySelector("#passkey-login");
+        const errorNode = document.querySelector("#login-error-runtime");
+
+        const encode = (buffer) => {
+            const base64 = window.btoa(String.fromCharCode(...new Uint8Array(buffer)));
+            return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+        };
+
+        const decode = (base64url) => {
+            const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+            const binStr = window.atob(base64);
+            const bin = new Uint8Array(binStr.length);
+            for (let i = 0; i < binStr.length; i++) {
+                bin[i] = binStr.charCodeAt(i);
+            }
+            return bin.buffer;
+        };
+
+        const showError = (message) => {
+            errorNode.textContent = message;
+            errorNode.style.display = "block";
+        };
+
+        const clearError = () => {
+            errorNode.textContent = "";
+            errorNode.style.display = "none";
+        };
+
+        button.addEventListener("click", async () => {
+            clearError();
+
+            if (!window.PublicKeyCredential) {
+                showError("WebAuthn wird von diesem Browser nicht unterstützt.");
+                return;
+            }
+
+            try {
+                const optionsResponse = await fetch("/webauthn/authenticate/options", {
+                    method: "POST",
+                    headers
+                });
+                if (!optionsResponse.ok) {
+                    throw new Error(`Konnte Anmeldeoptionen nicht laden (HTTP ${optionsResponse.status}).`);
+                }
+
+                const options = await optionsResponse.json();
+                const decodedAllowCredentials = !options.allowCredentials ? [] : options.allowCredentials.map((cred) => ({
+                    ...cred,
+                    id: decode(cred.id)
+                }));
+
+                const credential = await navigator.credentials.get({
+                    publicKey: {
+                        ...options,
+                        challenge: decode(options.challenge),
+                        allowCredentials: decodedAllowCredentials
+                    }
+                });
+
+                if (!credential) {
+                    throw new Error("Keine Passkey-Anmeldedaten verfügbar.");
+                }
+
+                const assertionResponse = credential.response;
+                const payload = {
+                    id: credential.id,
+                    rawId: encode(credential.rawId),
+                    response: {
+                        authenticatorData: encode(assertionResponse.authenticatorData),
+                        clientDataJSON: encode(assertionResponse.clientDataJSON),
+                        signature: encode(assertionResponse.signature),
+                        userHandle: assertionResponse.userHandle ? encode(assertionResponse.userHandle) : null
+                    },
+                    type: credential.type,
+                    clientExtensionResults: credential.getClientExtensionResults(),
+                    authenticatorAttachment: credential.authenticatorAttachment
+                };
+
+                const loginResponse = await fetch("/login/webauthn", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...headers
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error("Anmeldung fehlgeschlagen.");
+                }
+
+                window.location.href = "/";
+            } catch (error) {
+                showError(error.message || "Anmeldung fehlgeschlagen.");
+            }
+        });
+    })();
+</script>
+</body>
+</html>

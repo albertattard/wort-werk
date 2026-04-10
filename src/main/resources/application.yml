@@ -1,7 +1,17 @@
 spring:
   application:
     name: wort-werk
+  datasource:
+    url: ${WORTWERK_DB_URL:jdbc:postgresql://localhost:5432/wortwerk}
+    username: ${WORTWERK_DB_USERNAME:wortwerk}
+    password: ${WORTWERK_DB_PASSWORD:wortwerk}
+    driver-class-name: org.postgresql.Driver
 
 wortwerk:
   articles-csv: assets/articles.csv
   assets-dir: assets
+  security:
+    webauthn:
+      rp-id: ${WORTWERK_WEBAUTHN_RP_ID:localhost}
+      rp-name: ${WORTWERK_WEBAUTHN_RP_NAME:Wort-Werk}
+      allowed-origins: ${WORTWERK_WEBAUTHN_ALLOWED_ORIGINS:http://127.0.0.1:8080,http://localhost:8080,http://127.0.0.1:18080,http://localhost:18080}
