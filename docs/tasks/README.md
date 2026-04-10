@@ -50,6 +50,7 @@ Use one of these `category` values for new tasks:
 - [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
 - [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
 - [TASK-034: Implement Passkey Auth Foundation](./quiz/TASK-034-implement-passkey-auth-foundation.md)
+- [TASK-043: Add Repo-Local Codex Review Skills](./agentic/TASK-043-add-repo-local-codex-review-skills.md)
 - [TASK-016: Add Update Assets Trigger Workflow](./repo-process/TASK-016-add-update-assets-trigger-workflow.md)
 - [TASK-025: Adopt Container-First Verification Workflow](./repo-process/TASK-025-adopt-container-first-verification-workflow.md)
 - [TASK-038: Adopt PostgreSQL-only Verification and DB Test Tag](./repo-process/TASK-038-adopt-postgresql-only-verification-and-db-test-tag.md)
@@ -84,6 +85,7 @@ Use one of these `category` values for new tasks:
 
 ## Pending
 
+- [ ] [TASK-043: Add Repo-Local Codex Review Skills](./agentic/TASK-043-add-repo-local-codex-review-skills.md)
 - [ ] [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
 - [ ] [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
 
