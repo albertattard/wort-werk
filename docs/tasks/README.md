@@ -83,11 +83,13 @@ Use one of these `category` values for new tasks:
 - [TASK-030: Resolve Runtime image_tag Automatically in Rollout](./infrastructure/TASK-030-resolve-runtime-image-tag-for-rollout.md)
 - [TASK-031: Split Verify Local Build and Release Multi-Arch Publish](./infrastructure/TASK-031-split-verify-local-build-and-release-multiarch-publish.md)
 - [TASK-032: Fix Rollout Order for Multi-Arch Release](./infrastructure/TASK-032-fix-rollout-order-for-multiarch-release.md)
+- [TASK-045: Add Secure OCI PostgreSQL Foundation](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
 
 ## Pending
 
 - [ ] [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
 - [ ] [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
+- [ ] [TASK-045: Add Secure OCI PostgreSQL Foundation](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
 
 ## In Progress
 
