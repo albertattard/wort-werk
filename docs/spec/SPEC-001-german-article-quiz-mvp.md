@@ -4,7 +4,7 @@ title: German Article Quiz MVP
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-04
+last_updated: 2026-04-09
 ---
 
 ## Problem
@@ -19,6 +19,8 @@ The app provides a quiz session where each round shows one image and three artic
 - `das`
 
 The noun is shown under the image.
+
+Quiz entries are curated from `assets/articles.csv` and may use the intended learner-facing lexical form for the pictured item, including common plural-form nouns such as `die Jeans` when deliberately supplied.
 
 If the learner selects a wrong article, the same object remains visible, feedback is shown, and the correct article is highlighted.
 

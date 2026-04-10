@@ -48,12 +48,15 @@ Use one of these `category` values for new tasks:
 - [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
 - [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
 - [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
+- [TASK-034: Implement Passkey Auth Foundation](./quiz/TASK-034-implement-passkey-auth-foundation.md)
 - [TASK-016: Add Update Assets Trigger Workflow](./repo-process/TASK-016-add-update-assets-trigger-workflow.md)
 - [TASK-025: Adopt Container-First Verification Workflow](./repo-process/TASK-025-adopt-container-first-verification-workflow.md)
 - [TASK-019: Generate 420px Image Variants While Preserving Originals](./content/TASK-019-generate-420px-image-variants.md)
 - [TASK-022: Separate Original and Derived Image Directories](./content/TASK-022-separate-original-and-derived-image-directories.md)
 - [TASK-023: Sync Missing Nouns and Regenerate Missing Derived Assets](./content/TASK-023-sync-missing-nouns-images-and-audio.md)
 - [TASK-035: Ingest New School Noun Assets](./content/TASK-035-ingest-new-school-noun-assets.md)
+- [TASK-036: Ingest New Clothing Noun Assets](./content/TASK-036-ingest-new-clothing-noun-assets.md)
+- [TASK-037: Ingest New Kitchen Noun Asset](./content/TASK-037-ingest-new-kitchen-noun-asset.md)
 - [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 - [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 - [TASK-008: Split OCI IaC into Foundation and Runtime Stacks](./infrastructure/TASK-008-split-oci-iac-foundation-and-runtime.md)
@@ -77,6 +80,7 @@ Use one of these `category` values for new tasks:
 
 - [ ] [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
 - [ ] [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
+- [ ] [TASK-034: Implement Passkey Auth Foundation](./quiz/TASK-034-implement-passkey-auth-foundation.md)
 
 ## In Progress
 
@@ -97,6 +101,8 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-022: Separate Original and Derived Image Directories](./content/TASK-022-separate-original-and-derived-image-directories.md)
 - [x] [TASK-023: Sync Missing Nouns and Regenerate Missing Derived Assets](./content/TASK-023-sync-missing-nouns-images-and-audio.md)
 - [x] [TASK-035: Ingest New School Noun Assets](./content/TASK-035-ingest-new-school-noun-assets.md)
+- [x] [TASK-036: Ingest New Clothing Noun Assets](./content/TASK-036-ingest-new-clothing-noun-assets.md)
+- [x] [TASK-037: Ingest New Kitchen Noun Asset](./content/TASK-037-ingest-new-kitchen-noun-asset.md)
 - [x] [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
 - [x] [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 - [x] [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
