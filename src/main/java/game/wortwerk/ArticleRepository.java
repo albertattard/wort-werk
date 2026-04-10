@@ -52,13 +52,14 @@ public class ArticleRepository {
                     throw new IllegalStateException("Invalid CSV row: " + line);
                 }
 
+                String id = get(parts, header.idIndex).trim();
                 String noun = get(parts, header.nounIndex).trim();
                 String article = get(parts, header.articleIndex).trim();
                 String imagePath = get(parts, header.imageIndex).trim();
                 String nounAudioPath = header.audioIndex >= 0 ? get(parts, header.audioIndex).trim() : "";
                 String phraseAudioPath = header.answerAudioIndex >= 0 ? get(parts, header.answerAudioIndex).trim() : "";
 
-                if (noun.isEmpty() || article.isEmpty() || imagePath.isEmpty()) {
+                if (id.isEmpty() || noun.isEmpty() || article.isEmpty() || imagePath.isEmpty()) {
                     throw new IllegalStateException("CSV row contains empty fields: " + line);
                 }
 
@@ -73,7 +74,7 @@ public class ArticleRepository {
                     phraseAudioPath = ArticleEntry.defaultPhraseAudioPath(article, noun);
                 }
 
-                loaded.add(new ArticleEntry(noun, article, imagePath, nounAudioPath, phraseAudioPath));
+                loaded.add(new ArticleEntry(id, noun, article, imagePath, nounAudioPath, phraseAudioPath));
             }
         } catch (IOException e) {
             throw new IllegalStateException("Failed to read CSV file: " + csvPath.toAbsolutePath(), e);
@@ -97,6 +98,7 @@ public class ArticleRepository {
             index.put(parts[i].trim(), i);
         }
 
+        int idIndex = requiredColumn(index, "Id");
         int nounIndex = requiredColumn(index, "Noun");
         int articleIndex = requiredColumn(index, "Article");
         int imageIndex = requiredColumn(index, "Image");
@@ -104,7 +106,7 @@ public class ArticleRepository {
         int audioIndex = optionalColumn(index, "Audio", "NounAudio");
         int answerAudioIndex = optionalColumn(index, "AnswerAudio", "PhraseAudio");
 
-        return new HeaderColumns(nounIndex, articleIndex, imageIndex, audioIndex, answerAudioIndex);
+        return new HeaderColumns(idIndex, nounIndex, articleIndex, imageIndex, audioIndex, answerAudioIndex);
     }
 
     private int requiredColumn(Map<String, Integer> columns, String name) {
@@ -131,7 +133,8 @@ public class ArticleRepository {
         return parts[index];
     }
 
-    private record HeaderColumns(int nounIndex,
+    private record HeaderColumns(int idIndex,
+                                 int nounIndex,
                                  int articleIndex,
                                  int imageIndex,
                                  int audioIndex,

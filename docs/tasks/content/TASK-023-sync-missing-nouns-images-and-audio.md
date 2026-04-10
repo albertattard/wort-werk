@@ -26,7 +26,7 @@ Sync `assets/articles.csv` with newly added source images and generate any missi
 
 - `assets/images/original` remains the source-of-truth image catalog.
 - Images dropped in `assets/images/new` will be moved into `assets/images/original` on successful sync.
-- `Specke.png` is treated as a replacement image for noun `Speck` (`der`).
+- Learner-facing noun values come from `assets/articles.csv`; later filename disambiguation should stay technical rather than inventing new noun forms.
 
 ## Acceptance Criteria
 

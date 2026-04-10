@@ -1,13 +1,14 @@
 package game.wortwerk;
 
-public record ArticleEntry(String noun,
+public record ArticleEntry(String id,
+                           String noun,
                            String article,
                            String imagePath,
                            String nounAudioPath,
                            String phraseAudioPath) {
 
-    public ArticleEntry(String noun, String article, String imagePath) {
-        this(noun, article, imagePath, defaultNounAudioPath(noun), defaultPhraseAudioPath(article, noun));
+    public ArticleEntry(String id, String noun, String article, String imagePath) {
+        this(id, noun, article, imagePath, defaultNounAudioPath(noun), defaultPhraseAudioPath(article, noun));
     }
 
     public String articlePhrase() {

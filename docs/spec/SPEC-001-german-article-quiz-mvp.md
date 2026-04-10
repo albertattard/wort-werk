@@ -4,7 +4,7 @@ title: German Article Quiz MVP
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-09
+last_updated: 2026-04-10
 ---
 
 ## Problem
@@ -20,7 +20,7 @@ The app provides a quiz session where each round shows one image and three artic
 
 The noun is shown under the image.
 
-Quiz entries are curated from `assets/articles.csv` and may use the intended learner-facing lexical form for the pictured item, including common plural-form nouns such as `die Jeans` when deliberately supplied.
+Quiz entries are curated from `assets/articles.csv` and may use the intended learner-facing lexical form for the pictured item, including common plural-form nouns such as `die Jeans` when deliberately supplied. Each row has a stable asset `Id` so the catalog can support valid duplicate noun text across different article forms or variants.
 
 If the learner selects a wrong article, the same object remains visible, feedback is shown, and the correct article is highlighted.
 
@@ -71,6 +71,7 @@ Output:
 - [x] A session consists of exactly 10 rounds.
 - [x] A final score is shown at the end of the session.
 - [x] Question and audio path data are loaded from `assets/articles.csv`.
+- [x] Asset identity comes from stable CSV IDs rather than assuming learner-facing nouns are unique.
 - [x] Functional tests validate article selection via real button clicks.
 - [x] Nouns with umlauts use ASCII-safe image/audio asset paths to avoid Unicode path normalization issues.
 - [x] Every source image in `assets/images/original` has a corresponding entry in `assets/articles.csv`.

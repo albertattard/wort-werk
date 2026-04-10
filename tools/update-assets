@@ -1,27 +1,40 @@
 #!/usr/bin/env -S java --source 25
 
-import java.io.IOException;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
 class UpdateAssetsScript {
 
-    private static final String HEADER = "Noun,Article,Image,Audio,AnswerAudio";
+    private static final String HEADER = "Id,Noun,Article,Category,Image,Audio,AnswerAudio";
     private static final List<String> VALID_ARTICLES = List.of("der", "die", "das");
+    private static final Pattern ASCII_SLUG = Pattern.compile("[a-z0-9]+(?:-[a-z0-9]+)*");
 
-    private record Row(String noun, String article, String imagePath, String audioPath, String answerAudioPath) {
+    private record Row(String id,
+                       String noun,
+                       String article,
+                       String category,
+                       String imageFileName,
+                       String audioPath,
+                       String answerAudioPath) {
+
+        String imagePath() {
+            return "assets/images/420/" + category + "/" + imageFileName;
+        }
     }
 
     public static void main(final String[] args) throws Exception {
@@ -40,60 +53,85 @@ class UpdateAssetsScript {
 
         final Map<String, Row> rowsByImage = loadArticlesCsv(csvPath);
         final Map<String, Path> sourceImages = listSourceImages(originalsDir, newImagesDir);
-        final List<String> imageNames = sourceImages.keySet().stream().sorted(Comparator.naturalOrder()).toList();
 
         final List<String> missingMetadata = new ArrayList<>();
+        final List<String> missingSourceImages = new ArrayList<>();
         final List<Row> orderedRows = new ArrayList<>();
 
-        for (String imageName : imageNames) {
+        for (String imageName : sourceImages.keySet().stream().sorted(Comparator.naturalOrder()).toList()) {
             requireAsciiImageName(imageName);
 
-            final String stem = imageName.substring(0, imageName.length() - ".png".length());
             final Row existing = rowsByImage.get(imageName);
-
-            final String noun = existing != null ? existing.noun : null;
-            final String article = existing != null ? existing.article : null;
-            if (noun == null || article == null) {
+            if (existing == null) {
                 missingMetadata.add(imageName);
                 continue;
             }
-            validateArticle(article, imageName);
 
-            final String imagePath = existing != null ? existing.imagePath : "assets/images/420/" + imageName;
+            validateRow(existing, imageName);
+
+            final String stem = imageName.substring(0, imageName.length() - ".png".length());
             final String defaultStemAudioPath = "assets/audio/" + stem + ".mp3";
-            final String defaultStemAnswerAudioPath = "assets/audio/" + article + " " + stem + ".mp3";
-            final String nounAudioPath = "assets/audio/" + noun + ".mp3";
-            final String nounAnswerAudioPath = "assets/audio/" + article + " " + noun + ".mp3";
-            final boolean nounIsAsciiSafe = isAscii(noun);
+            final String defaultStemAnswerAudioPath = "assets/audio/" + existing.article + " " + stem + ".mp3";
+            final String nounAudioPath = "assets/audio/" + existing.noun + ".mp3";
+            final String nounAnswerAudioPath = "assets/audio/" + existing.article + " " + existing.noun + ".mp3";
+            final boolean nounIsAsciiSafe = isAscii(existing.noun);
 
-            final String audioPath = existing != null
-                    ? !isAscii(existing.audioPath)
-                        ? defaultStemAudioPath
-                        : nounIsAsciiSafe && existing.audioPath.equals(defaultStemAudioPath) ? nounAudioPath : existing.audioPath
-                    : nounAudioPath;
+            final String audioPath = !isAscii(existing.audioPath)
+                    ? defaultStemAudioPath
+                    : nounIsAsciiSafe && existing.audioPath.equals(defaultStemAudioPath) ? nounAudioPath : existing.audioPath;
 
-            final String answerAudioPath = existing != null
-                    ? !isAscii(existing.answerAudioPath)
-                        ? defaultStemAnswerAudioPath
-                        : nounIsAsciiSafe && existing.answerAudioPath.equals(defaultStemAnswerAudioPath) ? nounAnswerAudioPath : existing.answerAudioPath
-                    : nounAnswerAudioPath;
+            final String answerAudioPath = !isAscii(existing.answerAudioPath)
+                    ? defaultStemAnswerAudioPath
+                    : nounIsAsciiSafe && existing.answerAudioPath.equals(defaultStemAnswerAudioPath)
+                        ? nounAnswerAudioPath
+                        : existing.answerAudioPath;
 
-            orderedRows.add(new Row(noun, article, imagePath, audioPath, answerAudioPath));
+            orderedRows.add(new Row(
+                    existing.id,
+                    existing.noun,
+                    existing.article,
+                    existing.category,
+                    imageName,
+                    audioPath,
+                    answerAudioPath));
+        }
+
+        for (String imageName : rowsByImage.keySet().stream().sorted(Comparator.naturalOrder()).toList()) {
+            if (!sourceImages.containsKey(imageName)) {
+                missingSourceImages.add(imageName);
+            }
+        }
+
+        if (!missingSourceImages.isEmpty()) {
+            throw new IllegalStateException("CSV rows point to missing source images: " + String.join(", ", missingSourceImages));
         }
 
         if (!missingMetadata.isEmpty()) {
             System.err.println("Missing metadata for new images. Add these rows to assets/articles.csv:");
             for (String imageName : missingMetadata) {
                 final String stem = imageName.substring(0, imageName.length() - ".png".length());
-                System.err.println(stem + ",<der|die|das>,assets/images/420/" + imageName + ",assets/audio/" + stem + ".mp3,assets/audio/<der|die|das> " + stem + ".mp3");
+                final String id = deriveDefaultId(stem);
+                System.err.println(
+                        id
+                                + ","
+                                + stem
+                                + ",<der|die|das>,<category>,assets/images/420/<category>/"
+                                + imageName
+                                + ",assets/audio/"
+                                + stem
+                                + ".mp3,assets/audio/<der|die|das> "
+                                + stem
+                                + ".mp3");
             }
             System.exit(1);
         }
 
-        generateMissingResizedImages(sourceImages, resizedImagesDir, imageNames);
+        orderedRows.sort(Comparator.comparing(Row::id));
+
+        generateMissingResizedImages(sourceImages, resizedImagesDir, orderedRows);
         writeArticlesCsv(csvPath, orderedRows);
         generateMissingAudio(root, ttsScript, orderedRows);
-        moveNewImagesToOriginal(newImagesDir, originalsDir);
+        moveNewImagesToOriginal(newImagesDir, originalsDir, sourceImages, orderedRows);
 
         System.out.println("Updated " + csvPath + " and generated missing audio files.");
     }
@@ -129,28 +167,68 @@ class UpdateAssetsScript {
     }
 
     private static Map<String, Row> loadArticlesCsv(final Path csvPath) throws IOException {
-        final Map<String, Row> rows = new HashMap<>();
         final List<String> lines = Files.readAllLines(csvPath, StandardCharsets.UTF_8);
+        if (lines.isEmpty()) {
+            throw new IllegalStateException("CSV file is empty: " + csvPath);
+        }
+
+        final HeaderColumns header = parseHeader(lines.getFirst());
+        final Map<String, Row> rows = new LinkedHashMap<>();
+
         for (int i = 1; i < lines.size(); i++) {
             final String line = lines.get(i).trim();
             if (line.isEmpty()) {
                 continue;
             }
-            final String[] parts = line.split(",", -1);
-            if (parts.length < 5) {
-                throw new IllegalStateException("Invalid CSV row in " + csvPath + ": " + line);
-            }
 
-            final String noun = parts[0].trim();
-            final String article = parts[1].trim();
-            final String imagePath = parts[2].trim();
-            final String audioPath = parts[3].trim();
-            final String answerAudioPath = parts[4].trim();
+            final String[] parts = line.split(",", -1);
+            final String id = get(parts, header.idIndex).trim();
+            final String noun = get(parts, header.nounIndex).trim();
+            final String article = get(parts, header.articleIndex).trim();
+            final String category = get(parts, header.categoryIndex).trim();
+            final String imagePath = get(parts, header.imageIndex).trim();
+            final String audioPath = get(parts, header.audioIndex).trim();
+            final String answerAudioPath = get(parts, header.answerAudioIndex).trim();
             final String imageName = Path.of(imagePath).getFileName().toString();
 
-            rows.put(imageName, new Row(noun, article, imagePath, audioPath, answerAudioPath));
+            if (rows.put(imageName, new Row(id, noun, article, category, imageName, audioPath, answerAudioPath)) != null) {
+                throw new IllegalStateException("Duplicate CSV image entry for " + imageName + " in " + csvPath);
+            }
         }
+
         return rows;
+    }
+
+    private static HeaderColumns parseHeader(final String line) {
+        final String[] parts = line.split(",", -1);
+        final Map<String, Integer> index = new HashMap<>();
+        for (int i = 0; i < parts.length; i++) {
+            index.put(parts[i].trim(), i);
+        }
+
+        return new HeaderColumns(
+                requiredColumn(index, "Id"),
+                requiredColumn(index, "Noun"),
+                requiredColumn(index, "Article"),
+                requiredColumn(index, "Category"),
+                requiredColumn(index, "Image"),
+                requiredColumn(index, "Audio"),
+                requiredColumn(index, "AnswerAudio"));
+    }
+
+    private static int requiredColumn(final Map<String, Integer> columns, final String name) {
+        final Integer index = columns.get(name);
+        if (index == null) {
+            throw new IllegalStateException("CSV header is missing required column: " + name);
+        }
+        return index;
+    }
+
+    private static String get(final String[] parts, final int index) {
+        if (index < 0 || index >= parts.length) {
+            return "";
+        }
+        return parts[index];
     }
 
     private static Map<String, Path> listSourceImages(final Path originalsDir, final Path newImagesDir) throws IOException {
@@ -161,17 +239,39 @@ class UpdateAssetsScript {
     }
 
     private static void addImagesFromDirectory(final Map<String, Path> sourceImages, final Path directory) throws IOException {
-        try (Stream<Path> files = Files.list(directory)) {
+        if (!Files.exists(directory)) {
+            return;
+        }
+        try (Stream<Path> files = Files.walk(directory)) {
             for (Path file : files.filter(Files::isRegularFile).toList()) {
                 final String imageName = file.getFileName().toString();
                 if (!imageName.endsWith(".png")) {
                     continue;
                 }
                 if (sourceImages.containsKey(imageName)) {
-                    throw new IllegalStateException("Duplicate source image name across source folders: " + imageName);
+                    throw new IllegalStateException("Duplicate source image filename across asset folders: " + imageName);
                 }
                 sourceImages.put(imageName, file);
             }
+        }
+    }
+
+    private static void validateRow(final Row row, final String imageName) {
+        validateSlug("id", row.id, imageName);
+        validateSlug("category", row.category, imageName);
+        validateArticle(row.article, imageName);
+        requireAsciiImageName(imageName);
+        if (row.noun.isBlank()) {
+            throw new IllegalStateException("Missing noun for image '" + imageName + "'");
+        }
+        if (row.audioPath.isBlank() || row.answerAudioPath.isBlank()) {
+            throw new IllegalStateException("Missing audio path metadata for image '" + imageName + "'");
+        }
+    }
+
+    private static void validateSlug(final String fieldName, final String value, final String imageName) {
+        if (!ASCII_SLUG.matcher(value).matches()) {
+            throw new IllegalStateException("Invalid " + fieldName + " '" + value + "' for image '" + imageName + "'");
         }
     }
 
@@ -199,23 +299,38 @@ class UpdateAssetsScript {
         return true;
     }
 
+    private static String deriveDefaultId(final String stem) {
+        return stem.toLowerCase();
+    }
+
     private static void writeArticlesCsv(final Path csvPath, final List<Row> rows) throws IOException {
         final List<String> lines = new ArrayList<>();
         lines.add(HEADER);
         for (Row row : rows) {
-            lines.add(String.join(",", row.noun, row.article, row.imagePath, row.audioPath, row.answerAudioPath));
+            lines.add(String.join(",",
+                    row.id,
+                    row.noun,
+                    row.article,
+                    row.category,
+                    row.imagePath(),
+                    row.audioPath,
+                    row.answerAudioPath));
         }
         Files.write(csvPath, lines, StandardCharsets.UTF_8);
     }
 
-    private static void generateMissingResizedImages(final Map<String, Path> sourceImages, final Path resizedDir, final List<String> imageNames) throws IOException {
-        for (String imageName : imageNames) {
-            final Path outputPath = resizedDir.resolve(imageName);
+    private static void generateMissingResizedImages(final Map<String, Path> sourceImages,
+                                                     final Path resizedDir,
+                                                     final List<Row> rows) throws IOException {
+        for (Row row : rows) {
+            final Path outputPath = resizedDir.resolve(row.category).resolve(row.imageFileName);
             if (Files.exists(outputPath)) {
                 continue;
             }
 
-            final Path inputPath = sourceImages.get(imageName);
+            Files.createDirectories(outputPath.getParent());
+
+            final Path inputPath = sourceImages.get(row.imageFileName);
             final BufferedImage original = ImageIO.read(inputPath.toFile());
             if (original == null) {
                 throw new IllegalStateException("Unable to decode image: " + inputPath);
@@ -241,19 +356,23 @@ class UpdateAssetsScript {
         }
     }
 
-    private static void moveNewImagesToOriginal(final Path newImagesDir, final Path originalsDir) throws IOException {
-        try (Stream<Path> files = Files.list(newImagesDir)) {
-            for (Path file : files.filter(Files::isRegularFile).toList()) {
-                final String imageName = file.getFileName().toString();
-                if (!imageName.endsWith(".png")) {
-                    continue;
-                }
-                final Path destination = originalsDir.resolve(imageName);
-                if (Files.exists(destination)) {
-                    throw new IllegalStateException("Cannot move image from assets/images/new because it already exists in assets/images/original: " + imageName);
-                }
-                Files.move(file, destination, StandardCopyOption.ATOMIC_MOVE);
+    private static void moveNewImagesToOriginal(final Path newImagesDir,
+                                                final Path originalsDir,
+                                                final Map<String, Path> sourceImages,
+                                                final List<Row> rows) throws IOException {
+        for (Row row : rows) {
+            final Path sourcePath = sourceImages.get(row.imageFileName);
+            if (sourcePath == null || !sourcePath.startsWith(newImagesDir)) {
+                continue;
             }
+
+            final Path destination = originalsDir.resolve(row.category).resolve(row.imageFileName);
+            Files.createDirectories(destination.getParent());
+            if (Files.exists(destination)) {
+                throw new IllegalStateException(
+                        "Cannot move image from assets/images/new because it already exists in assets/images/original: " + destination);
+            }
+            Files.move(sourcePath, destination, StandardCopyOption.ATOMIC_MOVE);
         }
     }
 
@@ -272,6 +391,7 @@ class UpdateAssetsScript {
     }
 
     private static void runTts(final Path ttsScript, final String text, final Path output) throws Exception {
+        Files.createDirectories(output.getParent());
         final Process process = new ProcessBuilder(ttsScript.toString(), text, output.toString())
                 .inheritIO()
                 .start();
@@ -279,5 +399,14 @@ class UpdateAssetsScript {
         if (exitCode != 0) {
             throw new IllegalStateException("TTS command failed for output: " + output);
         }
+    }
+
+    private record HeaderColumns(int idIndex,
+                                 int nounIndex,
+                                 int articleIndex,
+                                 int categoryIndex,
+                                 int imageIndex,
+                                 int audioIndex,
+                                 int answerAudioIndex) {
     }
 }
