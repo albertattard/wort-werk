@@ -85,7 +85,6 @@ Use one of these `category` values for new tasks:
 
 ## Pending
 
-- [ ] [TASK-043: Add Repo-Local Codex Review Skills](./agentic/TASK-043-add-repo-local-codex-review-skills.md)
 - [ ] [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
 - [ ] [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
 
@@ -95,6 +94,7 @@ Use one of these `category` values for new tasks:
 
 ## Done
 
+- [x] [TASK-043: Add Repo-Local Codex Review Skills](./agentic/TASK-043-add-repo-local-codex-review-skills.md)
 - [x] [TASK-001: Implement SPEC-001 Quiz Vertical Slice](./quiz/TASK-001-implement-spec-001-quiz-vertical-slice.md)
 - [x] [TASK-002: Enforce Correct Selection Before Advancing and Show Noun](./quiz/TASK-002-enforce-correct-before-advance-and-show-noun.md)
 - [x] [TASK-003: Center Noun and Article Buttons](./quiz/TASK-003-center-noun-and-article-buttons.md)

@@ -1,7 +1,7 @@
 ---
 id: TASK-043
 title: Add Repo-Local Codex Review Skills
-status: pending
+status: done
 category: agentic
 related_features:
   - SPEC-007
@@ -31,8 +31,8 @@ Add three repo-local Codex review skills for Wort-Werk so architecture, project-
 
 ## Acceptance Criteria
 
-- [ ] All three skills exist under `.codex/skills/` with a `SKILL.md`.
-- [ ] `architecture-review` and `project-coherence-review` have clearly separated trigger conditions.
-- [ ] `security-analysis` explicitly covers passkeys, sessions, CSRF, PostgreSQL, containers, OCI, and secret handling.
-- [ ] Each skill instructs Codex to read `AGENTS.md` plus the relevant spec/task/ADR files first.
-- [ ] `docs/spec/README.md` and `docs/tasks/README.md` reference the new spec and task.
+- [x] All three skills exist under `.codex/skills/` with a `SKILL.md`.
+- [x] `architecture-review` and `project-coherence-review` have clearly separated trigger conditions.
+- [x] `security-analysis` explicitly covers passkeys, sessions, CSRF, PostgreSQL, containers, OCI, and secret handling.
+- [x] Each skill instructs Codex to read `AGENTS.md` plus the relevant spec/task/ADR files first.
+- [x] `docs/spec/README.md` and `docs/tasks/README.md` reference the new spec and task.

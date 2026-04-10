@@ -1,7 +1,7 @@
 ---
 id: SPEC-007
 title: Repo-Local Codex Review Skills
-status: in_progress
+status: done
 priority: medium
 owner: @aattard
 last_updated: 2026-04-10
@@ -53,11 +53,11 @@ The first slice must define three review skills:
 
 ## Acceptance Criteria
 
-- [ ] Repository contains three repo-local skills under `.codex/skills/`:
+- [x] Repository contains three repo-local skills under `.codex/skills/`:
   - `architecture-review`
   - `project-coherence-review`
   - `security-analysis`
-- [ ] Each skill defines when it should be used and which repo artifacts must be read first.
-- [ ] Each skill uses a distinct review lens and output structure.
-- [ ] Skill docs explicitly state that specs, tasks, and ADRs remain the source of truth.
-- [ ] Specification and task indexes reference this spec and its implementation task.
+- [x] Each skill defines when it should be used and which repo artifacts must be read first.
+- [x] Each skill uses a distinct review lens and output structure.
+- [x] Skill docs explicitly state that specs, tasks, and ADRs remain the source of truth.
+- [x] Specification and task indexes reference this spec and its implementation task.
