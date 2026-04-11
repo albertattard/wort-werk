@@ -35,7 +35,7 @@ OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/set-db-secrets.sh
 - `./infrastructure/oci/deploy.sh rollout`: repeatable full rollout (`foundation`, `data`, then `release`).
   - preflight: fails if git has pending changes outside `assets/images/new`
   - override: set `ALLOW_DIRTY_ROLLOUT=true` for intentional exception runs
-- `./tools/rollout`: sources `~/.oci/oci.secrets.env` and runs `deploy.sh rollout` from repo root.
+- `./tools/rollout`: sources `~/.oci/oci.secrets.env`, preserves explicit `VERIFY_DB_USERNAME` / `VERIFY_DB_PASSWORD` values when present, generates ephemeral local ones when missing, and runs `deploy.sh rollout` from repo root.
 
 Runtime `image_tag` behavior:
 - `runtime` resolves tag in this order: `IMAGE_TAG` env var, existing `runtime/release.auto.tfvars:image_tag`, current runtime Terraform output `deployed_image_url` tag.

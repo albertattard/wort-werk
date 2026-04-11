@@ -4,7 +4,7 @@ title: OCI Deployment via Container Instance
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-06
+last_updated: 2026-04-11
 ---
 
 ## Problem
@@ -53,6 +53,7 @@ Repeatable operator flow:
 - this flow is the recommended repeatable path when operators want deterministic refresh + deploy behavior
 - rollout should fail fast when the workspace has pending changes outside `assets/images/new`, unless explicitly overridden for exceptional runs
 - a repository-local wrapper command should exist so operators can run rollout without manually typing environment bootstrap + deploy invocation
+- the rollout wrapper must ensure local verify credentials exist for the release-stage `./mvnw clean verify` gate, while preserving any explicit operator-provided values
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
 
 ## Acceptance Criteria
@@ -80,7 +81,7 @@ Repeatable operator flow:
 - [x] Release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
 - [x] Deployment script provides a single repeatable command that runs `foundation -> release` in order, where `release` performs runtime apply after publishing the image.
 - [x] Rollout preflight blocks deployment when git working tree is dirty outside `assets/images/new`, with an explicit override knob for intentional exceptions.
-- [x] Repository includes `tools/rollout` wrapper that sources OCI secrets file and triggers `deploy.sh rollout`.
+- [x] Repository includes `tools/rollout` wrapper that sources OCI secrets file, ensures verify credentials exist, and triggers `deploy.sh rollout`.
 - [x] Runtime stage resolves `image_tag` automatically (existing deployed tag) when not explicitly provided, and only fails when no prior runtime tag exists.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
