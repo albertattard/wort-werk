@@ -19,6 +19,7 @@ A single operator trigger phrase (`update assets`) runs a deterministic workflow
 - keeps one stable asset `Id` per CSV row
 - generates missing noun/answer audio files
 - allows ASCII-safe technical filename suffixes such as `-pl` for disambiguation while keeping learner-facing noun/article values in `assets/articles.csv`
+- allows neutral ASCII-safe numeric variant suffixes such as `-01` and `-02` when multiple images intentionally share the same learner-facing noun
 - allows operators to normalize technical filename stems before sync when dropped images use non-ASCII or non-standard source names
 - maintains derivative image copies under:
   - `assets/images/420/<category>/` with fixed height `420px`
