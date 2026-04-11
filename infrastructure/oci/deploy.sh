@@ -4,11 +4,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 FOUNDATION_DIR="${SCRIPT_DIR}/foundation"
+DATA_DIR="${SCRIPT_DIR}/data"
 RUNTIME_DIR="${SCRIPT_DIR}/runtime"
 MODE="${1:-all}"
 
-if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
-  echo "Usage: $0 [all|foundation|runtime|release|rollout]" >&2
+if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "data" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
+  echo "Usage: $0 [all|foundation|data|runtime|release|rollout]" >&2
   exit 1
 fi
 
@@ -132,7 +133,39 @@ apply_foundation() {
   terraform -chdir="${FOUNDATION_DIR}" apply -auto-approve -input=false
 }
 
-write_runtime_foundation_vars() {
+write_data_foundation_vars() {
+  local region
+  local home_region
+  local compartment_ocid
+  local database_subnet_id
+  local database_nsg_id
+  local runtime_dynamic_group_name
+
+  region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
+  home_region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw home_region)"
+  compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
+  database_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw database_subnet_id)"
+  database_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw database_nsg_id)"
+  runtime_dynamic_group_name="$(terraform -chdir="${FOUNDATION_DIR}" output -raw runtime_dynamic_group_name)"
+
+  cat > "${DATA_DIR}/foundation.auto.tfvars" <<DATAEOF
+region = "${region}"
+home_region = "${home_region}"
+compartment_ocid = "${compartment_ocid}"
+database_subnet_id = "${database_subnet_id}"
+database_nsg_id = "${database_nsg_id}"
+runtime_dynamic_group_name = "${runtime_dynamic_group_name}"
+DATAEOF
+}
+
+apply_data() {
+  terraform -chdir="${DATA_DIR}" init -upgrade
+  write_data_foundation_vars
+  terraform -chdir="${DATA_DIR}" fmt
+  terraform -chdir="${DATA_DIR}" apply -auto-approve -input=false
+}
+
+write_runtime_stack_vars() {
   local region
   local tenancy_ocid
   local compartment_ocid
@@ -141,6 +174,10 @@ write_runtime_foundation_vars() {
   local load_balancer_nsg_id
   local load_balancer_public_ip_id
   local load_balancer_public_ip
+  local runtime_db_url
+  local runtime_db_username
+  local runtime_db_password_secret_ocid
+  local runtime_db_ssl_root_cert_base64
   local image_repository
   local image_registry_endpoint
   local app_port
@@ -165,15 +202,24 @@ write_runtime_foundation_vars() {
   load_balancer_min_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_min_bandwidth_mbps)"
   load_balancer_max_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_max_bandwidth_mbps)"
 
-  cat > "${RUNTIME_DIR}/foundation.auto.tfvars" <<EOF
-region           = "${region}"
-tenancy_ocid     = "${tenancy_ocid}"
+  runtime_db_url="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_url)"
+  runtime_db_username="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_username)"
+  runtime_db_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_password_secret_ocid)"
+  runtime_db_ssl_root_cert_base64="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_ssl_root_cert_base64)"
+
+  cat > "${RUNTIME_DIR}/foundation.auto.tfvars" <<RUNTIMEEOF
+region = "${region}"
+tenancy_ocid = "${tenancy_ocid}"
 compartment_ocid = "${compartment_ocid}"
-subnet_id        = "${subnet_id}"
-nsg_id           = "${nsg_id}"
+subnet_id = "${subnet_id}"
+nsg_id = "${nsg_id}"
 load_balancer_nsg_id = "${load_balancer_nsg_id}"
 load_balancer_public_ip_id = "${load_balancer_public_ip_id}"
 load_balancer_public_ip = "${load_balancer_public_ip}"
+runtime_db_url = "${runtime_db_url}"
+runtime_db_username = "${runtime_db_username}"
+runtime_db_password_secret_ocid = "${runtime_db_password_secret_ocid}"
+runtime_db_ssl_root_cert_base64 = "${runtime_db_ssl_root_cert_base64}"
 image_repository = "${image_repository}"
 image_registry_endpoint = "${image_registry_endpoint}"
 app_port = ${app_port}
@@ -181,7 +227,7 @@ lb_listener_port = ${lb_listener_port}
 https_listener_port = ${https_listener_port}
 load_balancer_min_bandwidth_mbps = ${load_balancer_min_bandwidth_mbps}
 load_balancer_max_bandwidth_mbps = ${load_balancer_max_bandwidth_mbps}
-EOF
+RUNTIMEEOF
 }
 
 apply_runtime() {
@@ -190,17 +236,17 @@ apply_runtime() {
 
   terraform -chdir="${RUNTIME_DIR}" init -upgrade
 
-  write_runtime_foundation_vars
+  write_runtime_stack_vars
   image_tag="$(resolve_runtime_image_tag)"
 
   if [[ -n "${OCI_USERNAME:-}" && -n "${OCI_AUTH_TOKEN:-}" ]]; then
     local ocir_namespace
     ocir_namespace="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace)"
-    cat > "${release_vars_file}" <<EOF
+    cat > "${release_vars_file}" <<EOFVARS
 image_tag               = "${image_tag}"
 image_registry_username = "${ocir_namespace}/${OCI_USERNAME}"
 image_registry_password = "${OCI_AUTH_TOKEN}"
-EOF
+EOFVARS
   elif [[ ! -f "${release_vars_file}" ]]; then
     echo "Missing runtime registry credentials. Set OCI_USERNAME and OCI_AUTH_TOKEN or provide runtime/release.auto.tfvars." >&2
     exit 1
@@ -319,12 +365,12 @@ deploy_release() {
     --push \
     "${REPO_ROOT}"
 
-  write_runtime_foundation_vars
-  cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOF
+  write_runtime_stack_vars
+  cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOFVARS
 image_tag               = "${image_tag}"
 image_registry_username = "${ocir_namespace}/${OCI_USERNAME}"
 image_registry_password = "${OCI_AUTH_TOKEN}"
-EOF
+EOFVARS
 
   terraform -chdir="${RUNTIME_DIR}" init -upgrade
   terraform -chdir="${RUNTIME_DIR}" fmt
@@ -341,6 +387,9 @@ case "${MODE}" in
   foundation)
     apply_foundation
     ;;
+  data)
+    apply_data
+    ;;
   runtime)
     apply_runtime
     ;;
@@ -350,10 +399,12 @@ case "${MODE}" in
   rollout)
     ensure_clean_rollout_worktree
     apply_foundation
+    apply_data
     deploy_release
     ;;
   all)
     apply_foundation
+    apply_data
     apply_runtime
     ;;
 esac

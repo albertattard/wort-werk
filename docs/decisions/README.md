@@ -11,3 +11,4 @@ Store ADRs here to capture technical decisions and the tradeoffs behind them.
 - [ADR-0005: Use PostgreSQL for All DB-Backed Verification](./ADR-0005-use-postgresql-for-all-db-backed-verification.md)
 - [ADR-0006: Use Stable Asset IDs and Category Directories](./ADR-0006-use-stable-asset-ids-and-category-directories.md)
 - [ADR-0007: Use Repo-Local Review Skills at Explicit Workflow Checkpoints](./ADR-0007-use-repo-local-review-skills-at-explicit-workflow-checkpoints.md)
+- [ADR-0008: Use OCI Vault and Resource Principals for Runtime DB Secrets](./ADR-0008-use-oci-vault-and-resource-principal-for-runtime-db-secrets.md)

@@ -3,7 +3,27 @@ provider "oci" {
 }
 
 locals {
-  image_url = "${var.image_repository}:${var.image_tag}"
+  stack_name                  = "wort-werk"
+  container_display_name      = local.stack_name
+  load_balancer_name          = local.stack_name
+  backend_set_name            = "${local.stack_name}-backend-set"
+  http_listener_name          = "http"
+  https_listener_name         = "https"
+  http_to_https_rule_set_name = "http_to_https"
+  image_url                   = "${var.image_repository}:${var.image_tag}"
+  public_origin               = var.https_listener_port == 443 ? "https://${var.tls_redirect_host}" : "https://${var.tls_redirect_host}:${var.https_listener_port}"
+  container_environment = merge(
+    {
+      WORTWERK_WEBAUTHN_RP_ID           = var.tls_redirect_host
+      WORTWERK_WEBAUTHN_ALLOWED_ORIGINS = local.public_origin
+    },
+    var.runtime_db_url != "" ? {
+      WORTWERK_DB_URL                  = var.runtime_db_url
+      WORTWERK_DB_USERNAME             = var.runtime_db_username
+      WORTWERK_DB_PASSWORD_SECRET_OCID = var.runtime_db_password_secret_ocid
+      WORTWERK_DB_SSL_ROOT_CERT_BASE64 = var.runtime_db_ssl_root_cert_base64
+    } : {}
+  )
 }
 
 data "oci_identity_availability_domains" "this" {
@@ -36,8 +56,10 @@ resource "oci_container_instances_container_instance" "wort_werk" {
   }
 
   containers {
-    display_name = "wort-werk"
-    image_url    = local.image_url
+    display_name                   = local.container_display_name
+    image_url                      = local.image_url
+    is_resource_principal_disabled = false
+    environment_variables          = local.container_environment
 
     resource_config {
       memory_limit_in_gbs = var.memory_in_gbs
@@ -52,7 +74,7 @@ resource "oci_container_instances_container_instance" "wort_werk" {
 
 resource "oci_load_balancer_load_balancer" "wort_werk" {
   compartment_id             = var.compartment_ocid
-  display_name               = "wort-werk"
+  display_name               = local.load_balancer_name
   shape                      = "flexible"
   subnet_ids                 = [var.subnet_id]
   network_security_group_ids = [var.load_balancer_nsg_id]
@@ -68,7 +90,7 @@ resource "oci_load_balancer_load_balancer" "wort_werk" {
 }
 
 resource "oci_load_balancer_backend_set" "wort_werk" {
-  name             = "wort-werk-backend-set"
+  name             = local.backend_set_name
   load_balancer_id = oci_load_balancer_load_balancer.wort_werk.id
   policy           = "ROUND_ROBIN"
 
@@ -94,7 +116,7 @@ resource "oci_load_balancer_backend" "wort_werk" {
 
 resource "oci_load_balancer_listener" "http" {
   load_balancer_id         = oci_load_balancer_load_balancer.wort_werk.id
-  name                     = "http"
+  name                     = local.http_listener_name
   default_backend_set_name = oci_load_balancer_backend_set.wort_werk.name
   port                     = var.lb_listener_port
   protocol                 = "HTTP"
@@ -111,7 +133,7 @@ resource "oci_load_balancer_certificate" "wort_werk_tls" {
 
 resource "oci_load_balancer_listener" "https" {
   load_balancer_id         = oci_load_balancer_load_balancer.wort_werk.id
-  name                     = "https"
+  name                     = local.https_listener_name
   default_backend_set_name = oci_load_balancer_backend_set.wort_werk.name
   port                     = var.https_listener_port
   protocol                 = "HTTP"
@@ -126,7 +148,7 @@ resource "oci_load_balancer_listener" "https" {
 
 resource "oci_load_balancer_rule_set" "http_to_https" {
   load_balancer_id = oci_load_balancer_load_balancer.wort_werk.id
-  name             = "http_to_https"
+  name             = local.http_to_https_rule_set_name
 
   items {
     action = "REDIRECT"

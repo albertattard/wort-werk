@@ -36,6 +36,12 @@ variable "container_subnet_cidr" {
   default     = "10.10.1.0/24"
 }
 
+variable "database_subnet_cidr" {
+  description = "CIDR for the private subnet hosting the OCI PostgreSQL private endpoint."
+  type        = string
+  default     = "10.10.2.0/24"
+}
+
 variable "allowed_ingress_cidr" {
   description = "CIDR allowed to access HTTP application port (set to 0.0.0.0/0 for public testing)."
   type        = string

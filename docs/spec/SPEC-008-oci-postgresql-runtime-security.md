@@ -9,11 +9,11 @@ last_updated: 2026-04-10
 
 ## Problem
 
-Wort-Werk now depends on PostgreSQL for authentication, but the OCI infrastructure only provisions container runtime resources. Production deployment is incomplete until OCI includes a database and secure application-to-database connectivity.
+Wort-Werk now depends on PostgreSQL for authentication, but the OCI infrastructure currently mixes bootstrap resources and PostgreSQL provisioning in the same Terraform stack. That forces a toggle-based, two-pass apply flow and makes the database lifecycle less clear than it should be.
 
 ## Goal
 
-Provision PostgreSQL-capable OCI infrastructure and wire the runtime container to it using concrete security controls rather than ad hoc credentials or permissive networking.
+Provision PostgreSQL-capable OCI infrastructure and wire the runtime container to it using concrete security controls rather than ad hoc credentials or permissive networking, while separating durable bootstrap infrastructure, stateful data infrastructure, and application runtime into explicit layers.
 
 ## Security Requirements
 
@@ -33,18 +33,30 @@ The infrastructure must satisfy all of the following:
 
 ## Deployment Model
 
-Keep the existing two-stack OCI split:
+Use a three-stack OCI split:
 
 - `foundation`
-  - provisions shared environment resources, now including database network prerequisites and the managed PostgreSQL service
+  - provisions shared environment resources required before secrets or database creation
+  - owns compartment, shared network, Vault, KMS key, OCIR repository, reserved public IP, and baseline IAM/dynamic-group scaffolding
+- `data`
+  - provisions PostgreSQL-specific resources and secret-dependent IAM/policy wiring
+  - consumes shared foundation outputs and Vault secret OCIDs
 - `runtime`
-  - provisions the application runtime and consumes database connection outputs and secret references from foundation
+  - provisions the application runtime and consumes database connection outputs and secret references from `data`
+
+The apply order must be:
+1. `foundation`
+2. create or rotate required Vault secrets outside Terraform
+3. `data`
+4. `runtime` or `release`
 
 ## Scope
 
 - Add OCI-managed PostgreSQL infrastructure.
 - Add private subnet and network security rules for database access.
 - Decide and document how DB credentials are stored and injected into runtime.
+- Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
+- Keep Terraform naming consistent by using locals for fixed Wort-Werk resource identity and variables only for deployment-specific inputs.
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
 - Document the operational steps needed for first deployment and future rotation of DB credentials.
 
@@ -57,9 +69,11 @@ Keep the existing two-stack OCI split:
 
 ## Acceptance Criteria
 
-- [ ] Repository docs define a managed PostgreSQL deployment path in OCI.
-- [ ] Foundation Terraform scope includes managed PostgreSQL and private database networking.
-- [ ] Runtime Terraform consumes DB connectivity inputs without storing DB secrets in version control.
+- [ ] Repository docs define a managed PostgreSQL deployment path in OCI using `foundation`, `data`, and `runtime` stacks.
+- [ ] Foundation Terraform scope excludes secret-dependent PostgreSQL provisioning.
+- [ ] Data Terraform scope owns managed PostgreSQL provisioning and DB-secret-dependent policy wiring.
+- [ ] Runtime Terraform consumes DB connectivity inputs from `data` without storing DB secrets in version control.
+- [ ] OCI Terraform naming is consistent across stacks, with fixed resource names centralized in locals.
 - [ ] Security requirements for private networking, TLS in transit, and least-privilege ingress are documented.
 - [ ] Secret-handling approach for app-to-DB credentials is explicitly documented.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

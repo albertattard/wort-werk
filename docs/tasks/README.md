@@ -65,6 +65,7 @@ Use one of these `category` values for new tasks:
 - [TASK-037: Ingest New Kitchen Noun Asset](./content/TASK-037-ingest-new-kitchen-noun-asset.md)
 - [TASK-039: Normalize Speck and Speckstreifen Asset Naming](./content/TASK-039-normalize-speck-plural-asset-naming.md)
 - [TASK-041: Ingest New Food and Household Noun Assets](./content/TASK-041-ingest-new-food-and-household-noun-assets.md)
+- [TASK-046: Ingest Travel, Beach, and Sky Noun Assets](./content/TASK-046-ingest-travel-beach-and-sky-noun-assets.md)
 - [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)
 - [TASK-007: Prepare OCI Container Instance Deployment](./infrastructure/TASK-007-prepare-oci-container-instance-deployment.md)
 - [TASK-008: Split OCI IaC into Foundation and Runtime Stacks](./infrastructure/TASK-008-split-oci-iac-foundation-and-runtime.md)
@@ -83,17 +84,16 @@ Use one of these `category` values for new tasks:
 - [TASK-030: Resolve Runtime image_tag Automatically in Rollout](./infrastructure/TASK-030-resolve-runtime-image-tag-for-rollout.md)
 - [TASK-031: Split Verify Local Build and Release Multi-Arch Publish](./infrastructure/TASK-031-split-verify-local-build-and-release-multiarch-publish.md)
 - [TASK-032: Fix Rollout Order for Multi-Arch Release](./infrastructure/TASK-032-fix-rollout-order-for-multiarch-release.md)
-- [TASK-045: Add Secure OCI PostgreSQL Foundation](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
+- [TASK-045: Split OCI PostgreSQL into Dedicated Data Stack](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
 
 ## Pending
 
 - [ ] [TASK-024: Roll Out User Auth and Progress Tracking](./quiz/TASK-024-user-auth-and-progress-rollout-plan.md)
 - [ ] [TASK-033: Implement Auth Foundation with PostgreSQL](./quiz/TASK-033-auth-foundation-with-postgresql.md)
-- [ ] [TASK-045: Add Secure OCI PostgreSQL Foundation](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
 
 ## In Progress
 
-- (none)
+- [ ] [TASK-045: Split OCI PostgreSQL into Dedicated Data Stack](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
 
 ## Done
 
@@ -119,6 +119,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-036: Ingest New Clothing Noun Assets](./content/TASK-036-ingest-new-clothing-noun-assets.md)
 - [x] [TASK-037: Ingest New Kitchen Noun Asset](./content/TASK-037-ingest-new-kitchen-noun-asset.md)
 - [x] [TASK-039: Normalize Speck and Speckstreifen Asset Naming](./content/TASK-039-normalize-speck-plural-asset-naming.md)
+- [x] [TASK-046: Ingest Travel, Beach, and Sky Noun Assets](./content/TASK-046-ingest-travel-beach-and-sky-noun-assets.md)
 - [x] [TASK-041: Ingest New Food and Household Noun Assets](./content/TASK-041-ingest-new-food-and-household-noun-assets.md)
 - [x] [TASK-021: Use HTMX Fragment Updates for Quiz Actions](./quiz/TASK-021-use-htmx-fragment-updates-for-quiz-actions.md)
 - [x] [TASK-006: Add Production Container Image](./infrastructure/TASK-006-add-production-container-image.md)

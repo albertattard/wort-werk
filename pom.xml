@@ -19,6 +19,7 @@
     <properties>
         <java.version>25</java.version>
         <required.maven.version>3.6.3</required.maven.version>
+        <oci.java.sdk.version>3.81.1</oci.java.sdk.version>
         <playwright.version>1.58.0</playwright.version>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <verify.container.port>18080</verify.container.port>
@@ -30,6 +31,18 @@
         <verify.db.name>wortwerk_verify</verify.db.name>
         <verify.db.host.port.url>jdbc:postgresql://localhost:${verify.db.port}/${verify.db.name}</verify.db.host.port.url>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.oracle.oci.sdk</groupId>
+                <artifactId>oci-java-sdk-bom</artifactId>
+                <version>${oci.java.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Web -->
@@ -69,6 +82,14 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.oci.sdk</groupId>
+            <artifactId>oci-java-sdk-secrets</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.oci.sdk</groupId>
+            <artifactId>oci-java-sdk-common-httpclient-jersey3</artifactId>
         </dependency>
 
         <!-- Testing -->

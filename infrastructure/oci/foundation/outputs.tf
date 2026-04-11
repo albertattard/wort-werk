@@ -8,6 +8,11 @@ output "region" {
   value       = var.region
 }
 
+output "home_region" {
+  description = "OCI home region used for identity resources."
+  value       = var.home_region
+}
+
 output "tenancy_ocid" {
   description = "Tenancy OCID."
   value       = var.tenancy_ocid
@@ -23,9 +28,19 @@ output "subnet_id" {
   value       = oci_core_subnet.container.id
 }
 
+output "database_subnet_id" {
+  description = "Private database subnet OCID."
+  value       = oci_core_subnet.database.id
+}
+
 output "nsg_id" {
   description = "Network Security Group OCID."
   value       = oci_core_network_security_group.wort_werk.id
+}
+
+output "database_nsg_id" {
+  description = "Database Network Security Group OCID."
+  value       = oci_core_network_security_group.database.id
 }
 
 output "load_balancer_nsg_id" {
@@ -71,6 +86,26 @@ output "load_balancer_max_bandwidth_mbps" {
 output "ocir_namespace" {
   description = "Object Storage/OCIR namespace."
   value       = data.oci_objectstorage_namespace.this.namespace
+}
+
+output "vault_id" {
+  description = "OCI Vault OCID used for Wort-Werk secrets."
+  value       = oci_kms_vault.wort_werk.id
+}
+
+output "vault_management_endpoint" {
+  description = "OCI Vault management endpoint."
+  value       = oci_kms_vault.wort_werk.management_endpoint
+}
+
+output "vault_key_id" {
+  description = "OCI Vault key OCID used to encrypt secrets."
+  value       = oci_kms_key.wort_werk.id
+}
+
+output "runtime_dynamic_group_name" {
+  description = "Dynamic group name for Wort-Werk runtime container instances."
+  value       = oci_identity_dynamic_group.runtime.name
 }
 
 output "ocir_repository_name" {
