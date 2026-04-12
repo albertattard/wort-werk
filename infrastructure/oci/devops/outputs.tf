@@ -28,9 +28,14 @@ output "deploy_pipeline_id" {
   value       = oci_devops_deploy_pipeline.release.id
 }
 
-output "release_artifact_repository_id" {
-  description = "Generic artifacts repository used for private rollout bundles."
-  value       = oci_artifacts_repository.release.id
+output "release_handoff_bucket_name" {
+  description = "Object Storage bucket name used for private rollout handoff objects."
+  value       = oci_objectstorage_bucket.release_handoff.name
+}
+
+output "release_handoff_bucket_namespace" {
+  description = "Object Storage namespace that owns the private rollout handoff bucket."
+  value       = data.oci_objectstorage_namespace.this.namespace
 }
 
 output "repository_url" {

@@ -22,6 +22,7 @@ The intended structure is:
 3. Run private PostgreSQL bootstrap steps from a deployment shell stage inside a private subnet rather than from an operator laptop.
 4. Prefer ephemeral or OCI-managed execution over long-lived general-purpose deployment hosts.
 5. Provide external SCM reachability for private DevOps runners through a dedicated outbound path for the DevOps subnet rather than by widening runtime subnet internet access.
+6. Use explicit OCI-managed storage as the release handoff boundary between build and deploy stages when OCI DevOps managed deliver-artifact stages are not operationally reliable enough for the required release bundle transfer.
 
 ## Consequences
 
@@ -30,17 +31,21 @@ Positive:
 - Private-network deployment steps no longer depend on a human reaching into the VCN from an ad hoc machine.
 - OCI-managed identity can replace some static operator credential handling.
 - Runtime and release tiers can keep different egress boundaries instead of collapsing into one broader private-subnet policy.
+- A commit-addressed Object Storage handoff is simpler to inspect and reason about than opaque OCI DevOps artifact-delivery stage internals.
 
 Negative:
 - OCI DevOps resources, permissions, and pipeline definitions add new infrastructure surface area.
 - Build and deployment concerns must be modeled explicitly instead of hidden in local shell scripts.
 - Private runners that need external SCM access still require deliberate outbound design, such as NAT plus scoped NSG egress.
+- Build and deploy stages must now coordinate on explicit object naming and bucket lifecycle rules.
 
 Risks:
 - If the pipeline is allowed to deploy anything other than an explicit git reference, traceability will still be weak.
 - If the deployment shell stage receives broader network or IAM access than necessary, the managed pipeline will just become a different form of over-privileged control plane.
+- If Object Storage permissions are scoped too broadly, the release handoff bucket could become an unnecessary escalation path.
 
 ## Alternatives Considered
 
 - Permanent deployment VM in OCI: rejected as the default because it creates a long-lived, manually maintained, high-value control-plane host with broad standing privileges.
 - Continue using an operator laptop for private-network steps: rejected because it is not a solid or reproducible foundation for private OCI rollout.
+- OCI DevOps managed `DELIVER_ARTIFACT` stages for release-bundle handoff: rejected for this path after repeated OCI-managed internal failures during artifact publication even when the build stage itself succeeded. The managed stage boundary is too opaque for a critical private rollout handoff.

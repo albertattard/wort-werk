@@ -22,8 +22,26 @@ steps:
         exit 1
       fi
 
-      RELEASE_BUNDLE="$(find . -name release-bundle.tgz -print -quit)"
-      RELEASE_METADATA="$(find . -name release-metadata.env -print -quit)"
+      export OCI_CLI_AUTH=resource_principal
+
+      RELEASE_VERSION="${releaseVersion}"
+      NAMESPACE="$(oci os ns get --query 'data' --raw-output)"
+      BUCKET_NAME="wort-werk-release-handoff"
+      OBJECT_PREFIX="releases/${RELEASE_VERSION}"
+      RELEASE_BUNDLE="$(pwd)/release-bundle.tgz"
+      RELEASE_METADATA="$(pwd)/release-metadata.env"
+
+      oci os object get \
+        --namespace "${NAMESPACE}" \
+        --bucket-name "${BUCKET_NAME}" \
+        --name "${OBJECT_PREFIX}/release-bundle.tgz" \
+        --file "${RELEASE_BUNDLE}"
+
+      oci os object get \
+        --namespace "${NAMESPACE}" \
+        --bucket-name "${BUCKET_NAME}" \
+        --name "${OBJECT_PREFIX}/release-metadata.env" \
+        --file "${RELEASE_METADATA}"
 
       test -n "${RELEASE_BUNDLE}"
       test -n "${RELEASE_METADATA}"

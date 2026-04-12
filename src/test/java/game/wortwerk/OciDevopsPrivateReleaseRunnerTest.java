@@ -48,8 +48,8 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use subnets");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use vnics");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups");
-        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use generic-artifacts");
-        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to read all-artifacts");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to read buckets");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-container-instances");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options");
@@ -87,6 +87,9 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("resource \"oci_devops_deploy_pipeline\"");
         assertThat(devopsMain).contains("resource \"oci_devops_deploy_stage\"");
         assertThat(devopsMain).contains("resource \"oci_devops_build_pipeline_stage\"");
+        assertThat(devopsMain).contains("resource \"oci_objectstorage_bucket\" \"release_handoff\"");
+        assertThat(devopsMain).doesNotContain("build_pipeline_stage_type = \"DELIVER_ARTIFACT\"");
+        assertThat(devopsMain).doesNotContain("resource \"oci_artifacts_repository\" \"release\"");
         assertThat(devopsMain).contains("resource \"oci_logging_log_group\"");
         assertThat(devopsMain).contains("resource \"oci_logging_log\"");
         assertThat(devopsMain).contains("service     = \"devops\"");
@@ -99,7 +102,9 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("IMAGE_TAG");
         assertThat(buildSpec).contains("exportedVariables");
         assertThat(buildSpec).contains("git archive --format=tar.gz --output=release-bundle.tgz \"${release_ref}\"");
+        assertThat(buildSpec).contains("oci os object put");
         assertThat(commandSpec).contains("ROLLBACK");
+        assertThat(commandSpec).contains("oci os object get");
         assertThat(commandSpec).contains("terraform");
         assertThat(runReleaseScript).contains("oci devops build-run create");
         assertThat(runReleaseScript).contains("commit_hash");

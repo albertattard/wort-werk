@@ -96,4 +96,4 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 - The DevOps route table combines OCI service-gateway access with NAT-backed outbound internet egress so private runners can fetch source from external SCM providers without public IPs.
 - The DevOps NSG can reach PostgreSQL, OCI regional services, and outbound HTTPS, but does not receive public ingress.
 - The management port exists for Spring Actuator readiness checks and is not exposed through a public listener.
-- Foundation also owns the baseline DevOps runner IAM boundary: a dedicated dynamic group plus least-privilege compartment-scoped policies for `devops-family`, private VNIC attachments, generic artifact delivery, and shell-stage container instances.
+- Foundation also owns the baseline DevOps runner IAM boundary: a dedicated dynamic group plus least-privilege compartment-scoped policies for `devops-family`, private VNIC attachments, release-handoff bucket access, and shell-stage container instances.

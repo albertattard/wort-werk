@@ -7,6 +7,10 @@ provider "oci" {
   region = var.home_region
 }
 
+data "oci_objectstorage_namespace" "this" {
+  compartment_id = var.compartment_ocid
+}
+
 locals {
   stack_name                                  = "wort-werk"
   topic_name                                  = "${local.stack_name}-devops"
@@ -19,16 +23,10 @@ locals {
   build_pipeline_name                         = "${local.stack_name}-build"
   deploy_pipeline_name                        = "${local.stack_name}-deploy"
   build_stage_name                            = "checkout-and-package"
-  deliver_bundle_stage_name                   = "publish-release-bundle"
-  deliver_metadata_stage_name                 = "publish-release-metadata"
   trigger_deploy_stage_name                   = "trigger-private-rollout"
   shell_stage_name                            = "private-rollout"
-  release_repository_name                     = "${local.stack_name}-release-bundles"
-  release_bundle_artifact_name                = "release-bundle"
-  release_metadata_artifact_name              = "release-metadata"
+  release_handoff_bucket_name                 = "${local.stack_name}-release-handoff"
   command_spec_artifact_name                  = "private-rollout-command-spec"
-  release_bundle_path                         = "${local.stack_name}/release-bundle.tgz"
-  release_metadata_path                       = "${local.stack_name}/release-metadata.env"
   build_source_name                           = "wortwerk"
   build_spec_path                             = "infrastructure/oci/devops/build_spec.yaml"
 }
@@ -93,12 +91,13 @@ resource "oci_devops_connection" "github" {
   description     = "GitHub connection used by the Wort-Werk release pipeline."
 }
 
-resource "oci_artifacts_repository" "release" {
-  compartment_id  = var.compartment_ocid
-  repository_type = "GENERIC"
-  is_immutable    = false
-  display_name    = local.release_repository_name
-  description     = "Generic release artifacts produced by the Wort-Werk OCI DevOps build pipeline."
+resource "oci_objectstorage_bucket" "release_handoff" {
+  compartment_id = var.compartment_ocid
+  namespace      = data.oci_objectstorage_namespace.this.namespace
+  name           = local.release_handoff_bucket_name
+  access_type    = "NoPublicAccess"
+  storage_tier   = "Standard"
+  versioning     = "Disabled"
 }
 
 resource "oci_devops_build_pipeline" "release" {
@@ -160,41 +159,11 @@ resource "oci_devops_deploy_artifact" "command_spec" {
   }
 }
 
-resource "oci_devops_deploy_artifact" "release_bundle" {
-  argument_substitution_mode = "SUBSTITUTE_PLACEHOLDERS"
-  deploy_artifact_type       = "GENERIC_FILE"
-  project_id                 = oci_devops_project.wort_werk.id
-  display_name               = local.release_bundle_artifact_name
-  description                = "Release bundle containing the repository snapshot required by the private shell stage."
-
-  deploy_artifact_source {
-    deploy_artifact_source_type = "GENERIC_ARTIFACT"
-    repository_id               = oci_artifacts_repository.release.id
-    deploy_artifact_path        = local.release_bundle_path
-    deploy_artifact_version     = "$${releaseVersion}"
-  }
-}
-
-resource "oci_devops_deploy_artifact" "release_metadata" {
-  argument_substitution_mode = "SUBSTITUTE_PLACEHOLDERS"
-  deploy_artifact_type       = "GENERIC_FILE"
-  project_id                 = oci_devops_project.wort_werk.id
-  display_name               = local.release_metadata_artifact_name
-  description                = "Commit and image metadata handed from build to private rollout."
-
-  deploy_artifact_source {
-    deploy_artifact_source_type = "GENERIC_ARTIFACT"
-    repository_id               = oci_artifacts_repository.release.id
-    deploy_artifact_path        = local.release_metadata_path
-    deploy_artifact_version     = "$${releaseVersion}"
-  }
-}
-
 resource "oci_devops_build_pipeline_stage" "build" {
   build_pipeline_id                  = oci_devops_build_pipeline.release.id
   build_pipeline_stage_type          = "BUILD"
   display_name                       = local.build_stage_name
-  description                        = "Checks out an explicit git revision and packages the private rollout bundle."
+  description                        = "Checks out an explicit git revision, packages the private rollout bundle, and uploads the release handoff objects."
   image                              = var.build_runner_image
   build_spec_file                    = local.build_spec_path
   primary_build_source               = local.build_source_name
@@ -223,61 +192,17 @@ resource "oci_devops_build_pipeline_stage" "build" {
   }
 }
 
-resource "oci_devops_build_pipeline_stage" "deliver_release_bundle" {
-  build_pipeline_id         = oci_devops_build_pipeline.release.id
-  build_pipeline_stage_type = "DELIVER_ARTIFACT"
-  display_name              = local.deliver_bundle_stage_name
-  description               = "Publishes the repository release bundle to the generic artifacts repository."
-
-  build_pipeline_stage_predecessor_collection {
-    items {
-      id = oci_devops_build_pipeline_stage.build.id
-    }
-  }
-
-  deliver_artifact_collection {
-    items {
-      artifact_id   = oci_devops_deploy_artifact.release_bundle.id
-      artifact_name = local.release_bundle_artifact_name
-    }
-  }
-}
-
-resource "oci_devops_build_pipeline_stage" "deliver_release_metadata" {
-  build_pipeline_id         = oci_devops_build_pipeline.release.id
-  build_pipeline_stage_type = "DELIVER_ARTIFACT"
-  display_name              = local.deliver_metadata_stage_name
-  description               = "Publishes commit and image metadata for the corresponding release bundle."
-
-  build_pipeline_stage_predecessor_collection {
-    items {
-      id = oci_devops_build_pipeline_stage.build.id
-    }
-  }
-
-  deliver_artifact_collection {
-    items {
-      artifact_id   = oci_devops_deploy_artifact.release_metadata.id
-      artifact_name = local.release_metadata_artifact_name
-    }
-  }
-}
-
 resource "oci_devops_build_pipeline_stage" "trigger_private_rollout" {
   build_pipeline_id              = oci_devops_build_pipeline.release.id
   build_pipeline_stage_type      = "TRIGGER_DEPLOYMENT_PIPELINE"
   display_name                   = local.trigger_deploy_stage_name
-  description                    = "Triggers the private OCI rollout pipeline after the release artifacts are published."
+  description                    = "Triggers the private OCI rollout pipeline after the release handoff objects are uploaded."
   deploy_pipeline_id             = oci_devops_deploy_pipeline.release.id
   is_pass_all_parameters_enabled = true
 
   build_pipeline_stage_predecessor_collection {
     items {
-      id = oci_devops_build_pipeline_stage.deliver_release_bundle.id
-    }
-
-    items {
-      id = oci_devops_build_pipeline_stage.deliver_release_metadata.id
+      id = oci_devops_build_pipeline_stage.build.id
     }
   }
 }
@@ -288,12 +213,8 @@ resource "oci_devops_deploy_stage" "private_rollout" {
   display_name                    = local.shell_stage_name
   description                     = "Private shell stage for runtime DB bootstrap and runtime rollout inside OCI networking."
   command_spec_deploy_artifact_id = oci_devops_deploy_artifact.command_spec.id
-  deploy_artifact_ids = [
-    oci_devops_deploy_artifact.release_bundle.id,
-    oci_devops_deploy_artifact.release_metadata.id
-  ]
-  timeout_in_seconds = 3600
-  is_debug_enabled   = false
+  timeout_in_seconds              = 3600
+  is_debug_enabled                = false
 
   deploy_stage_predecessor_collection {
     items {

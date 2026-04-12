@@ -29,6 +29,7 @@ locals {
   devops_dynamic_group_description  = "OCI DevOps build and deploy pipelines for Wort-Werk"
   devops_runner_policy_name         = "${local.stack_name}-devops-runner"
   devops_runner_policy_description  = "Least-privilege policy for Wort-Werk OCI DevOps runners"
+  release_handoff_bucket_name       = "${local.stack_name}-release-handoff"
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
   devops_nat_gateway_name           = "${local.stack_name}-devops"
   service_gateway_name              = "${local.stack_name}-services"
@@ -432,8 +433,8 @@ resource "oci_identity_policy" "devops_runner" {
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to use generic-artifacts in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to read all-artifacts in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to read buckets in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects in compartment id ${oci_identity_compartment.wort_werk.id} where target.bucket.name = '${local.release_handoff_bucket_name}'",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-container-instances in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers in compartment id ${oci_identity_compartment.wort_werk.id}"
   ]

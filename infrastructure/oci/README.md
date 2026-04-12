@@ -160,12 +160,12 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Runtime uses the dedicated non-admin role `wortwerk_app` by default.
 - The container instance reads the runtime DB password from OCI Vault by using OCI resource principal.
 - Foundation provisions Vault, key, dynamic group, and shared network boundaries; secret values themselves must be created or rotated outside Terraform.
-- Foundation also provisions the DevOps runner dynamic group plus baseline least-privilege runner policies for `devops-family`, private-network attachment, artifact delivery, and shell-stage container instances.
+- Foundation also provisions the DevOps runner dynamic group plus baseline least-privilege runner policies for `devops-family`, private-network attachment, release-handoff storage access, and shell-stage container instances.
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
 - DevOps provisions the GitHub external-connection secret-read policy scoped to the configured PAT secret OCID.
 - The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
 - The DevOps shell stage is provisioned on private OCI networking for this bootstrap path, but it is intentionally blocked from applying local Terraform state until backend handling is migrated away from laptop-local state files.
-- The DevOps build spec currently computes and publishes commit/image metadata plus a release bundle; it does not yet publish the runtime image itself through OCI DevOps.
+- The DevOps build spec currently computes and publishes commit/image metadata plus a release bundle into OCI-managed release-handoff storage; it does not yet publish the runtime image itself through OCI DevOps.
 
 ## Naming Convention
 

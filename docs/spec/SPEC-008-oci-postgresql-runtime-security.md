@@ -81,6 +81,8 @@ Secure release and deployment execution must satisfy all of the following:
 7. OCI DevOps runner identities must use explicit dynamic-group and policy bindings instead of inheriting broad tenancy-wide privileges.
 8. Secret-read permissions for external SCM connections must be scoped to the specific secret OCID used by the release path.
 9. Private DevOps runners must have an explicit egress design for external SCM access; if public internet egress is required, it must be isolated to the DevOps subnet through a controlled outbound path such as NAT and must not be reused by the runtime subnet.
+10. Release bundle handoff between OCI DevOps stages must use a deterministic OCI-managed storage boundary with explicit object naming and IAM scope instead of relying on opaque managed artifact delivery that cannot be diagnosed or reproduced from repository state.
+11. The release handoff must preserve commit-to-artifact traceability by addressing release bundle and metadata objects with the selected release version.
 
 ## Out of Scope
 
@@ -106,4 +108,5 @@ Secure release and deployment execution must satisfy all of the following:
 - [ ] Repository docs define how private-network DB bootstrap is executed from OCI-managed infrastructure instead of an operator laptop.
 - [ ] Repository docs define the DevOps runner IAM model, including dynamic groups and least-privilege policies for private-network execution and external-connection secret reads.
 - [ ] Repository docs define the DevOps runner outbound network model, including how private build stages reach external SCM without broadening runtime subnet exposure.
+- [ ] Repository docs define the OCI-native release artifact handoff boundary, including why the chosen storage path is preferred over OCI DevOps managed deliver-artifact stages.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

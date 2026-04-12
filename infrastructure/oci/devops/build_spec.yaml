@@ -16,12 +16,14 @@ steps:
 
       COMMIT_SHA="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-$(git rev-parse HEAD)}"
       IMAGE_TAG="$(printf '%s' "${COMMIT_SHA}" | cut -c1-12)"
+      RELEASE_VERSION="${IMAGE_TAG}"
 
-      export COMMIT_SHA IMAGE_TAG
+      export COMMIT_SHA IMAGE_TAG RELEASE_VERSION
 
       cat > release-metadata.env <<EOF
       COMMIT_SHA=${COMMIT_SHA}
       IMAGE_TAG=${IMAGE_TAG}
+      RELEASE_VERSION=${RELEASE_VERSION}
       EOF
 
   - type: Command
@@ -31,10 +33,27 @@ steps:
       release_ref="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-HEAD}"
       git archive --format=tar.gz --output=release-bundle.tgz "${release_ref}"
 
-outputArtifacts:
-  - name: release-bundle
-    type: BINARY
-    location: release-bundle.tgz
-  - name: release-metadata
-    type: BINARY
-    location: release-metadata.env
+  - type: Command
+    name: Upload release handoff objects
+    command: |
+      set -euo pipefail
+
+      export OCI_CLI_AUTH=resource_principal
+
+      NAMESPACE="$(oci os ns get --query 'data' --raw-output)"
+      BUCKET_NAME="wort-werk-release-handoff"
+      OBJECT_PREFIX="releases/${RELEASE_VERSION}"
+
+      oci os object put \
+        --namespace "${NAMESPACE}" \
+        --bucket-name "${BUCKET_NAME}" \
+        --name "${OBJECT_PREFIX}/release-bundle.tgz" \
+        --file release-bundle.tgz \
+        --force
+
+      oci os object put \
+        --namespace "${NAMESPACE}" \
+        --bucket-name "${BUCKET_NAME}" \
+        --name "${OBJECT_PREFIX}/release-metadata.env" \
+        --file release-metadata.env \
+        --force
