@@ -37,7 +37,7 @@ variable "postgresql_version" {
 variable "postgresql_shape" {
   description = "OCI PostgreSQL shape."
   type        = string
-  default     = "PostgreSQL.VM.Standard.E5.Flex.2.32GB"
+  default     = "PostgreSQL.VM.Standard.E5.Flex"
 }
 
 variable "postgresql_instance_count" {
@@ -96,5 +96,5 @@ variable "postgresql_backup_retention_days" {
 variable "postgresql_maintenance_window_start" {
   description = "Maintenance window start in UTC using '<day> <HH:MM>' format."
   type        = string
-  default     = "sun 03:00"
+  default     = "SUN 03:00"
 }
