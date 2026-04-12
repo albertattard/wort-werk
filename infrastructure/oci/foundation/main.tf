@@ -18,7 +18,6 @@ locals {
   container_nsg_name                = "${local.stack_name}-container"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
   database_nsg_name                 = "${local.stack_name}-database"
-  load_balancer_subnet_name         = "${local.stack_name}-lb"
   runtime_subnet_name               = "${local.stack_name}-runtime"
   database_subnet_name              = "${local.stack_name}-db"
   runtime_dynamic_group_name        = "${local.stack_name}-container-runtime"
@@ -259,8 +258,8 @@ resource "oci_core_subnet" "container" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
   cidr_block                 = var.container_subnet_cidr
-  display_name               = local.load_balancer_subnet_name
-  dns_label                  = "wortlb"
+  display_name               = local.stack_name
+  dns_label                  = "wortwerk"
   route_table_id             = oci_core_route_table.public.id
   prohibit_public_ip_on_vnic = false
 }

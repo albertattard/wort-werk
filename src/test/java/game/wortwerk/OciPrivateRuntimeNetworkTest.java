@@ -32,6 +32,9 @@ class OciPrivateRuntimeNetworkTest {
         String foundationVariables = read("infrastructure/oci/foundation/variables.tf");
 
         assertThat(foundationMain).contains("resource \"oci_core_service_gateway\"");
+        assertThat(foundationMain).contains("resource \"oci_core_subnet\" \"container\"");
+        assertThat(foundationMain).contains("display_name               = local.stack_name");
+        assertThat(foundationMain).contains("dns_label                  = \"wortwerk\"");
         assertThat(foundationMain).contains("resource \"oci_core_subnet\" \"runtime\"");
         assertThat(foundationMain).contains("prohibit_public_ip_on_vnic = true");
         assertThat(foundationMain).contains("route_table_id             = oci_core_route_table.runtime.id");
