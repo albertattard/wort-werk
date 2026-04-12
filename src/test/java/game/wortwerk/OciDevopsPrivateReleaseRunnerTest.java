@@ -98,7 +98,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("COMMIT_SHA");
         assertThat(buildSpec).contains("IMAGE_TAG");
         assertThat(buildSpec).contains("exportedVariables");
-        assertThat(buildSpec).contains("tar --exclude=.git --exclude=release-bundle.tgz --exclude=release-metadata.env -czf release-bundle.tgz .");
+        assertThat(buildSpec).contains("git archive --format=tar.gz --output=release-bundle.tgz \"${release_ref}\"");
         assertThat(commandSpec).contains("ROLLBACK");
         assertThat(commandSpec).contains("terraform");
         assertThat(runReleaseScript).contains("oci devops build-run create");

@@ -28,7 +28,8 @@ steps:
     name: Package release bundle
     command: |
       set -euo pipefail
-      tar --exclude=.git --exclude=release-bundle.tgz --exclude=release-metadata.env -czf release-bundle.tgz .
+      release_ref="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-HEAD}"
+      git archive --format=tar.gz --output=release-bundle.tgz "${release_ref}"
 
 outputArtifacts:
   - name: release-bundle
