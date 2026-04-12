@@ -172,7 +172,7 @@ resource "oci_devops_build_pipeline_stage" "build" {
   }
 
   private_access_config {
-    network_channel_type = "PRIVATE_ENDPOINT_CHANNEL"
+    network_channel_type = "SERVICE_VNIC_CHANNEL"
     subnet_id            = var.devops_subnet_id
     nsg_ids              = [var.devops_nsg_id]
   }
@@ -267,7 +267,7 @@ resource "oci_devops_deploy_stage" "private_rollout" {
     }
 
     network_channel {
-      network_channel_type = "PRIVATE_ENDPOINT_CHANNEL"
+      network_channel_type = "SERVICE_VNIC_CHANNEL"
       subnet_id            = var.devops_subnet_id
       nsg_ids              = [var.devops_nsg_id]
     }

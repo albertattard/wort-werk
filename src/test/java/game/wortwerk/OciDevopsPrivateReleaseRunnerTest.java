@@ -52,6 +52,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("resource \"oci_devops_build_pipeline_stage\"");
         assertThat(devopsMain).contains("devops_subnet_id");
         assertThat(devopsMain).contains("devops_nsg_id");
+        assertThat(devopsMain).contains("network_channel_type = \"SERVICE_VNIC_CHANNEL\"");
         assertThat(buildSpec).contains("COMMIT_SHA");
         assertThat(buildSpec).contains("IMAGE_TAG");
         assertThat(buildSpec).contains("exportedVariables");
