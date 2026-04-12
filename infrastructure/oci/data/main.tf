@@ -11,7 +11,7 @@ locals {
   stack_name                    = "wort-werk"
   postgresql_display_name       = "${local.stack_name}-postgresql"
   postgresql_description        = "Managed PostgreSQL for Wort-Werk"
-  runtime_db_username           = var.runtime_db_username != "" ? var.runtime_db_username : var.postgresql_admin_username
+  runtime_db_username           = trimspace(var.runtime_db_username)
   runtime_secret_read_policy    = "${local.stack_name}-runtime-secret-read"
   runtime_secret_read_statement = "Allow Wort-Werk container instances to read the runtime DB password secret bundle"
 }
@@ -71,6 +71,11 @@ resource "oci_psql_db_system" "wort_werk" {
     precondition {
       condition     = var.postgresql_admin_password_secret_ocid != "" && var.runtime_db_password_secret_ocid != ""
       error_message = "postgresql_admin_password_secret_ocid and runtime_db_password_secret_ocid must both be set."
+    }
+
+    precondition {
+      condition     = local.runtime_db_username != "" && local.runtime_db_username != var.postgresql_admin_username
+      error_message = "runtime_db_username must be a dedicated non-admin application role and must not equal postgresql_admin_username."
     }
   }
 }

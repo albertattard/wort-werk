@@ -19,32 +19,31 @@ class SetDbSecretsScriptTest {
     Path tempDir;
 
     @Test
-    void shouldReuseAdminPasswordForRuntimeSecretWhenRuntimePasswordMissing() throws Exception {
+    void shouldRequireExplicitRuntimePasswordWhenRuntimePasswordMissing() throws Exception {
         TestHarness harness = prepareHarness();
 
         ProcessResult result = runScript(harness, Map.of(
                 "POSTGRESQL_ADMIN_PASSWORD", "admin-secret"));
+
+        assertThat(result.exitCode()).isNotZero();
+        assertThat(result.stderr()).contains("RUNTIME_DB_PASSWORD");
+        assertThat(Files.exists(harness.ociCaptureFile())).isFalse();
+    }
+
+    @Test
+    void shouldStoreSeparateAdminAndRuntimePasswords() throws Exception {
+        TestHarness harness = prepareHarness();
+
+        ProcessResult result = runScript(harness, Map.of(
+                "POSTGRESQL_ADMIN_PASSWORD", "admin-secret",
+                "RUNTIME_DB_PASSWORD", "runtime-secret"));
 
         assertThat(result.exitCode())
                 .withFailMessage("stdout=%s%nstderr=%s", result.stdout(), result.stderr())
                 .isZero();
         assertThat(Files.readString(harness.ociCaptureFile(), StandardCharsets.UTF_8))
                 .contains("wort-werk-db-admin-password=admin-secret")
-                .contains("wort-werk-db-runtime-password=admin-secret");
-    }
-
-    @Test
-    void shouldRejectMismatchedPasswordsWhileRuntimeUsesAdminUser() throws Exception {
-        TestHarness harness = prepareHarness();
-
-        ProcessResult result = runScript(harness, Map.of(
-                "POSTGRESQL_ADMIN_PASSWORD", "admin-secret",
-                "RUNTIME_DB_PASSWORD", "different-runtime-secret"));
-
-        assertThat(result.exitCode()).isNotZero();
-        assertThat(result.stderr()).contains("runtime DB password");
-        assertThat(result.stderr()).contains("wortwerk_admin");
-        assertThat(Files.exists(harness.ociCaptureFile())).isFalse();
+                .contains("wort-werk-db-runtime-password=runtime-secret");
     }
 
     private TestHarness prepareHarness() throws IOException {

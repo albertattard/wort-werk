@@ -1,7 +1,7 @@
 ---
 id: TASK-048
 title: Introduce Least-Privilege OCI Runtime DB Role
-status: in_progress
+status: done
 category: infrastructure
 related_features:
   - SPEC-008
@@ -43,8 +43,8 @@ Replace the OCI runtime database credential model that currently defaults to `wo
 
 ## Acceptance Criteria
 
-- [ ] `runtime_db_username` no longer defaults to `wortwerk_admin`.
-- [ ] Secret bootstrap workflow no longer aliases runtime credentials to the administrator password by default.
-- [ ] Repository docs describe how the least-privilege runtime role is provisioned and rotated.
-- [ ] The runtime DB role boundary is explicit and limited to application-owned responsibilities.
-- [ ] `./mvnw clean verify` passes after changes.
+- [x] `runtime_db_username` no longer defaults to `wortwerk_admin`.
+- [x] Secret bootstrap workflow no longer aliases runtime credentials to the administrator password by default.
+- [x] Repository docs describe how the least-privilege runtime role is provisioned and rotated.
+- [x] The runtime DB role boundary is explicit and limited to application-owned responsibilities.
+- [x] `./mvnw clean verify` passes after changes.

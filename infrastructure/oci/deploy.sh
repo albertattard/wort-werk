@@ -7,9 +7,10 @@ FOUNDATION_DIR="${SCRIPT_DIR}/foundation"
 DATA_DIR="${SCRIPT_DIR}/data"
 RUNTIME_DIR="${SCRIPT_DIR}/runtime"
 MODE="${1:-all}"
+BOOTSTRAP_RUNTIME_DB_ROLE_SCRIPT="${DATA_DIR}/bootstrap-runtime-db-role.sh"
 
-if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "data" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
-  echo "Usage: $0 [all|foundation|data|runtime|release|rollout]" >&2
+if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "data" && "${MODE}" != "db-role" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
+  echo "Usage: $0 [all|foundation|data|db-role|runtime|release|rollout]" >&2
   exit 1
 fi
 
@@ -163,6 +164,11 @@ apply_data() {
   write_data_foundation_vars
   terraform -chdir="${DATA_DIR}" fmt
   terraform -chdir="${DATA_DIR}" apply -auto-approve -input=false
+}
+
+bootstrap_runtime_db_role() {
+  require_command "${BOOTSTRAP_RUNTIME_DB_ROLE_SCRIPT}"
+  "${BOOTSTRAP_RUNTIME_DB_ROLE_SCRIPT}"
 }
 
 write_runtime_stack_vars() {
@@ -395,6 +401,9 @@ case "${MODE}" in
     ;;
   data)
     apply_data
+    ;;
+  db-role)
+    bootstrap_runtime_db_role
     ;;
   runtime)
     apply_runtime

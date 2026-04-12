@@ -64,9 +64,9 @@ variable "postgresql_admin_password_secret_version" {
 }
 
 variable "runtime_db_username" {
-  description = "Runtime database username used by the application. Defaults to the admin username until a separate least-privilege app role is provisioned."
+  description = "Dedicated non-admin runtime database username used by the application."
   type        = string
-  default     = "wortwerk_admin"
+  default     = "wortwerk_app"
 }
 
 variable "runtime_db_password_secret_ocid" {

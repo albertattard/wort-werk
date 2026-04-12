@@ -87,9 +87,7 @@ The application then:
 - materializes the PostgreSQL CA certificate locally at startup
 - verifies PostgreSQL TLS with `sslmode=verify-full`
 - exposes Actuator readiness with database health on the internal management port
-
-Current limitation:
-- runtime defaults to the PostgreSQL admin username until a separate least-privilege application role bootstrap flow exists
+- connects by default as the dedicated non-admin role `wortwerk_app`, provisioned by `../data/bootstrap-runtime-db-role.sh`
 
 ## Key Outputs
 

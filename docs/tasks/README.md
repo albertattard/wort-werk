@@ -96,7 +96,6 @@ Use one of these `category` values for new tasks:
 ## In Progress
 
 - [ ] [TASK-045: Split OCI PostgreSQL into Dedicated Data Stack](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
-- [ ] [TASK-048: Introduce Least-Privilege OCI Runtime DB Role](./infrastructure/TASK-048-introduce-least-privilege-oci-runtime-db-role.md)
 
 ## Done
 
@@ -115,6 +114,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-040: Adopt Docker Compose for Verify Orchestration](./repo-process/TASK-040-adopt-docker-compose-for-verify-orchestration.md)
 - [x] [TASK-042: Structure Asset Catalog with IDs and Category Directories](./repo-process/TASK-042-structure-asset-catalog-with-ids-and-category-directories.md)
 - [x] [TASK-034: Implement Passkey Auth Foundation](./quiz/TASK-034-implement-passkey-auth-foundation.md)
+- [x] [TASK-048: Introduce Least-Privilege OCI Runtime DB Role](./infrastructure/TASK-048-introduce-least-privilege-oci-runtime-db-role.md)
 - [x] [TASK-019: Generate 420px Image Variants While Preserving Originals](./content/TASK-019-generate-420px-image-variants.md)
 - [x] [TASK-022: Separate Original and Derived Image Directories](./content/TASK-022-separate-original-and-derived-image-directories.md)
 - [x] [TASK-023: Sync Missing Nouns and Regenerate Missing Derived Assets](./content/TASK-023-sync-missing-nouns-images-and-audio.md)

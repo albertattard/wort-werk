@@ -38,11 +38,7 @@ The script:
 - creates the Vault secrets on first run
 - updates the Vault secrets on later runs
 - writes `infrastructure/oci/data/terraform.tfvars`
-
-Current runtime safeguard:
-- while `runtime_db_username` still resolves to `wortwerk_admin`, the script reuses the PostgreSQL admin password for the runtime secret by default
-- if you explicitly provide a different `RUNTIME_DB_PASSWORD` while `runtime_db_username` is still `wortwerk_admin`, the script exits with an error instead of writing an incompatible secret pair
-- separate runtime passwords are only allowed after you configure a non-admin `runtime_db_username`
+- defaults `runtime_db_username` to `wortwerk_app` unless you override it explicitly
 
 Then apply the `data` stack:
 
@@ -57,10 +53,9 @@ If you prefer to avoid interactive prompts, provide the passwords as environment
 ```bash
 OCI_PROFILE="FRANKFURT" \
 POSTGRESQL_ADMIN_PASSWORD="<admin-password>" \
+RUNTIME_DB_PASSWORD="<runtime-password>" \
 ./infrastructure/oci/data/set-db-secrets.sh
 ```
-
-Add `RUNTIME_DB_PASSWORD="<runtime-password>"` only after `runtime_db_username` has been changed away from `wortwerk_admin`.
 
 If you want the script to use different secret names:
 
@@ -88,8 +83,29 @@ terraform apply
 
 The helper script `../deploy.sh data` writes `foundation.auto.tfvars` for shared inputs automatically.
 
-Current limitation:
-- runtime defaults to the PostgreSQL admin username until a separate least-privilege application role bootstrap path is added.
+## Bootstrap the Dedicated Runtime DB Role
+
+After the `data` stack has been applied, run the role bootstrap from a machine that can resolve and reach the private PostgreSQL endpoint. This step requires `psql`.
+
+```bash
+OCI_PROFILE="FRANKFURT" ./infrastructure/oci/deploy.sh db-role
+```
+
+Or invoke the helper directly:
+
+```bash
+OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/bootstrap-runtime-db-role.sh
+```
+
+The helper:
+- reads the PostgreSQL endpoint and CA certificate from `terraform output`
+- reads the administrator and runtime DB passwords from OCI Vault
+- connects over TLS with `psql`
+- creates or rotates the `runtime_db_username` role
+- grants only Wort-Werk-owned database/schema privileges on the configured database
+- reassigns existing objects in the `public` schema to the runtime role so Flyway can keep evolving the schema without using the administrator account
+
+Re-run this helper after rotating the runtime DB password secret, or after administrator-created schema objects need to be handed back to the runtime role.
 
 ## Key Outputs
 

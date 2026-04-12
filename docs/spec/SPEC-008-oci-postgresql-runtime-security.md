@@ -51,7 +51,8 @@ The apply order must be:
 1. `foundation`
 2. create or rotate required Vault secrets outside Terraform
 3. `data`
-4. `runtime` or `release`
+4. bootstrap or rotate the dedicated runtime DB role from a host with private DB connectivity
+5. `runtime` or `release`
 
 ## Scope
 
@@ -82,7 +83,7 @@ The apply order must be:
 - [ ] OCI Terraform naming is consistent across stacks, with fixed resource names centralized in locals.
 - [ ] Security requirements for private networking, TLS in transit, and least-privilege ingress are documented.
 - [ ] Secret-handling approach for app-to-DB credentials is explicitly documented.
-- [ ] Secret bootstrap workflow prevents mismatched runtime credentials for the configured runtime DB user.
-- [ ] Runtime DB connectivity no longer defaults to the PostgreSQL administrator account.
-- [ ] Repository docs define the least-privilege boundary for the runtime DB role and the bootstrap path that provisions it.
+- [x] Secret bootstrap workflow prevents mismatched runtime credentials for the configured runtime DB user.
+- [x] Runtime DB connectivity no longer defaults to the PostgreSQL administrator account.
+- [x] Repository docs define the least-privilege boundary for the runtime DB role and the bootstrap path that provisions it.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

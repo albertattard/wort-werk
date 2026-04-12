@@ -29,7 +29,7 @@ Negative:
 - The application startup path now depends on OCI Vault availability when runtime secret lookup is enabled.
 
 Risks:
-- The current runtime still defaults to the PostgreSQL admin user until a separate least-privilege application role bootstrap path is introduced.
+- Secret rotation must stay coordinated with the dedicated runtime-role bootstrap step, otherwise OCI Vault and PostgreSQL credentials can drift.
 
 ## Alternatives Considered
 

@@ -8,6 +8,7 @@ ADMIN_SECRET_NAME="${POSTGRESQL_ADMIN_SECRET_NAME:-wort-werk-db-admin-password}"
 RUNTIME_SECRET_NAME="${RUNTIME_DB_SECRET_NAME:-wort-werk-db-runtime-password}"
 TFVARS_FILE="${SCRIPT_DIR}/terraform.tfvars"
 DEFAULT_POSTGRESQL_ADMIN_USERNAME="wortwerk_admin"
+DEFAULT_RUNTIME_DB_USERNAME="wortwerk_app"
 
 require_command() {
   local command_name="$1"
@@ -30,14 +31,16 @@ prompt_secret() {
   local prompt="$1"
   local value
 
-  if [[ ! -r /dev/tty ]]; then
+  if ! exec 3<> /dev/tty; then
     echo "Interactive secret prompt requires /dev/tty. Set POSTGRESQL_ADMIN_PASSWORD and RUNTIME_DB_PASSWORD explicitly." >&2
     exit 1
   fi
 
-  printf "%s:" "${prompt}" > /dev/tty
-  IFS= read -rs value < /dev/tty
-  printf "\n" > /dev/tty
+  printf "%s:" "${prompt}" >&3
+  IFS= read -rs value <&3
+  printf "\n" >&3
+  exec 3>&-
+  exec 3<&-
   require_non_empty "${prompt}" "${value}"
   printf "%s" "${value}"
 }
@@ -128,20 +131,18 @@ require_non_empty "VAULT_KEY_OCID" "${VAULT_KEY_OCID}"
 POSTGRESQL_ADMIN_PASSWORD="${POSTGRESQL_ADMIN_PASSWORD:-}"
 RUNTIME_DB_PASSWORD="${RUNTIME_DB_PASSWORD:-}"
 RUNTIME_DB_USERNAME="${RUNTIME_DB_USERNAME:-$(read_tfvars_string "${TFVARS_FILE}" "runtime_db_username")}"
-RUNTIME_DB_USERNAME="${RUNTIME_DB_USERNAME:-${DEFAULT_POSTGRESQL_ADMIN_USERNAME}}"
+RUNTIME_DB_USERNAME="${RUNTIME_DB_USERNAME:-${DEFAULT_RUNTIME_DB_USERNAME}}"
 
 if [[ -z "${POSTGRESQL_ADMIN_PASSWORD}" ]]; then
   POSTGRESQL_ADMIN_PASSWORD="$(prompt_secret "PostgreSQL admin password: ")"
 fi
 
-if [[ "${RUNTIME_DB_USERNAME}" == "${DEFAULT_POSTGRESQL_ADMIN_USERNAME}" && -n "${RUNTIME_DB_PASSWORD}" && "${RUNTIME_DB_PASSWORD}" != "${POSTGRESQL_ADMIN_PASSWORD}" ]]; then
-  echo "Refusing to write a different runtime DB password while runtime_db_username is ${DEFAULT_POSTGRESQL_ADMIN_USERNAME}. Reuse the PostgreSQL admin password or configure a separate runtime_db_username first." >&2
+if [[ "${RUNTIME_DB_USERNAME}" == "${DEFAULT_POSTGRESQL_ADMIN_USERNAME}" ]]; then
+  echo "runtime_db_username must be a dedicated non-admin application role, not ${DEFAULT_POSTGRESQL_ADMIN_USERNAME}." >&2
   exit 1
 fi
 
-if [[ "${RUNTIME_DB_USERNAME}" == "${DEFAULT_POSTGRESQL_ADMIN_USERNAME}" && -z "${RUNTIME_DB_PASSWORD}" ]]; then
-  RUNTIME_DB_PASSWORD="${POSTGRESQL_ADMIN_PASSWORD}"
-elif [[ -z "${RUNTIME_DB_PASSWORD}" ]]; then
+if [[ -z "${RUNTIME_DB_PASSWORD}" ]]; then
   RUNTIME_DB_PASSWORD="$(prompt_secret "Runtime DB password: ")"
 fi
 

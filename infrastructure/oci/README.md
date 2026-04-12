@@ -10,7 +10,8 @@ Apply order:
 1. foundation
 2. create or rotate DB secrets in OCI Vault
 3. data
-4. runtime or release
+4. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
+5. runtime or release
 
 ## Set the DB Credentials
 
@@ -25,18 +26,26 @@ Recommended command:
 OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/set-db-secrets.sh
 ```
 
-While `runtime_db_username` still defaults to `wortwerk_admin`, `set-db-secrets.sh` reuses the PostgreSQL admin password for the runtime secret and rejects mismatched values.
+The runtime secret is always independent from the PostgreSQL administrator secret. The default runtime DB username is `wortwerk_app`.
+
+After `data` has been applied, bootstrap the dedicated runtime role and grants from a host that can resolve and reach the private PostgreSQL endpoint:
+
+```bash
+OCI_PROFILE="FRANKFURT" ./infrastructure/oci/deploy.sh db-role
+```
 
 ## Helper Scripts
 
 - `./infrastructure/oci/deploy.sh all`: apply foundation, data, then runtime.
 - `./infrastructure/oci/deploy.sh foundation`: apply foundation only.
 - `./infrastructure/oci/deploy.sh data`: apply data only.
+- `./infrastructure/oci/deploy.sh db-role`: bootstrap or rotate the dedicated runtime DB role from a host with private DB connectivity.
 - `./infrastructure/oci/deploy.sh runtime`: apply runtime only.
 - `./infrastructure/oci/deploy.sh release`: run `./mvnw clean verify` (local single-platform image), then publish multi-arch image and deploy runtime with a new image tag.
 - `./infrastructure/oci/deploy.sh rollout`: repeatable full rollout (`foundation`, `data`, then `release`).
   - preflight: fails if git has pending changes outside `assets/images/new`
   - override: set `ALLOW_DIRTY_ROLLOUT=true` for intentional exception runs
+- Run `./infrastructure/oci/deploy.sh db-role` after changing administrator or runtime DB passwords so PostgreSQL stays in sync with OCI Vault before `runtime`, `release`, or `rollout`.
 - `./tools/rollout`: sources `~/.oci/oci.secrets.env`, preserves explicit `VERIFY_DB_USERNAME` / `VERIFY_DB_PASSWORD` values when present, generates ephemeral local ones when missing, and runs `deploy.sh rollout` from repo root.
 
 Runtime `image_tag` behavior:
@@ -131,9 +140,11 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - OCI Database with PostgreSQL is provisioned in the `data` stack on a private subnet exposed by `foundation`.
 - The database NSG accepts PostgreSQL traffic only from the application NSG.
 - Runtime DB passwords are stored in OCI Vault.
+- Runtime uses the dedicated non-admin role `wortwerk_app` by default.
 - The container instance reads the runtime DB password from OCI Vault by using OCI resource principal.
 - Foundation provisions Vault, key, dynamic group, and shared network boundaries; secret values themselves must be created or rotated outside Terraform.
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
+- The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
 
 ## Naming Convention
 
