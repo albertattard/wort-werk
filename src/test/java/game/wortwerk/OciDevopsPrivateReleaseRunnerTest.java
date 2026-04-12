@@ -55,6 +55,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to read postgres-db-systems");
         assertThat(foundationOutputs).contains("output \"devops_dynamic_group_name\"");
         assertThat(foundationOutputs).contains("output \"terraform_state_bucket_name\"");
         assertThat(deployScript).contains("devops_dynamic_group_name");

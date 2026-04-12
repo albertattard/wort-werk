@@ -87,6 +87,7 @@ Secure release and deployment execution must satisfy all of the following:
 12. The deployment stage must not depend on laptop-local Terraform state or laptop-local foundation/data outputs; all required deployment inputs must be available to the OCI runner through remote state or OCI-managed release metadata.
 13. The runtime Terraform state used by OCI-resident deployment must live in a remote OCI-managed backend, with an explicit guard against applying from an empty or missing remote state object.
 14. Release trigger inputs must remain small and explicit; stable runtime configuration belongs on OCI-managed pipeline defaults, and large PostgreSQL connection material such as CA certificates must be resolved inside OCI from authoritative service APIs rather than being copied through ad hoc build arguments.
+15. OCI DevOps runner IAM must include read access to OCI PostgreSQL database-system connection details when the build resolves runtime TLS material from the OCI PostgreSQL API.
 
 ## Out of Scope
 

@@ -84,3 +84,4 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
   - removal or blocking of the legacy laptop-local release wrappers
 - OCI DevOps pipeline parameter defaults now carry the stable runtime deployment contract, while `run-release.sh` only passes `releaseVersion` and `tfBackendMode`.
 - PostgreSQL CA material is now resolved inside OCI from the DB system connection-details API so the build pipeline no longer exceeds OCI DevOps parameter size limits.
+- The DevOps dynamic-group policy must include `read postgres-db-systems` so the build runner can call `GetConnectionDetails` against the managed PostgreSQL system.
