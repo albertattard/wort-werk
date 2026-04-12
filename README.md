@@ -60,6 +60,7 @@ docs/
 
 - The in-progress OCI DevOps release path is provisioned through `infrastructure/oci/devops/`.
 - This path depends on explicit OCI IAM bindings for the DevOps runner; private networking alone is not sufficient.
+- Private DevOps runners also need a dedicated outbound path for external SCM fetches; do not assume the runtime subnet's private-only network policy is sufficient for release execution.
 - Treat DevOps dynamic groups and compartment-scoped policies as part of the release infrastructure contract, not as post-apply console cleanup.
 
 ## Container

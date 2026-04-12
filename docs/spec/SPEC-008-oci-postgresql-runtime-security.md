@@ -80,6 +80,7 @@ Secure release and deployment execution must satisfy all of the following:
 6. Database role bootstrap and runtime rollout must be part of the reproducible release path rather than an undocumented side step.
 7. OCI DevOps runner identities must use explicit dynamic-group and policy bindings instead of inheriting broad tenancy-wide privileges.
 8. Secret-read permissions for external SCM connections must be scoped to the specific secret OCID used by the release path.
+9. Private DevOps runners must have an explicit egress design for external SCM access; if public internet egress is required, it must be isolated to the DevOps subnet through a controlled outbound path such as NAT and must not be reused by the runtime subnet.
 
 ## Out of Scope
 
@@ -104,4 +105,5 @@ Secure release and deployment execution must satisfy all of the following:
 - [ ] Release execution is documented to target an explicit git reference and preserve commit-to-image traceability.
 - [ ] Repository docs define how private-network DB bootstrap is executed from OCI-managed infrastructure instead of an operator laptop.
 - [ ] Repository docs define the DevOps runner IAM model, including dynamic groups and least-privilege policies for private-network execution and external-connection secret reads.
+- [ ] Repository docs define the DevOps runner outbound network model, including how private build stages reach external SCM without broadening runtime subnet exposure.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

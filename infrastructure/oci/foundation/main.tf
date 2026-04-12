@@ -14,6 +14,7 @@ locals {
   vault_key_name                    = "${local.stack_name}-secrets"
   public_route_table_name           = "${local.stack_name}-public"
   runtime_route_table_name          = "${local.stack_name}-runtime"
+  devops_route_table_name           = "${local.stack_name}-devops"
   private_route_table_name          = "${local.stack_name}-private"
   container_nsg_name                = "${local.stack_name}-container"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
@@ -29,6 +30,7 @@ locals {
   devops_runner_policy_name         = "${local.stack_name}-devops-runner"
   devops_runner_policy_description  = "Least-privilege policy for Wort-Werk OCI DevOps runners"
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
+  devops_nat_gateway_name           = "${local.stack_name}-devops"
   service_gateway_name              = "${local.stack_name}-services"
 }
 
@@ -84,6 +86,12 @@ resource "oci_core_route_table" "private" {
   display_name   = local.private_route_table_name
 }
 
+resource "oci_core_nat_gateway" "devops" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.devops_nat_gateway_name
+}
+
 resource "oci_core_service_gateway" "oracle_services" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
@@ -103,6 +111,24 @@ resource "oci_core_route_table" "runtime" {
     destination       = data.oci_core_services.oracle_services.services[0].cidr_block
     destination_type  = "SERVICE_CIDR_BLOCK"
     network_entity_id = oci_core_service_gateway.oracle_services.id
+  }
+}
+
+resource "oci_core_route_table" "devops" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.devops_route_table_name
+
+  route_rules {
+    destination       = data.oci_core_services.oracle_services.services[0].cidr_block
+    destination_type  = "SERVICE_CIDR_BLOCK"
+    network_entity_id = oci_core_service_gateway.oracle_services.id
+  }
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_nat_gateway.devops.id
   }
 }
 
@@ -296,6 +322,21 @@ resource "oci_core_network_security_group_security_rule" "devops_egress_oci_serv
   destination_type          = "SERVICE_CIDR_BLOCK"
 }
 
+resource "oci_core_network_security_group_security_rule" "devops_egress_https" {
+  network_security_group_id = oci_core_network_security_group.devops.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = "0.0.0.0/0"
+  destination_type          = "CIDR_BLOCK"
+
+  tcp_options {
+    destination_port_range {
+      min = 443
+      max = 443
+    }
+  }
+}
+
 resource "oci_core_network_security_group_security_rule" "db_egress_all" {
   network_security_group_id = oci_core_network_security_group.database.id
   direction                 = "EGRESS"
@@ -340,7 +381,7 @@ resource "oci_core_subnet" "devops" {
   cidr_block                 = var.devops_subnet_cidr
   display_name               = local.devops_subnet_name
   dns_label                  = "wortdev"
-  route_table_id             = oci_core_route_table.runtime.id
+  route_table_id             = oci_core_route_table.devops.id
   prohibit_public_ip_on_vnic = true
 }
 

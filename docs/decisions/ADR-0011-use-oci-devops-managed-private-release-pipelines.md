@@ -21,6 +21,7 @@ The intended structure is:
 2. Use an OCI DevOps deployment pipeline to execute private-network rollout steps from inside OCI.
 3. Run private PostgreSQL bootstrap steps from a deployment shell stage inside a private subnet rather than from an operator laptop.
 4. Prefer ephemeral or OCI-managed execution over long-lived general-purpose deployment hosts.
+5. Provide external SCM reachability for private DevOps runners through a dedicated outbound path for the DevOps subnet rather than by widening runtime subnet internet access.
 
 ## Consequences
 
@@ -28,10 +29,12 @@ Positive:
 - Release execution becomes reproducible and tied to explicit repository state instead of a mutable local workspace.
 - Private-network deployment steps no longer depend on a human reaching into the VCN from an ad hoc machine.
 - OCI-managed identity can replace some static operator credential handling.
+- Runtime and release tiers can keep different egress boundaries instead of collapsing into one broader private-subnet policy.
 
 Negative:
 - OCI DevOps resources, permissions, and pipeline definitions add new infrastructure surface area.
 - Build and deployment concerns must be modeled explicitly instead of hidden in local shell scripts.
+- Private runners that need external SCM access still require deliberate outbound design, such as NAT plus scoped NSG egress.
 
 Risks:
 - If the pipeline is allowed to deploy anything other than an explicit git reference, traceability will still be weak.

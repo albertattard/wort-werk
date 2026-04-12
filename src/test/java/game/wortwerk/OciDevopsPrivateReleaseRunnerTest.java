@@ -18,13 +18,17 @@ class OciDevopsPrivateReleaseRunnerTest {
         String foundationOutputs = read("infrastructure/oci/foundation/outputs.tf");
 
         assertThat(foundationVariables).contains("variable \"devops_subnet_cidr\"");
+        assertThat(foundationMain).contains("resource \"oci_core_nat_gateway\" \"devops\"");
+        assertThat(foundationMain).contains("resource \"oci_core_route_table\" \"devops\"");
         assertThat(foundationMain).contains("devops_nsg_name");
         assertThat(foundationMain).contains("devops_subnet_name");
         assertThat(foundationMain).contains("resource \"oci_core_network_security_group\" \"devops\"");
         assertThat(foundationMain).contains("resource \"oci_core_subnet\" \"devops\"");
         assertThat(foundationMain).contains("source                    = oci_core_network_security_group.devops.id");
         assertThat(foundationMain).contains("destination               = oci_core_network_security_group.database.id");
-        assertThat(foundationMain).contains("route_table_id             = oci_core_route_table.runtime.id");
+        assertThat(foundationMain).contains("resource \"oci_core_network_security_group_security_rule\" \"devops_egress_https\"");
+        assertThat(foundationMain).contains("destination               = \"0.0.0.0/0\"");
+        assertThat(foundationMain).contains("route_table_id             = oci_core_route_table.devops.id");
         assertThat(foundationOutputs).contains("output \"devops_subnet_id\"");
         assertThat(foundationOutputs).contains("output \"devops_nsg_id\"");
     }

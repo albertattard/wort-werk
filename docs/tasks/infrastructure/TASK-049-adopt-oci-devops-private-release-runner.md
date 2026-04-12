@@ -31,6 +31,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - Long-lived standing privileges should be minimized; ephemeral or OCI-managed execution is preferred over a permanent general-purpose VM.
 - The release path must not make the PostgreSQL endpoint public just to simplify deployment.
 - The release path must not deploy ambiguous workspace state; it must target an explicit git reference.
+- Private build and deployment stages may use constrained outbound internet egress only where required to fetch source or dependencies, and that egress must not be shared with the runtime subnet.
 
 ## Architecture Notes
 
@@ -51,13 +52,14 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - [ ] The release path is documented to accept an explicit git reference and preserve commit-to-image traceability.
 - [ ] The release path is documented to execute DB role bootstrap and runtime rollout from inside OCI private networking.
 - [ ] IAM, secret, and network boundaries for the release runner are explicit.
+- [ ] The network design explains how private DevOps runners fetch source from external SCM without widening runtime subnet exposure.
 - [ ] Follow-on implementation steps are broken down before infrastructure changes begin.
 
 ## Implementation Notes
 
 - The current Terraform now provisions the DevOps project, private subnet placement, and project logging.
-- A live build-run exposed the next missing slice: OCI resource-principal IAM for the DevOps runner.
+- A live build-run exposed the next missing slice: the private DevOps subnet can reach OCI services and PostgreSQL, but cannot fetch source from GitHub without a dedicated egress path.
 - The next implementation step is to provision:
-  - a dedicated DevOps dynamic group
-  - baseline compartment-scoped policies for `devops-family`, private-network VNIC attachment, and generic artifact delivery
-  - a secret-read policy scoped to the GitHub PAT secret used by the external connection
+  - a dedicated NAT-backed route path for the DevOps subnet only
+  - constrained DevOps NSG egress for outbound HTTPS fetches
+  - documentation that keeps runtime networking on OCI service-gateway-only access

@@ -7,8 +7,9 @@ Foundation Terraform stack for Wort-Werk OCI environment setup.
 - dedicated compartment
 - VCN
 - internet gateway
+- NAT gateway for private DevOps runner egress
 - service gateway for OCI regional services
-- route tables for public load balancer, private runtime, and private database paths
+- route tables for public load balancer, private runtime, private DevOps, and private database paths
 - dedicated private subnet for OCI DevOps build and shell stages
 - public subnet for Load Balancer
 - private subnet for Container Instance runtime
@@ -92,6 +93,7 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 - The runtime subnet is private and prohibits public IP assignment on runtime VNICs.
 - The DevOps subnet is private and exists only for OCI-managed build and shell stages that need private service or database reachability.
 - The runtime route table provides private access to OCI regional services through the service gateway.
-- The DevOps NSG can reach PostgreSQL and OCI regional services, but does not receive public ingress.
+- The DevOps route table combines OCI service-gateway access with NAT-backed outbound internet egress so private runners can fetch source from external SCM providers without public IPs.
+- The DevOps NSG can reach PostgreSQL, OCI regional services, and outbound HTTPS, but does not receive public ingress.
 - The management port exists for Spring Actuator readiness checks and is not exposed through a public listener.
 - Foundation also owns the baseline DevOps runner IAM boundary: a dedicated dynamic group plus least-privilege compartment-scoped policies for `devops-family`, private VNIC attachments, generic artifact delivery, and shell-stage container instances.

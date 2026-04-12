@@ -149,6 +149,7 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - The Wort-Werk container instance runs on a dedicated private runtime subnet and does not receive a public IP.
 - OCI DevOps private build and shell stages run on a separate private subnet and NSG so release execution has a narrower trust boundary than the runtime tier.
 - Foundation provides a service-gateway path for OCI regional services so runtime startup dependencies such as Vault-backed secret reads remain available without public internet exposure.
+- The DevOps subnet may require outbound HTTPS to external SCM providers; when that is needed, the path must be isolated to the DevOps subnet through NAT-backed egress rather than copied onto the runtime subnet.
 - Public traffic reaches the backend only through the Load Balancer; the application container is addressed privately inside the VCN.
 
 ## Database Security Model
