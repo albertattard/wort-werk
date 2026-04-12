@@ -13,13 +13,18 @@ variable "compartment_ocid" {
   type        = string
 }
 
-variable "subnet_id" {
-  description = "Subnet OCID from foundation stack."
+variable "runtime_subnet_id" {
+  description = "Private runtime subnet OCID from foundation stack."
   type        = string
 }
 
 variable "nsg_id" {
   description = "NSG OCID from foundation stack."
+  type        = string
+}
+
+variable "load_balancer_subnet_id" {
+  description = "Public load balancer subnet OCID from foundation stack."
   type        = string
 }
 

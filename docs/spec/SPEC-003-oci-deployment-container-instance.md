@@ -57,6 +57,8 @@ Repeatable operator flow:
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
 - load balancer health checks must target a stable unauthenticated route so auth changes do not strand an otherwise healthy backend behind `502`
 - production health checks should use a dedicated Spring Actuator management endpoint rather than a learner-facing UI route
+- runtime container instances must not be directly internet-addressable; public ingress must terminate at the OCI Load Balancer
+- runtime networking must preserve private access to required OCI regional services so startup dependencies such as Vault-backed secret reads still work without a container public IP
 
 ## Acceptance Criteria
 
@@ -82,6 +84,9 @@ Repeatable operator flow:
 - [x] Load balancer health checks use HTTP readiness instead of raw TCP to reduce premature traffic routing.
 - [x] Runtime exposes a dedicated management port for Spring Actuator health checks without adding a new public listener.
 - [x] Load balancer health checks use Spring Actuator readiness instead of a learner-facing route.
+- [x] Runtime container instances use private IPs only and do not receive public IP assignment.
+- [x] Public ingress terminates at the OCI Load Balancer while the runtime backend stays on private VCN addressing.
+- [x] Runtime retains private access to required OCI regional services after container public IP removal.
 - [x] Release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
 - [x] Deployment script provides a single repeatable command that runs `foundation -> release` in order, where `release` performs runtime apply after publishing the image.
 - [x] Rollout preflight blocks deployment when git working tree is dirty outside `assets/images/new`, with an explicit override knob for intentional exceptions.

@@ -13,18 +13,30 @@ locals {
   vault_name                        = local.stack_name
   vault_key_name                    = "${local.stack_name}-secrets"
   public_route_table_name           = "${local.stack_name}-public"
+  runtime_route_table_name          = "${local.stack_name}-runtime"
   private_route_table_name          = "${local.stack_name}-private"
   container_nsg_name                = "${local.stack_name}-container"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
   database_nsg_name                 = "${local.stack_name}-database"
+  load_balancer_subnet_name         = "${local.stack_name}-lb"
+  runtime_subnet_name               = "${local.stack_name}-runtime"
   database_subnet_name              = "${local.stack_name}-db"
   runtime_dynamic_group_name        = "${local.stack_name}-container-runtime"
   runtime_dynamic_group_description = "Container instances for Wort-Werk runtime"
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
+  service_gateway_name              = "${local.stack_name}-services"
 }
 
 data "oci_objectstorage_namespace" "this" {
   compartment_id = var.tenancy_ocid
+}
+
+data "oci_core_services" "oracle_services" {
+  filter {
+    name   = "name"
+    values = ["All .* Services In Oracle Services Network"]
+    regex  = true
+  }
 }
 
 resource "oci_identity_compartment" "wort_werk" {
@@ -65,6 +77,28 @@ resource "oci_core_route_table" "private" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.private_route_table_name
+}
+
+resource "oci_core_service_gateway" "oracle_services" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.service_gateway_name
+
+  services {
+    service_id = data.oci_core_services.oracle_services.services[0].id
+  }
+}
+
+resource "oci_core_route_table" "runtime" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.runtime_route_table_name
+
+  route_rules {
+    destination       = data.oci_core_services.oracle_services.services[0].cidr_block
+    destination_type  = "SERVICE_CIDR_BLOCK"
+    network_entity_id = oci_core_service_gateway.oracle_services.id
+  }
 }
 
 resource "oci_core_network_security_group" "wort_werk" {
@@ -115,12 +149,12 @@ resource "oci_core_network_security_group_security_rule" "ingress_management" {
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "egress_all" {
+resource "oci_core_network_security_group_security_rule" "egress_oci_services" {
   network_security_group_id = oci_core_network_security_group.wort_werk.id
   direction                 = "EGRESS"
-  protocol                  = "all"
-  destination               = "0.0.0.0/0"
-  destination_type          = "CIDR_BLOCK"
+  protocol                  = "6"
+  destination               = data.oci_core_services.oracle_services.services[0].cidr_block
+  destination_type          = "SERVICE_CIDR_BLOCK"
 }
 
 resource "oci_core_network_security_group_security_rule" "egress_postgresql" {
@@ -225,10 +259,20 @@ resource "oci_core_subnet" "container" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
   cidr_block                 = var.container_subnet_cidr
-  display_name               = local.stack_name
-  dns_label                  = "wortwerk"
+  display_name               = local.load_balancer_subnet_name
+  dns_label                  = "wortlb"
   route_table_id             = oci_core_route_table.public.id
   prohibit_public_ip_on_vnic = false
+}
+
+resource "oci_core_subnet" "runtime" {
+  compartment_id             = oci_identity_compartment.wort_werk.id
+  vcn_id                     = oci_core_vcn.wort_werk.id
+  cidr_block                 = var.runtime_subnet_cidr
+  display_name               = local.runtime_subnet_name
+  dns_label                  = "wortrun"
+  route_table_id             = oci_core_route_table.runtime.id
+  prohibit_public_ip_on_vnic = true
 }
 
 resource "oci_core_subnet" "database" {

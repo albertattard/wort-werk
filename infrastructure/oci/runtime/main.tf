@@ -44,8 +44,8 @@ resource "oci_container_instances_container_instance" "wort_werk" {
   }
 
   vnics {
-    subnet_id             = var.subnet_id
-    is_public_ip_assigned = true
+    subnet_id             = var.runtime_subnet_id
+    is_public_ip_assigned = false
     nsg_ids               = [var.nsg_id]
   }
 
@@ -77,7 +77,7 @@ resource "oci_load_balancer_load_balancer" "wort_werk" {
   compartment_id             = var.compartment_ocid
   display_name               = local.load_balancer_name
   shape                      = "flexible"
-  subnet_ids                 = [var.subnet_id]
+  subnet_ids                 = [var.load_balancer_subnet_id]
   network_security_group_ids = [var.load_balancer_nsg_id]
 
   shape_details {

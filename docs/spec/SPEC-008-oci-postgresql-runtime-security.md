@@ -30,6 +30,8 @@ The infrastructure must satisfy all of the following:
    - `WORTWERK_DB_URL`
    - `WORTWERK_DB_USERNAME`
    - `WORTWERK_DB_PASSWORD`
+9. Runtime container instances must not receive public IP addresses; internet-facing traffic must terminate at the OCI Load Balancer instead of the application container.
+10. Runtime access to OCI-managed dependencies required at startup, such as Vault secret retrieval, must remain available through private OCI networking rather than public internet exposure.
 
 ## Deployment Model
 
@@ -59,6 +61,7 @@ The apply order must be:
 - Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
 - Keep Terraform naming consistent by using locals for fixed Wort-Werk resource identity and variables only for deployment-specific inputs.
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
+- Remove direct public-IP exposure from runtime container instances while preserving access to OCI regional services needed at startup.
 - Document the operational steps needed for first deployment and future rotation of DB credentials.
 
 ## Out of Scope

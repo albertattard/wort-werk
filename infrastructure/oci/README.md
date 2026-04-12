@@ -60,7 +60,8 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation and da
 - `region`
 - `tenancy_ocid`
 - `compartment_ocid`
-- `subnet_id`
+- `runtime_subnet_id`
+- `load_balancer_subnet_id`
 - `nsg_id`
 - `load_balancer_nsg_id`
 - `load_balancer_public_ip_id`
@@ -117,6 +118,13 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - The Load Balancer health checker targets `/actuator/health/readiness` on that management port.
 - Foundation NSGs allow the management port only from the Load Balancer NSG; no public listener is created for it.
 - Readiness includes database health, so OCI only routes traffic when the app and PostgreSQL dependency are both ready.
+
+## Runtime Network Design
+
+- The Load Balancer stays on the public subnet with the reserved public IP.
+- The Wort-Werk container instance runs on a dedicated private runtime subnet and does not receive a public IP.
+- Foundation provides a service-gateway path for OCI regional services so runtime startup dependencies such as Vault-backed secret reads remain available without public internet exposure.
+- Public traffic reaches the backend only through the Load Balancer; the application container is addressed privately inside the VCN.
 
 ## Database Security Model
 

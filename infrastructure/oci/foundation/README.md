@@ -7,8 +7,10 @@ Foundation Terraform stack for Wort-Werk OCI environment setup.
 - dedicated compartment
 - VCN
 - internet gateway
-- route tables
-- subnet for Container Instance
+- service gateway for OCI regional services
+- route tables for public load balancer, private runtime, and private database paths
+- public subnet for Load Balancer
+- private subnet for Container Instance runtime
 - private subnet reserved for OCI PostgreSQL
 - NSGs and ingress/egress rules for container, load balancer, and database tiers
 - OCIR repository
@@ -59,6 +61,8 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 - `tenancy_ocid`
 - `compartment_ocid`
 - `subnet_id`
+- `runtime_subnet_id`
+- `load_balancer_subnet_id`
 - `database_subnet_id`
 - `nsg_id`
 - `database_nsg_id`
@@ -80,4 +84,6 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 
 - The Load Balancer NSG accepts public ingress only on `80` and `443`.
 - The container NSG accepts the application port and the internal management port only from the Load Balancer NSG.
+- The runtime subnet is private and prohibits public IP assignment on runtime VNICs.
+- The runtime route table provides private access to OCI regional services through the service gateway.
 - The management port exists for Spring Actuator readiness checks and is not exposed through a public listener.

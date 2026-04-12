@@ -12,18 +12,18 @@ updated: 2026-04-05
 
 ## Summary
 
-Expose runtime Terraform outputs for public IP and direct HTTP URL so operators can access the deployed app without manual OCI CLI lookup.
+Expose runtime Terraform outputs for the public entrypoint IP and access URL so operators can access the deployed app without manual OCI CLI lookup.
 
 ## Scope
 
-- Add runtime output for container instance public IP.
-- Add runtime output for app access URL (`http://<ip>:8080`).
+- Add runtime output for the public Load Balancer IP.
+- Add runtime output for the application access URL.
 - Update runtime docs to include the new outputs.
 
 ## Assumptions
 
-- Runtime container uses public IP assignment.
-- Application listens on port `8080`.
+- The stable public entrypoint is the Load Balancer.
+- Application traffic is routed through the Load Balancer listener.
 
 ## Acceptance Criteria
 

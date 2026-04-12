@@ -31,9 +31,15 @@ variable "vcn_cidr" {
 }
 
 variable "container_subnet_cidr" {
-  description = "CIDR for the public subnet hosting the Container Instance."
+  description = "CIDR for the public subnet hosting the OCI Load Balancer."
   type        = string
   default     = "10.10.1.0/24"
+}
+
+variable "runtime_subnet_cidr" {
+  description = "CIDR for the private subnet hosting the Wort-Werk Container Instance."
+  type        = string
+  default     = "10.10.3.0/24"
 }
 
 variable "database_subnet_cidr" {

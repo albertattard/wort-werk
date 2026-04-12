@@ -85,6 +85,7 @@ Use one of these `category` values for new tasks:
 - [TASK-031: Split Verify Local Build and Release Multi-Arch Publish](./infrastructure/TASK-031-split-verify-local-build-and-release-multiarch-publish.md)
 - [TASK-032: Fix Rollout Order for Multi-Arch Release](./infrastructure/TASK-032-fix-rollout-order-for-multiarch-release.md)
 - [TASK-045: Split OCI PostgreSQL into Dedicated Data Stack](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
+- [TASK-047: Place OCI Runtime in Private Subnet](./infrastructure/TASK-047-place-oci-runtime-in-private-subnet.md)
 
 ## Pending
 
@@ -140,6 +141,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-030: Resolve Runtime image_tag Automatically in Rollout](./infrastructure/TASK-030-resolve-runtime-image-tag-for-rollout.md)
 - [x] [TASK-031: Split Verify Local Build and Release Multi-Arch Publish](./infrastructure/TASK-031-split-verify-local-build-and-release-multiarch-publish.md)
 - [x] [TASK-032: Fix Rollout Order for Multi-Arch Release](./infrastructure/TASK-032-fix-rollout-order-for-multiarch-release.md)
+- [x] [TASK-047: Place OCI Runtime in Private Subnet](./infrastructure/TASK-047-place-oci-runtime-in-private-subnet.md)
 
 ## Blocked
 

@@ -24,7 +24,17 @@ output "vcn_id" {
 }
 
 output "subnet_id" {
-  description = "Container subnet OCID."
+  description = "Deprecated alias for the runtime subnet OCID."
+  value       = oci_core_subnet.runtime.id
+}
+
+output "runtime_subnet_id" {
+  description = "Private runtime subnet OCID."
+  value       = oci_core_subnet.runtime.id
+}
+
+output "load_balancer_subnet_id" {
+  description = "Public load balancer subnet OCID."
   value       = oci_core_subnet.container.id
 }
 

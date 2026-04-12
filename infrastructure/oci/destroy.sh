@@ -44,7 +44,8 @@ write_runtime_stack_vars_if_possible() {
     local region
     local tenancy_ocid
     local compartment_ocid
-    local subnet_id
+    local runtime_subnet_id
+    local load_balancer_subnet_id
     local nsg_id
     local load_balancer_nsg_id
     local load_balancer_public_ip_id
@@ -65,7 +66,8 @@ write_runtime_stack_vars_if_possible() {
     region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
     tenancy_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw tenancy_ocid)"
     compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
-    subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw subnet_id)"
+    runtime_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw runtime_subnet_id)"
+    load_balancer_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_subnet_id)"
     nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw nsg_id)"
     load_balancer_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_nsg_id)"
     load_balancer_public_ip_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_public_ip_id)"
@@ -87,7 +89,8 @@ write_runtime_stack_vars_if_possible() {
 region = "${region}"
 tenancy_ocid = "${tenancy_ocid}"
 compartment_ocid = "${compartment_ocid}"
-subnet_id = "${subnet_id}"
+runtime_subnet_id = "${runtime_subnet_id}"
+load_balancer_subnet_id = "${load_balancer_subnet_id}"
 nsg_id = "${nsg_id}"
 load_balancer_nsg_id = "${load_balancer_nsg_id}"
 load_balancer_public_ip_id = "${load_balancer_public_ip_id}"

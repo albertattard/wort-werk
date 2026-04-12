@@ -9,6 +9,7 @@ Runtime Terraform stack for Wort-Werk Container Instance rollout.
 - OCI Load Balancer certificate (from local PEM files)
 - HTTPS listener and HTTP to HTTPS redirect
 - runtime DB environment wiring for OCI PostgreSQL
+- private runtime placement behind the public Load Balancer
 
 ## Depends On
 
@@ -16,7 +17,8 @@ Outputs from `infrastructure/oci/foundation`:
 - `region`
 - `tenancy_ocid`
 - `compartment_ocid`
-- `subnet_id`
+- `runtime_subnet_id`
+- `load_balancer_subnet_id`
 - `nsg_id`
 - `load_balancer_nsg_id`
 - `load_balancer_public_ip_id`
@@ -58,6 +60,11 @@ This reduces premature routing, while keeping health probing off learner-facing 
 
 Runtime injects `MANAGEMENT_SERVER_PORT`, so Spring Actuator can listen on a dedicated internal port.
 The Load Balancer probes that port directly, but runtime does not add any public listener for it.
+
+Runtime networking uses separate subnet roles:
+- the Load Balancer stays on the public subnet
+- the container instance runs on the private runtime subnet without a public IP
+- Vault-dependent startup traffic uses the OCI service gateway path from foundation
 
 Use immutable image tags (git commit hash recommended) for repeatable rollouts and rollback.
 Use `container_instance_shape` to switch between Arm and AMD64 when needed.
