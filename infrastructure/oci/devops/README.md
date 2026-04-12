@@ -17,7 +17,7 @@ This stack provisions the OCI-native release runner foundation described by `TAS
 
 The private PostgreSQL endpoint and runtime rollout path should not depend on an operator laptop.
 This stack moves the release control plane into OCI-managed infrastructure and binds the private shell stage to the dedicated DevOps subnet and NSG.
-OCI DevOps managed build runners currently ship JDK 17 by default, so the build spec installs Oracle GraalVM for JDK 25 before running the repository verification flow.
+OCI DevOps managed build runners currently ship JDK 17 by default, so the build spec enables the Oracle JDK repository on Oracle Linux and installs Oracle JDK 25 before running the repository verification flow.
 
 ## Current Boundary
 

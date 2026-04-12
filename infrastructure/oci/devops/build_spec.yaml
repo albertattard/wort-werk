@@ -13,8 +13,9 @@ steps:
     name: Install Java 25 toolchain
     command: |
       set -euo pipefail
-      yum -y install graalvm-25-native-image
-      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      yum -y install oracle-java-jdk-release-el8
+      yum -y install jdk-25-headful
+      export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
       java -version
       mvn -version
@@ -24,7 +25,7 @@ steps:
     command: |
       set -euo pipefail
 
-      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
 
       export OCI_CLI_AUTH=resource_principal
@@ -154,7 +155,7 @@ steps:
     command: |
       set -euo pipefail
 
-      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
 
       export VERIFY_DB_USERNAME="wortwerk_verify"
@@ -167,7 +168,7 @@ steps:
     command: |
       set -euo pipefail
 
-      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
 
       export OCI_CLI_AUTH=resource_principal
@@ -205,7 +206,7 @@ steps:
     name: Package release bundle
     command: |
       set -euo pipefail
-      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
       release_ref="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-HEAD}"
       git archive --format=tar.gz --output=release-bundle.tgz "${release_ref}"
@@ -215,7 +216,7 @@ steps:
     command: |
       set -euo pipefail
 
-      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
 
       export OCI_CLI_AUTH=resource_principal
