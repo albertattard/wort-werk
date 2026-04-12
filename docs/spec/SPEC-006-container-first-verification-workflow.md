@@ -4,7 +4,7 @@ title: Container-First Verification Workflow
 status: done
 priority: high
 owner: @aattard
-last_updated: 2026-04-10
+last_updated: 2026-04-12
 ---
 
 ## Problem
@@ -49,6 +49,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - Let Compose service naming provide container-to-container hostnames inside the verification stack; avoid redundant environment variables for values Compose can derive directly.
 - Keep verification DB credentials out of the repository; `verify` must read them from environment variables and fail fast if they are missing.
 - Treat `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites in workflow documentation, not hidden assumptions.
+- Repository automation and tests that exercise operator helper scripts must not block on interactive secret prompts during `./mvnw test` or `./mvnw clean verify`; automated invocations must fail fast with an explicit non-interactive error instead.
 - Do not use a dedicated Spring profile purely to select the only supported database; single-database datasource settings belong in the base application configuration.
 - Keep registry publishing out of `verify`; image publication belongs to release automation.
 - Keep `./mvnw test` limited to fast tests that do not require PostgreSQL.
@@ -63,6 +64,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - [x] The Compose-managed app uses the `db` service hostname directly for database connectivity instead of a redundant injected Compose JDBC URL variable.
 - [x] `verify` reads DB verification credentials from environment variables rather than repository-stored defaults.
 - [x] Workflow docs show `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites before `./mvnw clean verify`.
+- [x] Automated tests covering helper scripts fail fast rather than prompting on `/dev/tty` during Maven verification.
 - [x] The single supported PostgreSQL datasource is configured without a dedicated database-selection Spring profile.
 - [x] `verify` does not push images to any remote registry.
 - [x] Current workflow docs are aligned (no conflicting mandatory gate language).

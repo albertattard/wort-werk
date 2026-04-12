@@ -4,12 +4,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,14 +22,17 @@ class SetDbSecretsScriptTest {
     Path tempDir;
 
     @Test
-    void shouldRequireExplicitRuntimePasswordWhenRuntimePasswordMissing() throws Exception {
+    void shouldFailFastWithoutRuntimePasswordInNonInteractiveMode() throws Exception {
         TestHarness harness = prepareHarness();
 
         ProcessResult result = runScript(harness, Map.of(
-                "POSTGRESQL_ADMIN_PASSWORD", "admin-secret"));
+                "POSTGRESQL_ADMIN_PASSWORD", "admin-secret",
+                "WORTWERK_NONINTERACTIVE", "1"));
 
+        assertThat(result.timedOut()).isFalse();
         assertThat(result.exitCode()).isNotZero();
         assertThat(result.stderr()).contains("RUNTIME_DB_PASSWORD");
+        assertThat(result.stderr()).contains("non-interactive");
         assertThat(Files.exists(harness.ociCaptureFile())).isFalse();
     }
 
@@ -138,12 +144,32 @@ class SetDbSecretsScriptTest {
         environment.putAll(extraEnvironment);
 
         Process process = processBuilder.start();
-        int exitCode = process.waitFor();
+        boolean finished = process.waitFor(Duration.ofSeconds(3).toMillis(), TimeUnit.MILLISECONDS);
+        if (!finished) {
+            process.destroyForcibly();
+            process.waitFor(Duration.ofSeconds(1).toMillis(), TimeUnit.MILLISECONDS);
+
+            return new ProcessResult(
+                    -1,
+                    readStream(process.getInputStream()),
+                    readStream(process.getErrorStream()),
+                    true);
+        }
+        int exitCode = process.exitValue();
 
         return new ProcessResult(
                 exitCode,
-                new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8),
-                new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
+                readStream(process.getInputStream()),
+                readStream(process.getErrorStream()),
+                false);
+    }
+
+    private String readStream(InputStream inputStream) throws IOException {
+        try {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException ignored) {
+            return "";
+        }
     }
 
     private void setExecutable(Path path) throws IOException {
@@ -156,6 +182,6 @@ class SetDbSecretsScriptTest {
     private record TestHarness(Path script, Path binDir, Path ociCaptureFile) {
     }
 
-    private record ProcessResult(int exitCode, String stdout, String stderr) {
+    private record ProcessResult(int exitCode, String stdout, String stderr, boolean timedOut) {
     }
 }

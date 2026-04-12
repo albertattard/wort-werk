@@ -9,6 +9,7 @@ RUNTIME_SECRET_NAME="${RUNTIME_DB_SECRET_NAME:-wort-werk-db-runtime-password}"
 TFVARS_FILE="${SCRIPT_DIR}/terraform.tfvars"
 DEFAULT_POSTGRESQL_ADMIN_USERNAME="wortwerk_admin"
 DEFAULT_RUNTIME_DB_USERNAME="wortwerk_app"
+NON_INTERACTIVE="${WORTWERK_NONINTERACTIVE:-${CI:-}}"
 
 require_command() {
   local command_name="$1"
@@ -29,10 +30,16 @@ require_non_empty() {
 
 prompt_secret() {
   local prompt="$1"
+  local env_name="$2"
   local value
 
+  if [[ -n "${NON_INTERACTIVE}" ]]; then
+    echo "Missing required value: ${env_name}. Refusing interactive prompt in non-interactive mode." >&2
+    exit 1
+  fi
+
   if ! exec 3<> /dev/tty; then
-    echo "Interactive secret prompt requires /dev/tty. Set POSTGRESQL_ADMIN_PASSWORD and RUNTIME_DB_PASSWORD explicitly." >&2
+    echo "Interactive secret prompt requires /dev/tty. Set ${env_name} explicitly or run interactively." >&2
     exit 1
   fi
 
@@ -134,7 +141,7 @@ RUNTIME_DB_USERNAME="${RUNTIME_DB_USERNAME:-$(read_tfvars_string "${TFVARS_FILE}
 RUNTIME_DB_USERNAME="${RUNTIME_DB_USERNAME:-${DEFAULT_RUNTIME_DB_USERNAME}}"
 
 if [[ -z "${POSTGRESQL_ADMIN_PASSWORD}" ]]; then
-  POSTGRESQL_ADMIN_PASSWORD="$(prompt_secret "PostgreSQL admin password: ")"
+  POSTGRESQL_ADMIN_PASSWORD="$(prompt_secret "PostgreSQL admin password: " "POSTGRESQL_ADMIN_PASSWORD")"
 fi
 
 if [[ "${RUNTIME_DB_USERNAME}" == "${DEFAULT_POSTGRESQL_ADMIN_USERNAME}" ]]; then
@@ -143,7 +150,7 @@ if [[ "${RUNTIME_DB_USERNAME}" == "${DEFAULT_POSTGRESQL_ADMIN_USERNAME}" ]]; the
 fi
 
 if [[ -z "${RUNTIME_DB_PASSWORD}" ]]; then
-  RUNTIME_DB_PASSWORD="$(prompt_secret "Runtime DB password: ")"
+  RUNTIME_DB_PASSWORD="$(prompt_secret "Runtime DB password: " "RUNTIME_DB_PASSWORD")"
 fi
 
 trap 'unset POSTGRESQL_ADMIN_PASSWORD RUNTIME_DB_PASSWORD' EXIT
