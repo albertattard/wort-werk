@@ -39,6 +39,7 @@ steps:
       set -euo pipefail
 
       export OCI_CLI_AUTH=resource_principal
+      . ./release-metadata.env
 
       NAMESPACE="$(oci os ns get --query 'data' --raw-output)"
       BUCKET_NAME="wort-werk-release-handoff"

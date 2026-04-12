@@ -103,6 +103,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("exportedVariables");
         assertThat(buildSpec).contains("git archive --format=tar.gz --output=release-bundle.tgz \"${release_ref}\"");
         assertThat(buildSpec).contains("oci os object put");
+        assertThat(buildSpec).contains(". ./release-metadata.env");
         assertThat(commandSpec).contains("ROLLBACK");
         assertThat(commandSpec).contains("oci os object get");
         assertThat(commandSpec).contains("terraform");
