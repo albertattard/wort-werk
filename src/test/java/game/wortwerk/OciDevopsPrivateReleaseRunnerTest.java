@@ -50,6 +50,11 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("resource \"oci_devops_deploy_pipeline\"");
         assertThat(devopsMain).contains("resource \"oci_devops_deploy_stage\"");
         assertThat(devopsMain).contains("resource \"oci_devops_build_pipeline_stage\"");
+        assertThat(devopsMain).contains("resource \"oci_logging_log_group\"");
+        assertThat(devopsMain).contains("resource \"oci_logging_log\"");
+        assertThat(devopsMain).contains("service     = \"devops\"");
+        assertThat(devopsMain).contains("resource    = oci_devops_project.wort_werk.id");
+        assertThat(devopsMain).contains("category    = \"all\"");
         assertThat(devopsMain).contains("devops_subnet_id");
         assertThat(devopsMain).contains("devops_nsg_id");
         assertThat(devopsMain).contains("network_channel_type = \"SERVICE_VNIC_CHANNEL\"");

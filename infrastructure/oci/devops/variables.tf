@@ -58,3 +58,9 @@ variable "shell_stage_shape_memory_in_gbs" {
   type        = number
   default     = 8
 }
+
+variable "project_log_retention_duration" {
+  description = "Retention duration in days for the OCI DevOps project service log. Must be in 30-day increments."
+  type        = number
+  default     = 30
+}

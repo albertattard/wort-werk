@@ -6,6 +6,8 @@ locals {
   stack_name                     = "wort-werk"
   topic_name                     = "${local.stack_name}-devops"
   project_name                   = "${local.stack_name}-release"
+  log_group_name                 = "${local.stack_name}-devops"
+  project_log_name               = "${local.stack_name}-devops-project"
   github_connection_name         = "${local.stack_name}-github"
   build_pipeline_name            = "${local.stack_name}-build"
   deploy_pipeline_name           = "${local.stack_name}-deploy"
@@ -37,6 +39,31 @@ resource "oci_devops_project" "wort_werk" {
 
   notification_config {
     topic_id = oci_ons_notification_topic.devops.id
+  }
+}
+
+resource "oci_logging_log_group" "devops" {
+  compartment_id = var.compartment_ocid
+  display_name   = local.log_group_name
+  description    = "OCI Logging group for Wort-Werk DevOps project service logs."
+}
+
+resource "oci_logging_log" "project" {
+  display_name       = local.project_log_name
+  log_group_id       = oci_logging_log_group.devops.id
+  log_type           = "SERVICE"
+  is_enabled         = true
+  retention_duration = var.project_log_retention_duration
+
+  configuration {
+    compartment_id = var.compartment_ocid
+
+    source {
+      category    = "all"
+      resource    = oci_devops_project.wort_werk.id
+      service     = "devops"
+      source_type = "OCISERVICE"
+    }
   }
 }
 

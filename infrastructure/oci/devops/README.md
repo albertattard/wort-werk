@@ -5,6 +5,7 @@ This stack provisions the OCI-native release runner foundation described by `TAS
 ## What It Provisions
 
 - OCI DevOps project
+- OCI Logging log group and DevOps project service log
 - GitHub access-token connection
 - build pipeline that checks out an explicit git revision
 - generic artifact repository for release bundle handoff
@@ -48,6 +49,7 @@ Optional inputs:
 - `shell_stage_shape_name`
 - `shell_stage_shape_ocpus`
 - `shell_stage_shape_memory_in_gbs`
+- `project_log_retention_duration`
 
 ## Apply
 
@@ -57,6 +59,8 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+The stack now provisions the DevOps project log through OCI Logging, so build runs do not depend on a manual "enable logs" console step.
 
 ## Trigger A Release
 

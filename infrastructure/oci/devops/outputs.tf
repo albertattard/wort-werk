@@ -3,6 +3,16 @@ output "project_id" {
   value       = oci_devops_project.wort_werk.id
 }
 
+output "project_log_group_id" {
+  description = "OCI Logging log group OCID used by the DevOps project."
+  value       = oci_logging_log_group.devops.id
+}
+
+output "project_log_id" {
+  description = "OCI Logging service log OCID for the DevOps project."
+  value       = oci_logging_log.project.id
+}
+
 output "github_connection_id" {
   description = "OCI DevOps GitHub connection OCID."
   value       = oci_devops_connection.github.id
