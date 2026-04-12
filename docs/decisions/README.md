@@ -13,3 +13,4 @@ Store ADRs here to capture technical decisions and the tradeoffs behind them.
 - [ADR-0007: Use Repo-Local Review Skills at Explicit Workflow Checkpoints](./ADR-0007-use-repo-local-review-skills-at-explicit-workflow-checkpoints.md)
 - [ADR-0008: Use OCI Vault and Resource Principals for Runtime DB Secrets](./ADR-0008-use-oci-vault-and-resource-principal-for-runtime-db-secrets.md)
 - [ADR-0009: Use Private Networking for OCI Runtime](./ADR-0009-use-private-networking-for-oci-runtime.md)
+- [ADR-0010: Use a Dedicated Non-Admin Runtime DB Role](./ADR-0010-use-a-dedicated-non-admin-runtime-db-role.md)

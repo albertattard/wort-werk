@@ -32,6 +32,7 @@ The infrastructure must satisfy all of the following:
    - `WORTWERK_DB_PASSWORD`
 9. Runtime container instances must not receive public IP addresses; internet-facing traffic must terminate at the OCI Load Balancer instead of the application container.
 10. Runtime access to OCI-managed dependencies required at startup, such as Vault secret retrieval, must remain available through private OCI networking rather than public internet exposure.
+11. The runtime database user must be distinct from the PostgreSQL administrator account and limited to application-owned database/schema responsibilities rather than broader instance administration.
 
 ## Deployment Model
 
@@ -58,6 +59,7 @@ The apply order must be:
 - Add private subnet and network security rules for database access.
 - Decide and document how DB credentials are stored and injected into runtime.
 - Prevent operator workflows from configuring a runtime DB secret that cannot authenticate the currently configured runtime DB user.
+- Introduce a dedicated non-admin runtime DB role and document its privilege boundary.
 - Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
 - Keep Terraform naming consistent by using locals for fixed Wort-Werk resource identity and variables only for deployment-specific inputs.
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
@@ -81,4 +83,6 @@ The apply order must be:
 - [ ] Security requirements for private networking, TLS in transit, and least-privilege ingress are documented.
 - [ ] Secret-handling approach for app-to-DB credentials is explicitly documented.
 - [ ] Secret bootstrap workflow prevents mismatched runtime credentials for the configured runtime DB user.
+- [ ] Runtime DB connectivity no longer defaults to the PostgreSQL administrator account.
+- [ ] Repository docs define the least-privilege boundary for the runtime DB role and the bootstrap path that provisions it.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.
