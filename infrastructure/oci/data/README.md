@@ -39,6 +39,11 @@ The script:
 - updates the Vault secrets on later runs
 - writes `infrastructure/oci/data/terraform.tfvars`
 
+Current runtime safeguard:
+- while `runtime_db_username` still resolves to `wortwerk_admin`, the script reuses the PostgreSQL admin password for the runtime secret by default
+- if you explicitly provide a different `RUNTIME_DB_PASSWORD` while `runtime_db_username` is still `wortwerk_admin`, the script exits with an error instead of writing an incompatible secret pair
+- separate runtime passwords are only allowed after you configure a non-admin `runtime_db_username`
+
 Then apply the `data` stack:
 
 ```bash
@@ -52,9 +57,10 @@ If you prefer to avoid interactive prompts, provide the passwords as environment
 ```bash
 OCI_PROFILE="FRANKFURT" \
 POSTGRESQL_ADMIN_PASSWORD="<admin-password>" \
-RUNTIME_DB_PASSWORD="<runtime-password>" \
 ./infrastructure/oci/data/set-db-secrets.sh
 ```
+
+Add `RUNTIME_DB_PASSWORD="<runtime-password>"` only after `runtime_db_username` has been changed away from `wortwerk_admin`.
 
 If you want the script to use different secret names:
 

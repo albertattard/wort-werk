@@ -25,6 +25,8 @@ Recommended command:
 OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/set-db-secrets.sh
 ```
 
+While `runtime_db_username` still defaults to `wortwerk_admin`, `set-db-secrets.sh` reuses the PostgreSQL admin password for the runtime secret and rejects mismatched values.
+
 ## Helper Scripts
 
 - `./infrastructure/oci/deploy.sh all`: apply foundation, data, then runtime.

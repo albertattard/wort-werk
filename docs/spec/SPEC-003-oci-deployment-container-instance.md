@@ -4,7 +4,7 @@ title: OCI Deployment via Container Instance
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-11
+last_updated: 2026-04-12
 ---
 
 ## Problem
@@ -55,6 +55,7 @@ Repeatable operator flow:
 - a repository-local wrapper command should exist so operators can run rollout without manually typing environment bootstrap + deploy invocation
 - the rollout wrapper must ensure local verify credentials exist for the release-stage `./mvnw clean verify` gate, while preserving any explicit operator-provided values
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
+- load balancer health checks must target a stable unauthenticated route so auth changes do not strand an otherwise healthy backend behind `502`
 
 ## Acceptance Criteria
 

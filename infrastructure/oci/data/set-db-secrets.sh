@@ -7,6 +7,7 @@ PROFILE="${OCI_PROFILE:-FRANKFURT}"
 ADMIN_SECRET_NAME="${POSTGRESQL_ADMIN_SECRET_NAME:-wort-werk-db-admin-password}"
 RUNTIME_SECRET_NAME="${RUNTIME_DB_SECRET_NAME:-wort-werk-db-runtime-password}"
 TFVARS_FILE="${SCRIPT_DIR}/terraform.tfvars"
+DEFAULT_POSTGRESQL_ADMIN_USERNAME="wortwerk_admin"
 
 require_command() {
   local command_name="$1"
@@ -39,6 +40,24 @@ prompt_secret() {
   printf "\n" > /dev/tty
   require_non_empty "${prompt}" "${value}"
   printf "%s" "${value}"
+}
+
+read_tfvars_string() {
+  local file="$1"
+  local key="$2"
+  if [[ ! -f "${file}" ]]; then
+    return 0
+  fi
+
+  awk -F= -v key="${key}" '
+    $1 ~ "^[[:space:]]*" key "[[:space:]]*$" {
+      value = $2
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      gsub(/^"|"$/, "", value)
+      print value
+      exit 0
+    }
+  ' "${file}"
 }
 
 lookup_secret_id() {
@@ -108,12 +127,21 @@ require_non_empty "VAULT_KEY_OCID" "${VAULT_KEY_OCID}"
 
 POSTGRESQL_ADMIN_PASSWORD="${POSTGRESQL_ADMIN_PASSWORD:-}"
 RUNTIME_DB_PASSWORD="${RUNTIME_DB_PASSWORD:-}"
+RUNTIME_DB_USERNAME="${RUNTIME_DB_USERNAME:-$(read_tfvars_string "${TFVARS_FILE}" "runtime_db_username")}"
+RUNTIME_DB_USERNAME="${RUNTIME_DB_USERNAME:-${DEFAULT_POSTGRESQL_ADMIN_USERNAME}}"
 
 if [[ -z "${POSTGRESQL_ADMIN_PASSWORD}" ]]; then
   POSTGRESQL_ADMIN_PASSWORD="$(prompt_secret "PostgreSQL admin password: ")"
 fi
 
-if [[ -z "${RUNTIME_DB_PASSWORD}" ]]; then
+if [[ "${RUNTIME_DB_USERNAME}" == "${DEFAULT_POSTGRESQL_ADMIN_USERNAME}" && -n "${RUNTIME_DB_PASSWORD}" && "${RUNTIME_DB_PASSWORD}" != "${POSTGRESQL_ADMIN_PASSWORD}" ]]; then
+  echo "Refusing to write a different runtime DB password while runtime_db_username is ${DEFAULT_POSTGRESQL_ADMIN_USERNAME}. Reuse the PostgreSQL admin password or configure a separate runtime_db_username first." >&2
+  exit 1
+fi
+
+if [[ "${RUNTIME_DB_USERNAME}" == "${DEFAULT_POSTGRESQL_ADMIN_USERNAME}" && -z "${RUNTIME_DB_PASSWORD}" ]]; then
+  RUNTIME_DB_PASSWORD="${POSTGRESQL_ADMIN_PASSWORD}"
+elif [[ -z "${RUNTIME_DB_PASSWORD}" ]]; then
   RUNTIME_DB_PASSWORD="$(prompt_secret "Runtime DB password: ")"
 fi
 

@@ -4,7 +4,7 @@ title: OCI PostgreSQL and Secure Runtime Connectivity
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-10
+last_updated: 2026-04-12
 ---
 
 ## Problem
@@ -55,6 +55,7 @@ The apply order must be:
 - Add OCI-managed PostgreSQL infrastructure.
 - Add private subnet and network security rules for database access.
 - Decide and document how DB credentials are stored and injected into runtime.
+- Prevent operator workflows from configuring a runtime DB secret that cannot authenticate the currently configured runtime DB user.
 - Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
 - Keep Terraform naming consistent by using locals for fixed Wort-Werk resource identity and variables only for deployment-specific inputs.
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
@@ -76,4 +77,5 @@ The apply order must be:
 - [ ] OCI Terraform naming is consistent across stacks, with fixed resource names centralized in locals.
 - [ ] Security requirements for private networking, TLS in transit, and least-privilege ingress are documented.
 - [ ] Secret-handling approach for app-to-DB credentials is explicitly documented.
+- [ ] Secret bootstrap workflow prevents mismatched runtime credentials for the configured runtime DB user.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

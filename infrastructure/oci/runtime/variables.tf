@@ -185,7 +185,7 @@ variable "load_balancer_max_bandwidth_mbps" {
 variable "lb_healthcheck_path" {
   description = "HTTP path used by load balancer backend health checks."
   type        = string
-  default     = "/"
+  default     = "/login"
 }
 
 variable "lb_healthcheck_return_code" {

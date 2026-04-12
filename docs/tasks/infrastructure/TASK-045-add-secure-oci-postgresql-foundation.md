@@ -7,7 +7,7 @@ related_features:
   - SPEC-008
 owner: @aattard
 created: 2026-04-10
-updated: 2026-04-10
+updated: 2026-04-12
 ---
 
 ## Summary
@@ -19,6 +19,7 @@ Restructure Wort-Werk OCI infrastructure so shared bootstrap resources, PostgreS
 - Remove PostgreSQL provisioning from `foundation`.
 - Introduce a dedicated `data` Terraform stack for managed PostgreSQL and secret-dependent policy wiring.
 - Keep `runtime` consuming DB connection and secret outputs without storing DB secrets in git.
+- Make the secret bootstrap workflow safe while `runtime_db_username` still defaults to the PostgreSQL admin user.
 - Standardize OCI Terraform naming so fixed Wort-Werk resource names live in locals while deployment-specific values remain variables.
 - Update deploy and destroy orchestration to use `foundation -> data -> runtime` ordering.
 - Update OCI runbooks and infrastructure docs to reflect the new stack split and bootstrap sequence.
@@ -31,6 +32,7 @@ Restructure Wort-Werk OCI infrastructure so shared bootstrap resources, PostgreS
 - TLS in transit must be part of the runtime design.
 - Database access must be limited to the application tier.
 - Runtime secret read access must stay scoped to the specific runtime DB password secret.
+- Secret bootstrap must not make it easy to deploy a runtime password that cannot authenticate the configured runtime DB user.
 
 ## Out of Scope
 
@@ -48,4 +50,5 @@ Restructure Wort-Werk OCI infrastructure so shared bootstrap resources, PostgreS
 - [ ] `deploy.sh` and `destroy.sh` support the `foundation -> data -> runtime` lifecycle correctly.
 - [ ] OCI docs describe first-time setup, secret creation, and apply order without a two-pass foundation toggle.
 - [ ] Existing runtime DB contract remains intact for the application.
+- [ ] Secret bootstrap workflow either reuses the admin password for runtime by default or blocks incompatible values while runtime uses the admin DB user.
 - [ ] `docs/spec/README.md` and `docs/tasks/README.md` continue to reference the updated spec and task.
