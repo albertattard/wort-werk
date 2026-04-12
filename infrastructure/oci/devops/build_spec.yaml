@@ -1,0 +1,39 @@
+version: 0.1
+component: build
+timeoutInSeconds: 3600
+shell: bash
+
+env:
+  exportedVariables:
+    - COMMIT_SHA
+    - IMAGE_TAG
+
+steps:
+  - type: Command
+    name: Resolve release metadata
+    command: |
+      set -euo pipefail
+
+      COMMIT_SHA="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-$(git rev-parse HEAD)}"
+      IMAGE_TAG="$(printf '%s' "${COMMIT_SHA}" | cut -c1-12)"
+
+      export COMMIT_SHA IMAGE_TAG
+
+      cat > release-metadata.env <<EOF
+      COMMIT_SHA=${COMMIT_SHA}
+      IMAGE_TAG=${IMAGE_TAG}
+      EOF
+
+  - type: Command
+    name: Package release bundle
+    command: |
+      set -euo pipefail
+      tar --exclude=.git -czf release-bundle.tgz .
+
+outputArtifacts:
+  - name: release-bundle
+    type: BINARY
+    location: release-bundle.tgz
+  - name: release-metadata
+    type: BINARY
+    location: release-metadata.env

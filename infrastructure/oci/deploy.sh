@@ -6,11 +6,12 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 FOUNDATION_DIR="${SCRIPT_DIR}/foundation"
 DATA_DIR="${SCRIPT_DIR}/data"
 RUNTIME_DIR="${SCRIPT_DIR}/runtime"
+DEVOPS_DIR="${SCRIPT_DIR}/devops"
 MODE="${1:-all}"
 BOOTSTRAP_RUNTIME_DB_ROLE_SCRIPT="${DATA_DIR}/bootstrap-runtime-db-role.sh"
 
-if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "data" && "${MODE}" != "db-role" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
-  echo "Usage: $0 [all|foundation|data|db-role|runtime|release|rollout]" >&2
+if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "devops" && "${MODE}" != "data" && "${MODE}" != "db-role" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
+  echo "Usage: $0 [all|foundation|devops|data|db-role|runtime|release|rollout]" >&2
   exit 1
 fi
 
@@ -132,6 +133,32 @@ apply_foundation() {
   terraform -chdir="${FOUNDATION_DIR}" init -upgrade
   terraform -chdir="${FOUNDATION_DIR}" fmt
   terraform -chdir="${FOUNDATION_DIR}" apply -auto-approve -input=false
+}
+
+write_devops_stack_vars() {
+  local region
+  local compartment_ocid
+  local devops_subnet_id
+  local devops_nsg_id
+
+  region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
+  compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
+  devops_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_subnet_id)"
+  devops_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_nsg_id)"
+
+  cat > "${DEVOPS_DIR}/foundation.auto.tfvars" <<DEVOPSEOF
+region = "${region}"
+compartment_ocid = "${compartment_ocid}"
+devops_subnet_id = "${devops_subnet_id}"
+devops_nsg_id = "${devops_nsg_id}"
+DEVOPSEOF
+}
+
+apply_devops() {
+  terraform -chdir="${DEVOPS_DIR}" init -upgrade
+  write_devops_stack_vars
+  terraform -chdir="${DEVOPS_DIR}" fmt
+  terraform -chdir="${DEVOPS_DIR}" apply -auto-approve -input=false
 }
 
 write_data_foundation_vars() {
@@ -398,6 +425,9 @@ EOFVARS
 case "${MODE}" in
   foundation)
     apply_foundation
+    ;;
+  devops)
+    apply_devops
     ;;
   data)
     apply_data

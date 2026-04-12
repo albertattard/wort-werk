@@ -18,8 +18,10 @@ locals {
   container_nsg_name                = "${local.stack_name}-container"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
   database_nsg_name                 = "${local.stack_name}-database"
+  devops_nsg_name                   = "${local.stack_name}-devops"
   runtime_subnet_name               = "${local.stack_name}-runtime"
   database_subnet_name              = "${local.stack_name}-db"
+  devops_subnet_name                = "${local.stack_name}-devops"
   runtime_dynamic_group_name        = "${local.stack_name}-container-runtime"
   runtime_dynamic_group_description = "Container instances for Wort-Werk runtime"
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
@@ -116,6 +118,12 @@ resource "oci_core_network_security_group" "database" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.database_nsg_name
+}
+
+resource "oci_core_network_security_group" "devops" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.devops_nsg_name
 }
 
 resource "oci_core_network_security_group_security_rule" "ingress_http" {
@@ -246,6 +254,44 @@ resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql"
   }
 }
 
+resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql_from_devops" {
+  network_security_group_id = oci_core_network_security_group.database.id
+  direction                 = "INGRESS"
+  protocol                  = "6"
+  source                    = oci_core_network_security_group.devops.id
+  source_type               = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = 5432
+      max = 5432
+    }
+  }
+}
+
+resource "oci_core_network_security_group_security_rule" "devops_egress_postgresql" {
+  network_security_group_id = oci_core_network_security_group.devops.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = oci_core_network_security_group.database.id
+  destination_type          = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = 5432
+      max = 5432
+    }
+  }
+}
+
+resource "oci_core_network_security_group_security_rule" "devops_egress_oci_services" {
+  network_security_group_id = oci_core_network_security_group.devops.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = data.oci_core_services.oracle_services.services[0].cidr_block
+  destination_type          = "SERVICE_CIDR_BLOCK"
+}
+
 resource "oci_core_network_security_group_security_rule" "db_egress_all" {
   network_security_group_id = oci_core_network_security_group.database.id
   direction                 = "EGRESS"
@@ -281,6 +327,16 @@ resource "oci_core_subnet" "database" {
   display_name               = local.database_subnet_name
   dns_label                  = "wortdb"
   route_table_id             = oci_core_route_table.private.id
+  prohibit_public_ip_on_vnic = true
+}
+
+resource "oci_core_subnet" "devops" {
+  compartment_id             = oci_identity_compartment.wort_werk.id
+  vcn_id                     = oci_core_vcn.wort_werk.id
+  cidr_block                 = var.devops_subnet_cidr
+  display_name               = local.devops_subnet_name
+  dns_label                  = "wortdev"
+  route_table_id             = oci_core_route_table.runtime.id
   prohibit_public_ip_on_vnic = true
 }
 

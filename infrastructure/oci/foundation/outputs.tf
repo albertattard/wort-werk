@@ -43,6 +43,11 @@ output "database_subnet_id" {
   value       = oci_core_subnet.database.id
 }
 
+output "devops_subnet_id" {
+  description = "Private OCI DevOps subnet OCID."
+  value       = oci_core_subnet.devops.id
+}
+
 output "nsg_id" {
   description = "Network Security Group OCID."
   value       = oci_core_network_security_group.wort_werk.id
@@ -56,6 +61,11 @@ output "database_nsg_id" {
 output "load_balancer_nsg_id" {
   description = "Load Balancer Network Security Group OCID."
   value       = oci_core_network_security_group.load_balancer.id
+}
+
+output "devops_nsg_id" {
+  description = "OCI DevOps Network Security Group OCID."
+  value       = oci_core_network_security_group.devops.id
 }
 
 output "load_balancer_public_ip_id" {

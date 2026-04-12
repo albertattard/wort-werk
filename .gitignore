@@ -4,6 +4,7 @@ target/
 .oca/
 *.tfstate
 *.tfstate.*
+.terraform/
 *.tfvars
 !*.tfvars.example
 infrastructure/oci/runtime/foundation.auto.tfvars

@@ -5,10 +5,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FOUNDATION_DIR="${SCRIPT_DIR}/foundation"
 DATA_DIR="${SCRIPT_DIR}/data"
 RUNTIME_DIR="${SCRIPT_DIR}/runtime"
+DEVOPS_DIR="${SCRIPT_DIR}/devops"
 MODE="${1:-all}"
 
-if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "data" && "${MODE}" != "runtime" ]]; then
-  echo "Usage: $0 [all|foundation|data|runtime]" >&2
+if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "devops" && "${MODE}" != "data" && "${MODE}" != "runtime" ]]; then
+  echo "Usage: $0 [all|foundation|devops|data|runtime]" >&2
   exit 1
 fi
 
@@ -35,6 +36,27 @@ compartment_ocid = "${compartment_ocid}"
 database_subnet_id = "${database_subnet_id}"
 database_nsg_id = "${database_nsg_id}"
 runtime_dynamic_group_name = "${runtime_dynamic_group_name}"
+EOFVARS
+  fi
+}
+
+write_devops_stack_vars_if_possible() {
+  if terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid >/dev/null 2>&1; then
+    local region
+    local compartment_ocid
+    local devops_subnet_id
+    local devops_nsg_id
+
+    region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
+    compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
+    devops_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_subnet_id)"
+    devops_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_nsg_id)"
+
+    cat > "${DEVOPS_DIR}/foundation.auto.tfvars" <<EOFVARS
+region = "${region}"
+compartment_ocid = "${compartment_ocid}"
+devops_subnet_id = "${devops_subnet_id}"
+devops_nsg_id = "${devops_nsg_id}"
 EOFVARS
   fi
 }
@@ -117,6 +139,12 @@ destroy_runtime() {
   terraform -chdir="${RUNTIME_DIR}" apply -auto-approve -destroy -input=false
 }
 
+destroy_devops() {
+  write_devops_stack_vars_if_possible
+  terraform -chdir="${DEVOPS_DIR}" init -upgrade
+  terraform -chdir="${DEVOPS_DIR}" apply -auto-approve -destroy -input=false
+}
+
 destroy_data() {
   write_data_foundation_vars_if_possible
   terraform -chdir="${DATA_DIR}" init -upgrade
@@ -135,11 +163,15 @@ case "${MODE}" in
   data)
     destroy_data
     ;;
+  devops)
+    destroy_devops
+    ;;
   runtime)
     destroy_runtime
     ;;
   all)
     destroy_runtime
+    destroy_devops
     destroy_data
     destroy_foundation
     ;;

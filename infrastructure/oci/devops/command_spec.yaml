@@ -1,0 +1,38 @@
+version: 1.0
+component: command
+timeoutInSeconds: 3600
+shell: bash
+
+steps:
+  - type: Command
+    name: Preflight private rollout
+    command: |
+      set -euo pipefail
+
+      ROLLBACK="${ROLLBACK}"
+      TF_BACKEND_MODE="${tfBackendMode}"
+
+      if [[ "${ROLLBACK}" == "true" ]]; then
+        echo "ROLLBACK=true is reserved for a future rollback path and is not implemented yet." >&2
+        exit 1
+      fi
+
+      if [[ "${TF_BACKEND_MODE}" != "remote" ]]; then
+        echo "Refusing to run terraform from OCI DevOps while runtime state is still laptop-local. Migrate backend handling first, then re-run with tfBackendMode=remote." >&2
+        exit 1
+      fi
+
+      RELEASE_BUNDLE="$(find . -name release-bundle.tgz -print -quit)"
+      RELEASE_METADATA="$(find . -name release-metadata.env -print -quit)"
+
+      test -n "${RELEASE_BUNDLE}"
+      test -n "${RELEASE_METADATA}"
+
+      RELEASE_DIR="$(mktemp -d)"
+      tar -xzf "${RELEASE_BUNDLE}" -C "${RELEASE_DIR}"
+      . "${RELEASE_METADATA}"
+
+      cd "${RELEASE_DIR}"
+      ./infrastructure/oci/data/bootstrap-runtime-db-role.sh
+      terraform -chdir=./infrastructure/oci/runtime init -upgrade
+      IMAGE_TAG="${IMAGE_TAG}" ./infrastructure/oci/deploy.sh runtime

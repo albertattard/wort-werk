@@ -6,12 +6,17 @@ Wort-Werk OCI Terraform is split into three stacks.
 - `data/`: managed PostgreSQL and DB-secret-dependent policy wiring
 - `runtime/`: application rollout by image tag
 
+An in-progress fourth stack now exists for the OCI-native release control plane:
+
+- `devops/`: OCI DevOps managed build/deploy scaffolding for private release execution
+
 Apply order:
 1. foundation
-2. create or rotate DB secrets in OCI Vault
-3. data
-4. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
-5. runtime or release
+2. optionally create the GitHub DevOps connection secret in OCI Vault and apply `devops/`
+3. create or rotate DB secrets in OCI Vault
+4. data
+5. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
+6. runtime or release
 
 ## Set the DB Credentials
 
@@ -38,6 +43,7 @@ OCI_PROFILE="FRANKFURT" ./infrastructure/oci/deploy.sh db-role
 
 - `./infrastructure/oci/deploy.sh all`: apply foundation, data, then runtime.
 - `./infrastructure/oci/deploy.sh foundation`: apply foundation only.
+- `./infrastructure/oci/deploy.sh devops`: apply the OCI DevOps release-runner stack after foundation outputs exist.
 - `./infrastructure/oci/deploy.sh data`: apply data only.
 - `./infrastructure/oci/deploy.sh db-role`: bootstrap or rotate the dedicated runtime DB role from a host with private DB connectivity.
 - `./infrastructure/oci/deploy.sh runtime`: apply runtime only.
@@ -55,6 +61,7 @@ Runtime `image_tag` behavior:
 - `./infrastructure/oci/destroy.sh all`: destroy runtime, data, then foundation.
 - `./infrastructure/oci/destroy.sh runtime`: destroy runtime only.
 - `./infrastructure/oci/destroy.sh data`: destroy data only.
+- `./infrastructure/oci/destroy.sh devops`: destroy the OCI DevOps release-runner stack only.
 - `./infrastructure/oci/destroy.sh foundation`: destroy foundation only.
 
 The deploy script writes `data/foundation.auto.tfvars` from foundation outputs:
@@ -87,6 +94,12 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation and da
 - `runtime_db_username`
 - `runtime_db_password_secret_ocid`
 - `runtime_db_ssl_root_cert_base64`
+
+The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs:
+- `region`
+- `compartment_ocid`
+- `devops_subnet_id`
+- `devops_nsg_id`
 
 Release mode requires:
 - `OCI_USERNAME`
@@ -132,6 +145,7 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 
 - The Load Balancer stays on the public subnet with the reserved public IP.
 - The Wort-Werk container instance runs on a dedicated private runtime subnet and does not receive a public IP.
+- OCI DevOps private build and shell stages run on a separate private subnet and NSG so release execution has a narrower trust boundary than the runtime tier.
 - Foundation provides a service-gateway path for OCI regional services so runtime startup dependencies such as Vault-backed secret reads remain available without public internet exposure.
 - Public traffic reaches the backend only through the Load Balancer; the application container is addressed privately inside the VCN.
 
@@ -145,6 +159,8 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Foundation provisions Vault, key, dynamic group, and shared network boundaries; secret values themselves must be created or rotated outside Terraform.
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
 - The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
+- The DevOps shell stage is provisioned on private OCI networking for this bootstrap path, but it is intentionally blocked from applying local Terraform state until backend handling is migrated away from laptop-local state files.
+- The DevOps build spec currently computes and publishes commit/image metadata plus a release bundle; it does not yet publish the runtime image itself through OCI DevOps.
 
 ## Naming Convention
 
