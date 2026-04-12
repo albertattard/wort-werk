@@ -74,6 +74,7 @@ Secure release and deployment execution must satisfy all of the following:
 
 1. The build and deployment control path must run from OCI-managed infrastructure rather than an operator laptop when private-network access is required.
 2. A release must target an explicit git reference, with the exact commit recorded in the produced image tag or deployment metadata.
+3. Verified release images must be built and published by the OCI-managed release pipeline rather than by a laptop-local `docker buildx` flow.
 3. The runner that performs private-network deployment steps should be ephemeral or OCI-managed rather than a long-lived manually administered VM unless an ADR explicitly accepts that tradeoff.
 4. The runner must execute inside OCI networking that can reach the private PostgreSQL endpoint without exposing the database publicly.
 5. Release automation must keep administrator credentials, runtime credentials, and image registry credentials out of repository-tracked files.
@@ -83,6 +84,8 @@ Secure release and deployment execution must satisfy all of the following:
 9. Private DevOps runners must have an explicit egress design for external SCM access; if public internet egress is required, it must be isolated to the DevOps subnet through a controlled outbound path such as NAT and must not be reused by the runtime subnet.
 10. Release bundle handoff between OCI DevOps stages must use a deterministic OCI-managed storage boundary with explicit object naming and IAM scope instead of relying on opaque managed artifact delivery that cannot be diagnosed or reproduced from repository state.
 11. The release handoff must preserve commit-to-artifact traceability by addressing release bundle and metadata objects with the selected release version.
+12. The deployment stage must not depend on laptop-local Terraform state or laptop-local foundation/data outputs; all required deployment inputs must be available to the OCI runner through remote state or OCI-managed release metadata.
+13. The runtime Terraform state used by OCI-resident deployment must live in a remote OCI-managed backend, with an explicit guard against applying from an empty or missing remote state object.
 
 ## Out of Scope
 
@@ -105,8 +108,11 @@ Secure release and deployment execution must satisfy all of the following:
 - [x] Repository docs define the least-privilege boundary for the runtime DB role and the bootstrap path that provisions it.
 - [ ] Repository docs define an OCI-resident release runner or pipeline that can execute private-network deployment steps reproducibly.
 - [ ] Release execution is documented to target an explicit git reference and preserve commit-to-image traceability.
+- [ ] Repository docs define OCI DevOps as the only supported release-image build/publish path for normal production rollout.
 - [ ] Repository docs define how private-network DB bootstrap is executed from OCI-managed infrastructure instead of an operator laptop.
 - [ ] Repository docs define the DevOps runner IAM model, including dynamic groups and least-privilege policies for private-network execution and external-connection secret reads.
 - [ ] Repository docs define the DevOps runner outbound network model, including how private build stages reach external SCM without broadening runtime subnet exposure.
 - [ ] Repository docs define the OCI-native release artifact handoff boundary, including why the chosen storage path is preferred over OCI DevOps managed deliver-artifact stages.
+- [ ] Repository docs define how OCI-resident deploy stages obtain runtime inputs without reading laptop-local `foundation` or `data` Terraform state files.
+- [ ] Repository docs define the remote runtime Terraform backend used by OCI deployment and the migration guardrails around it.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

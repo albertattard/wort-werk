@@ -62,8 +62,16 @@ base64_decode() {
 
 read_secret_value() {
   local secret_id="$1"
+  local oci_args=()
+
+  if [[ "${OCI_CLI_AUTH:-}" == "resource_principal" ]]; then
+    oci_args+=(--auth resource_principal)
+  else
+    oci_args+=(--profile "${PROFILE}")
+  fi
+
   oci secrets secret-bundle get \
-    --profile "${PROFILE}" \
+    "${oci_args[@]}" \
     --secret-id "${secret_id}" \
     --query 'data."secret-bundle-content".content' \
     --raw-output | base64_decode

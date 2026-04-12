@@ -20,17 +20,9 @@ This stack moves the release control plane into OCI-managed infrastructure and b
 
 ## Current Boundary
 
-This stack is intentionally safe by default.
-The private shell stage refuses to execute `terraform apply` while runtime Terraform state is still local-file based.
-That refusal is deliberate: an ephemeral OCI runner must not guess at or recreate production state from an empty workspace.
-
-Current status:
-
-- explicit git reference selection is wired through `run-release.sh`
-- private network placement is provisioned
-- release bundle and metadata handoff are provisioned through commit-addressed objects in OCI-managed storage
-- commit-derived image tagging is recorded in release metadata, but OCIR publication is not wired through this stack yet
-- destructive rollout remains blocked until Terraform backend/state handling is migrated to a reproducible remote strategy
+This stack is the intended normal production release path.
+The build stage owns verification, commit-traceable image publication, and release-metadata generation.
+The deploy stage owns private DB bootstrap and runtime rollout from inside OCI.
 
 ## Required Inputs
 
@@ -53,6 +45,13 @@ Optional inputs:
 - `shell_stage_shape_ocpus`
 - `shell_stage_shape_memory_in_gbs`
 - `project_log_retention_duration`
+- OCI-resident image-push and runtime-deploy inputs documented in `terraform.tfvars`
+
+Required `terraform.tfvars` entries for OCI-managed image publication:
+
+- `github_connection_token_secret_ocid`
+- `image_registry_username`
+- `image_registry_password_secret_ocid`
 
 ## Apply
 
@@ -80,4 +79,10 @@ By default it:
 - reads `build_pipeline_id` from Terraform output when possible
 - targets the current git `HEAD`
 - derives `releaseVersion` from the selected commit short SHA
-- leaves `tfBackendMode=local-blocked` so the private shell stage cannot mutate production until backend migration is complete
+- passes the OCI-managed runtime deployment inputs needed by the build/deploy stages
+
+Before the first OCI DevOps rollout, migrate runtime state into the OCI backend once:
+
+```bash
+RUNTIME_BACKEND_MIGRATE=true ./infrastructure/oci/deploy.sh runtime
+```

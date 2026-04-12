@@ -45,6 +45,147 @@ variable "github_connection_token_secret_ocid" {
   type        = string
 }
 
+variable "image_repository" {
+  description = "OCIR repository path without tag used for runtime releases."
+  type        = string
+}
+
+variable "image_registry_endpoint" {
+  description = "OCIR registry host used for runtime image publication and pulls."
+  type        = string
+}
+
+variable "image_registry_username" {
+  description = "Registry username used by OCI DevOps to publish the runtime image and by runtime to pull it."
+  type        = string
+}
+
+variable "image_registry_password_secret_ocid" {
+  description = "Vault secret OCID that stores the registry auth token used for OCI DevOps image publication and runtime image pulls."
+  type        = string
+}
+
+variable "runtime_state_bucket_name" {
+  description = "Object Storage bucket name that owns the remote runtime Terraform state."
+  type        = string
+}
+
+variable "region_runtime" {
+  description = "OCI region used by runtime resources."
+  type        = string
+}
+
+variable "tenancy_ocid" {
+  description = "Tenancy OCID used by runtime Terraform."
+  type        = string
+}
+
+variable "runtime_subnet_id" {
+  description = "Private runtime subnet OCID from foundation."
+  type        = string
+}
+
+variable "load_balancer_subnet_id" {
+  description = "Public load balancer subnet OCID from foundation."
+  type        = string
+}
+
+variable "nsg_id" {
+  description = "Runtime NSG OCID from foundation."
+  type        = string
+}
+
+variable "load_balancer_nsg_id" {
+  description = "Load balancer NSG OCID from foundation."
+  type        = string
+}
+
+variable "load_balancer_public_ip_id" {
+  description = "Reserved public IP OCID used by the load balancer."
+  type        = string
+}
+
+variable "load_balancer_public_ip" {
+  description = "Reserved public IP value used by the load balancer."
+  type        = string
+}
+
+variable "app_port" {
+  description = "Application port exposed by the runtime container."
+  type        = number
+}
+
+variable "management_port" {
+  description = "Internal management port exposed by the runtime container."
+  type        = number
+}
+
+variable "lb_listener_port" {
+  description = "Public HTTP listener port exposed by the load balancer."
+  type        = number
+}
+
+variable "https_listener_port" {
+  description = "Public HTTPS listener port exposed by the load balancer."
+  type        = number
+}
+
+variable "load_balancer_min_bandwidth_mbps" {
+  description = "Minimum flexible load balancer bandwidth in Mbps."
+  type        = number
+}
+
+variable "load_balancer_max_bandwidth_mbps" {
+  description = "Maximum flexible load balancer bandwidth in Mbps."
+  type        = number
+}
+
+variable "runtime_db_url" {
+  description = "JDBC URL used by the application runtime."
+  type        = string
+}
+
+variable "runtime_db_username" {
+  description = "Database username used by the application runtime."
+  type        = string
+}
+
+variable "runtime_db_password_secret_ocid" {
+  description = "Vault secret OCID that stores the runtime database password."
+  type        = string
+}
+
+variable "runtime_db_ssl_root_cert_base64" {
+  description = "Base64-encoded PostgreSQL CA certificate used by the runtime."
+  type        = string
+  sensitive   = true
+}
+
+variable "postgresql_admin_username" {
+  description = "PostgreSQL administrator username used for DB bootstrap."
+  type        = string
+}
+
+variable "postgresql_admin_password_secret_ocid" {
+  description = "Vault secret OCID that stores the PostgreSQL administrator password."
+  type        = string
+}
+
+variable "postgresql_host" {
+  description = "Private PostgreSQL endpoint hostname."
+  type        = string
+}
+
+variable "postgresql_port" {
+  description = "Private PostgreSQL endpoint port."
+  type        = string
+}
+
+variable "postgresql_database_name" {
+  description = "Database name used by the application runtime."
+  type        = string
+}
+
 variable "build_runner_image" {
   description = "Managed OCI DevOps build image used for the build stage."
   type        = string

@@ -18,6 +18,17 @@ output "postgresql_database_name" {
   value       = var.postgresql_database_name
 }
 
+output "postgresql_admin_username" {
+  description = "Administrator role used for privileged PostgreSQL bootstrap operations."
+  value       = var.postgresql_admin_username
+}
+
+output "postgresql_admin_password_secret_ocid" {
+  description = "OCI Vault secret OCID that stores the PostgreSQL administrator password."
+  value       = var.postgresql_admin_password_secret_ocid
+  sensitive   = true
+}
+
 output "runtime_db_username" {
   description = "Runtime database username configured for the application."
   value       = local.runtime_db_username

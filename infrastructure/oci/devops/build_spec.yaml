@@ -14,17 +14,150 @@ steps:
     command: |
       set -euo pipefail
 
+      export OCI_CLI_AUTH=resource_principal
+
+      resolve_build_argument() {
+        local name="$1"
+        oci devops build-run get \
+          --build-run-id "$OCI_BUILD_RUN_ID" \
+          --query "data.\"build-run-arguments\".items[?name=='$name'] | [0].value" \
+          --raw-output
+      }
+
+      require_argument() {
+        local name="$1"
+        local value="$2"
+        if [[ -z "$value" || "$value" == "null" ]]; then
+          echo "Missing required build argument: $name" >&2
+          exit 1
+        fi
+      }
+
       COMMIT_SHA="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-$(git rev-parse HEAD)}"
-      IMAGE_TAG="$(printf '%s' "${COMMIT_SHA}" | cut -c1-12)"
-      RELEASE_VERSION="${IMAGE_TAG}"
+      IMAGE_TAG="$(printf '%s' "$COMMIT_SHA" | cut -c1-12)"
+      RELEASE_VERSION="$IMAGE_TAG"
+
+      TF_BACKEND_MODE="$(resolve_build_argument tfBackendMode)"
+      IMAGE_REPOSITORY="$(resolve_build_argument imageRepository)"
+      IMAGE_REGISTRY_ENDPOINT="$(resolve_build_argument imageRegistryEndpoint)"
+      IMAGE_REGISTRY_USERNAME="$(resolve_build_argument imageRegistryUsername)"
+      IMAGE_REGISTRY_PASSWORD_SECRET_OCID="$(resolve_build_argument imageRegistryPasswordSecretOcid)"
+      REGION="$(resolve_build_argument regionRuntime)"
+      TENANCY_OCID="$(resolve_build_argument tenancyOcid)"
+      COMPARTMENT_OCID="$(resolve_build_argument compartmentOcid)"
+      RUNTIME_SUBNET_ID="$(resolve_build_argument runtimeSubnetId)"
+      LOAD_BALANCER_SUBNET_ID="$(resolve_build_argument loadBalancerSubnetId)"
+      NSG_ID="$(resolve_build_argument nsgId)"
+      LOAD_BALANCER_NSG_ID="$(resolve_build_argument loadBalancerNsgId)"
+      LOAD_BALANCER_PUBLIC_IP_ID="$(resolve_build_argument loadBalancerPublicIpId)"
+      LOAD_BALANCER_PUBLIC_IP="$(resolve_build_argument loadBalancerPublicIp)"
+      APP_PORT="$(resolve_build_argument appPort)"
+      MANAGEMENT_PORT="$(resolve_build_argument managementPort)"
+      LB_LISTENER_PORT="$(resolve_build_argument lbListenerPort)"
+      HTTPS_LISTENER_PORT="$(resolve_build_argument httpsListenerPort)"
+      LOAD_BALANCER_MIN_BANDWIDTH_MBPS="$(resolve_build_argument loadBalancerMinBandwidthMbps)"
+      LOAD_BALANCER_MAX_BANDWIDTH_MBPS="$(resolve_build_argument loadBalancerMaxBandwidthMbps)"
+      RUNTIME_DB_URL="$(resolve_build_argument runtimeDbUrl)"
+      RUNTIME_DB_USERNAME="$(resolve_build_argument runtimeDbUsername)"
+      RUNTIME_DB_PASSWORD_SECRET_OCID="$(resolve_build_argument runtimeDbPasswordSecretOcid)"
+      RUNTIME_DB_SSL_ROOT_CERT_BASE64="$(resolve_build_argument runtimeDbSslRootCertBase64)"
+      POSTGRESQL_ADMIN_USERNAME="$(resolve_build_argument postgresqlAdminUsername)"
+      POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID="$(resolve_build_argument postgresqlAdminPasswordSecretOcid)"
+      POSTGRESQL_HOST="$(resolve_build_argument postgresqlHost)"
+      POSTGRESQL_PORT="$(resolve_build_argument postgresqlPort)"
+      POSTGRESQL_DATABASE_NAME="$(resolve_build_argument postgresqlDatabaseName)"
+      RUNTIME_STATE_BUCKET_NAME="$(resolve_build_argument runtimeStateBucketName)"
+
+      require_argument tfBackendMode "$TF_BACKEND_MODE"
+      require_argument imageRepository "$IMAGE_REPOSITORY"
+      require_argument imageRegistryEndpoint "$IMAGE_REGISTRY_ENDPOINT"
+      require_argument imageRegistryUsername "$IMAGE_REGISTRY_USERNAME"
+      require_argument imageRegistryPasswordSecretOcid "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID"
+      require_argument runtimeStateBucketName "$RUNTIME_STATE_BUCKET_NAME"
 
       export COMMIT_SHA IMAGE_TAG RELEASE_VERSION
 
       cat > release-metadata.env <<EOF
-      COMMIT_SHA=${COMMIT_SHA}
-      IMAGE_TAG=${IMAGE_TAG}
-      RELEASE_VERSION=${RELEASE_VERSION}
+      COMMIT_SHA=$COMMIT_SHA
+      IMAGE_TAG=$IMAGE_TAG
+      RELEASE_VERSION=$RELEASE_VERSION
+      TF_BACKEND_MODE=$TF_BACKEND_MODE
+      IMAGE_REPOSITORY=$IMAGE_REPOSITORY
+      IMAGE_REGISTRY_ENDPOINT=$IMAGE_REGISTRY_ENDPOINT
+      IMAGE_REGISTRY_USERNAME=$IMAGE_REGISTRY_USERNAME
+      IMAGE_REGISTRY_PASSWORD_SECRET_OCID=$IMAGE_REGISTRY_PASSWORD_SECRET_OCID
+      REGION=$REGION
+      TENANCY_OCID=$TENANCY_OCID
+      COMPARTMENT_OCID=$COMPARTMENT_OCID
+      RUNTIME_SUBNET_ID=$RUNTIME_SUBNET_ID
+      LOAD_BALANCER_SUBNET_ID=$LOAD_BALANCER_SUBNET_ID
+      NSG_ID=$NSG_ID
+      LOAD_BALANCER_NSG_ID=$LOAD_BALANCER_NSG_ID
+      LOAD_BALANCER_PUBLIC_IP_ID=$LOAD_BALANCER_PUBLIC_IP_ID
+      LOAD_BALANCER_PUBLIC_IP=$LOAD_BALANCER_PUBLIC_IP
+      APP_PORT=$APP_PORT
+      MANAGEMENT_PORT=$MANAGEMENT_PORT
+      LB_LISTENER_PORT=$LB_LISTENER_PORT
+      HTTPS_LISTENER_PORT=$HTTPS_LISTENER_PORT
+      LOAD_BALANCER_MIN_BANDWIDTH_MBPS=$LOAD_BALANCER_MIN_BANDWIDTH_MBPS
+      LOAD_BALANCER_MAX_BANDWIDTH_MBPS=$LOAD_BALANCER_MAX_BANDWIDTH_MBPS
+      RUNTIME_DB_URL=$RUNTIME_DB_URL
+      RUNTIME_DB_USERNAME=$RUNTIME_DB_USERNAME
+      RUNTIME_DB_PASSWORD_SECRET_OCID=$RUNTIME_DB_PASSWORD_SECRET_OCID
+      RUNTIME_DB_SSL_ROOT_CERT_BASE64=$RUNTIME_DB_SSL_ROOT_CERT_BASE64
+      POSTGRESQL_ADMIN_USERNAME=$POSTGRESQL_ADMIN_USERNAME
+      POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID=$POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID
+      POSTGRESQL_HOST=$POSTGRESQL_HOST
+      POSTGRESQL_PORT=$POSTGRESQL_PORT
+      POSTGRESQL_DATABASE_NAME=$POSTGRESQL_DATABASE_NAME
+      RUNTIME_STATE_BUCKET_NAME=$RUNTIME_STATE_BUCKET_NAME
       EOF
+
+  - type: Command
+    name: Verify release candidate
+    command: |
+      set -euo pipefail
+
+      export VERIFY_DB_USERNAME="wortwerk_verify"
+      export VERIFY_DB_PASSWORD="wortwerk_verify"
+
+      ./mvnw clean verify "-Dverify.container.image=wort-werk:verify-release"
+
+  - type: Command
+    name: Publish runtime image
+    command: |
+      set -euo pipefail
+
+      export OCI_CLI_AUTH=resource_principal
+      . ./release-metadata.env
+
+      base64_decode() {
+        if base64 --help 2>&1 | grep -q -- '--decode'; then
+          base64 --decode
+          return 0
+        fi
+
+        base64 -D
+      }
+
+      IMAGE_REGISTRY_PASSWORD="$(oci secrets secret-bundle get \
+        --secret-id "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID" \
+        --query 'data."secret-bundle-content".content' \
+        --raw-output | base64_decode)"
+
+      printf '%s' "$IMAGE_REGISTRY_PASSWORD" | docker login "$IMAGE_REGISTRY_ENDPOINT" \
+        --username "$IMAGE_REGISTRY_USERNAME" \
+        --password-stdin
+
+      docker buildx create --name wortwerk-release-builder --driver docker-container --use >/dev/null 2>&1 || \
+        docker buildx use wortwerk-release-builder
+
+      docker buildx build \
+        --file container/Dockerfile \
+        --platform linux/amd64,linux/arm64 \
+        --tag "$IMAGE_REPOSITORY:$IMAGE_TAG" \
+        --push \
+        .
 
   - type: Command
     name: Package release bundle
@@ -43,18 +176,18 @@ steps:
 
       NAMESPACE="$(oci os ns get --query 'data' --raw-output)"
       BUCKET_NAME="wort-werk-release-handoff"
-      OBJECT_PREFIX="releases/${RELEASE_VERSION}"
+      OBJECT_PREFIX="releases/$RELEASE_VERSION"
 
       oci os object put \
-        --namespace "${NAMESPACE}" \
-        --bucket-name "${BUCKET_NAME}" \
-        --name "${OBJECT_PREFIX}/release-bundle.tgz" \
+        --namespace "$NAMESPACE" \
+        --bucket-name "$BUCKET_NAME" \
+        --name "$OBJECT_PREFIX/release-bundle.tgz" \
         --file release-bundle.tgz \
         --force
 
       oci os object put \
-        --namespace "${NAMESPACE}" \
-        --bucket-name "${BUCKET_NAME}" \
-        --name "${OBJECT_PREFIX}/release-metadata.env" \
+        --namespace "$NAMESPACE" \
+        --bucket-name "$BUCKET_NAME" \
+        --name "$OBJECT_PREFIX/release-metadata.env" \
         --file release-metadata.env \
         --force

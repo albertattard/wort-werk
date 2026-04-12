@@ -49,11 +49,9 @@ Expected lifecycle:
 - runtime apply: frequent (release/update/rollback)
 
 Repeatable operator flow:
-- one command should support a full end-to-end rollout by running `foundation` then `release` (`release` includes runtime apply after image publication)
-- this flow is the recommended repeatable path when operators want deterministic refresh + deploy behavior
-- rollout should fail fast when the workspace has pending changes outside `assets/images/new`, unless explicitly overridden for exceptional runs
-- a repository-local wrapper command should exist so operators can run rollout without manually typing environment bootstrap + deploy invocation
-- the rollout wrapper must ensure local verify credentials exist for the release-stage `./mvnw clean verify` gate, while preserving any explicit operator-provided values
+- OCI DevOps is the recommended repeatable release path for normal production rollout
+- operators should trigger a release from an explicit git reference through `infrastructure/oci/devops/run-release.sh`
+- laptop-local helper scripts may still exist for targeted infrastructure administration, but they are not the source of truth for verified image publication
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
 - load balancer health checks must target a stable unauthenticated route so auth changes do not strand an otherwise healthy backend behind `502`
 - production health checks should use a dedicated Spring Actuator management endpoint rather than a learner-facing UI route
@@ -74,7 +72,7 @@ Repeatable operator flow:
 - [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
 - [x] Infrastructure is split into foundation/runtime stacks.
 - [x] Runtime stack consumes foundation outputs and deploys by immutable image tag.
-- [x] Repository includes deployment script that builds, pushes and applies runtime stack.
+- [x] Repository includes deployment automation for publishing a runtime image and applying the runtime stack.
 - [x] Deployment script supports safe image cleanup policy (retention-based) instead of deleting all previous images.
 - [x] Deployment script cleanup does not fail a successful runtime deployment if repository lookup is unavailable.
 - [x] Runtime supports private OCIR image pulls via explicit registry credentials.
@@ -87,10 +85,8 @@ Repeatable operator flow:
 - [x] Runtime container instances use private IPs only and do not receive public IP assignment.
 - [x] Public ingress terminates at the OCI Load Balancer while the runtime backend stays on private VCN addressing.
 - [x] Runtime retains private access to required OCI regional services after container public IP removal.
-- [x] Release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
-- [x] Deployment script provides a single repeatable command that runs `foundation -> release` in order, where `release` performs runtime apply after publishing the image.
-- [x] Rollout preflight blocks deployment when git working tree is dirty outside `assets/images/new`, with an explicit override knob for intentional exceptions.
-- [x] Repository includes `tools/rollout` wrapper that sources OCI secrets file, ensures verify credentials exist, and triggers `deploy.sh rollout`.
+- [ ] OCI DevOps release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
+- [ ] The recommended repeatable release entrypoint is `infrastructure/oci/devops/run-release.sh` rather than a laptop-local wrapper.
 - [x] Runtime stage resolves `image_tag` automatically (existing deployed tag) when not explicitly provided, and only fails when no prior runtime tag exists.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 

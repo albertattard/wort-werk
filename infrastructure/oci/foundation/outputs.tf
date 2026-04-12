@@ -157,3 +157,8 @@ output "image_repository" {
   description = "Runtime image repository URL without tag."
   value       = "${var.ocir_registry}/${data.oci_objectstorage_namespace.this.namespace}/${oci_artifacts_container_repository.wort_werk.display_name}"
 }
+
+output "terraform_state_bucket_name" {
+  description = "Object Storage bucket name used for Terraform remote state."
+  value       = oci_objectstorage_bucket.terraform_state.name
+}

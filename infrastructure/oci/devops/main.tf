@@ -79,7 +79,9 @@ resource "oci_identity_policy" "github_connection_secret_read" {
   description    = local.github_connection_secret_policy_description
   statements = [
     "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'"
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'"
   ]
 }
 
@@ -116,6 +118,180 @@ resource "oci_devops_build_pipeline" "release" {
       name          = "tfBackendMode"
       default_value = "local-blocked"
       description   = "Must stay non-local before the private runner is allowed to execute terraform apply."
+    }
+
+    items {
+      name          = "imageRepository"
+      default_value = var.image_repository
+      description   = "Runtime image repository without tag."
+    }
+
+    items {
+      name          = "imageRegistryEndpoint"
+      default_value = var.image_registry_endpoint
+      description   = "Runtime image registry host."
+    }
+
+    items {
+      name          = "imageRegistryUsername"
+      default_value = var.image_registry_username
+      description   = "Registry username used for OCI DevOps image publication and runtime pulls."
+    }
+
+    items {
+      name          = "imageRegistryPasswordSecretOcid"
+      default_value = var.image_registry_password_secret_ocid
+      description   = "Vault secret OCID that stores the registry auth token."
+    }
+
+    items {
+      name          = "regionRuntime"
+      default_value = var.region_runtime
+      description   = "OCI runtime region."
+    }
+
+    items {
+      name          = "tenancyOcid"
+      default_value = var.tenancy_ocid
+      description   = "Tenancy OCID used by runtime Terraform."
+    }
+
+    items {
+      name          = "compartmentOcid"
+      default_value = var.compartment_ocid
+      description   = "Compartment OCID used by runtime resources."
+    }
+
+    items {
+      name          = "runtimeSubnetId"
+      default_value = var.runtime_subnet_id
+      description   = "Runtime subnet OCID."
+    }
+
+    items {
+      name          = "loadBalancerSubnetId"
+      default_value = var.load_balancer_subnet_id
+      description   = "Load balancer subnet OCID."
+    }
+
+    items {
+      name          = "nsgId"
+      default_value = var.nsg_id
+      description   = "Runtime NSG OCID."
+    }
+
+    items {
+      name          = "loadBalancerNsgId"
+      default_value = var.load_balancer_nsg_id
+      description   = "Load balancer NSG OCID."
+    }
+
+    items {
+      name          = "loadBalancerPublicIpId"
+      default_value = var.load_balancer_public_ip_id
+      description   = "Reserved public IP OCID used by the load balancer."
+    }
+
+    items {
+      name          = "loadBalancerPublicIp"
+      default_value = var.load_balancer_public_ip
+      description   = "Reserved public IP value used by the load balancer."
+    }
+
+    items {
+      name          = "appPort"
+      default_value = tostring(var.app_port)
+      description   = "Runtime application port."
+    }
+
+    items {
+      name          = "managementPort"
+      default_value = tostring(var.management_port)
+      description   = "Runtime management port."
+    }
+
+    items {
+      name          = "lbListenerPort"
+      default_value = tostring(var.lb_listener_port)
+      description   = "Public HTTP listener port."
+    }
+
+    items {
+      name          = "httpsListenerPort"
+      default_value = tostring(var.https_listener_port)
+      description   = "Public HTTPS listener port."
+    }
+
+    items {
+      name          = "loadBalancerMinBandwidthMbps"
+      default_value = tostring(var.load_balancer_min_bandwidth_mbps)
+      description   = "Minimum flexible load balancer bandwidth in Mbps."
+    }
+
+    items {
+      name          = "loadBalancerMaxBandwidthMbps"
+      default_value = tostring(var.load_balancer_max_bandwidth_mbps)
+      description   = "Maximum flexible load balancer bandwidth in Mbps."
+    }
+
+    items {
+      name          = "runtimeDbUrl"
+      default_value = var.runtime_db_url
+      description   = "Runtime JDBC URL."
+    }
+
+    items {
+      name          = "runtimeDbUsername"
+      default_value = var.runtime_db_username
+      description   = "Runtime database username."
+    }
+
+    items {
+      name          = "runtimeDbPasswordSecretOcid"
+      default_value = var.runtime_db_password_secret_ocid
+      description   = "Vault secret OCID used for the runtime database password."
+    }
+
+    items {
+      name          = "runtimeDbSslRootCertBase64"
+      default_value = var.runtime_db_ssl_root_cert_base64
+      description   = "Base64-encoded PostgreSQL CA certificate used by the runtime."
+    }
+
+    items {
+      name          = "postgresqlAdminUsername"
+      default_value = var.postgresql_admin_username
+      description   = "PostgreSQL administrator username used for DB bootstrap."
+    }
+
+    items {
+      name          = "postgresqlAdminPasswordSecretOcid"
+      default_value = var.postgresql_admin_password_secret_ocid
+      description   = "Vault secret OCID used for the PostgreSQL administrator password."
+    }
+
+    items {
+      name          = "postgresqlHost"
+      default_value = var.postgresql_host
+      description   = "Private PostgreSQL endpoint hostname."
+    }
+
+    items {
+      name          = "postgresqlPort"
+      default_value = var.postgresql_port
+      description   = "Private PostgreSQL endpoint port."
+    }
+
+    items {
+      name          = "postgresqlDatabaseName"
+      default_value = var.postgresql_database_name
+      description   = "Database name used by the runtime."
+    }
+
+    items {
+      name          = "runtimeStateBucketName"
+      default_value = var.runtime_state_bucket_name
+      description   = "Object Storage bucket that owns runtime Terraform state."
     }
   }
 }

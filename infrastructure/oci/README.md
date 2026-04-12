@@ -12,11 +12,11 @@ An in-progress fourth stack now exists for the OCI-native release control plane:
 
 Apply order:
 1. foundation
-2. optionally create the GitHub DevOps connection secret in OCI Vault and apply `devops/`
-3. create or rotate DB secrets in OCI Vault
-4. data
+2. create or rotate DB secrets in OCI Vault
+3. data
+4. optionally create the GitHub DevOps connection secret and OCIR push secret in OCI Vault, then apply `devops/`
 5. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
-6. runtime or release
+6. runtime
 
 ## Set the DB Credentials
 
@@ -43,16 +43,23 @@ OCI_PROFILE="FRANKFURT" ./infrastructure/oci/deploy.sh db-role
 
 - `./infrastructure/oci/deploy.sh all`: apply foundation, data, then runtime.
 - `./infrastructure/oci/deploy.sh foundation`: apply foundation only.
-- `./infrastructure/oci/deploy.sh devops`: apply the OCI DevOps release-runner stack after foundation outputs exist.
+- `./infrastructure/oci/deploy.sh devops`: apply the OCI DevOps release-runner stack after `foundation` and `data` outputs exist.
 - `./infrastructure/oci/deploy.sh data`: apply data only.
 - `./infrastructure/oci/deploy.sh db-role`: bootstrap or rotate the dedicated runtime DB role from a host with private DB connectivity.
-- `./infrastructure/oci/deploy.sh runtime`: apply runtime only.
-- `./infrastructure/oci/deploy.sh release`: run `./mvnw clean verify` (local single-platform image), then publish multi-arch image and deploy runtime with a new image tag.
-- `./infrastructure/oci/deploy.sh rollout`: repeatable full rollout (`foundation`, `data`, then `release`).
-  - preflight: fails if git has pending changes outside `assets/images/new`
-  - override: set `ALLOW_DIRTY_ROLLOUT=true` for intentional exception runs
-- Run `./infrastructure/oci/deploy.sh db-role` after changing administrator or runtime DB passwords so PostgreSQL stays in sync with OCI Vault before `runtime`, `release`, or `rollout`.
-- `./tools/rollout`: sources `~/.oci/oci.secrets.env`, preserves explicit `VERIFY_DB_USERNAME` / `VERIFY_DB_PASSWORD` values when present, generates ephemeral local ones when missing, and runs `deploy.sh rollout` from repo root.
+- `./infrastructure/oci/deploy.sh runtime`: reserved for the one-time backend migration or OCI DevOps-driven runtime apply.
+- `./infrastructure/oci/devops/run-release.sh`: trigger the OCI DevOps build/deploy pipeline from an explicit git reference.
+- Run `./infrastructure/oci/deploy.sh db-role` after changing administrator or runtime DB passwords so PostgreSQL stays in sync with OCI Vault before `runtime` or any OCI DevOps release.
+
+## One-Time Runtime State Migration
+
+Before the first OCI DevOps-managed rollout, migrate the existing local runtime Terraform state into the OCI backend bucket created by `foundation`:
+
+```bash
+RUNTIME_BACKEND_MIGRATE=true ./infrastructure/oci/deploy.sh runtime
+```
+
+This migration is intentionally explicit. `deploy.sh runtime` refuses to auto-migrate a detected local `runtime/terraform.tfstate` unless `RUNTIME_BACKEND_MIGRATE=true` is set.
+After that migration, `deploy.sh runtime` is expected to run only inside OCI DevOps (`OCI_CLI_AUTH=resource_principal`).
 
 Runtime `image_tag` behavior:
 - `runtime` resolves tag in this order: `IMAGE_TAG` env var, existing `runtime/release.auto.tfvars:image_tag`, current runtime Terraform output `deployed_image_url` tag.
@@ -103,23 +110,13 @@ The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs
 - `devops_nsg_id`
 - `devops_dynamic_group_name`
 
-Release mode requires:
-- `OCI_USERNAME`
-- `OCI_AUTH_TOKEN`
+Runtime apply still honors:
+- `IMAGE_TAG` when you want to pin runtime apply to a specific tag.
 
-Optional release variables:
-- `OCI_PROFILE` (default `FRANKFURT`)
-- `IMAGE_TAG` (default current git short SHA)
-- `IMAGE_TAG` is also honored by `runtime`/`rollout` when you want to pin runtime apply to a specific tag.
-- `VERIFY_IMAGE_TAG` (default `<repo-name>:verify-release`; local image tag used by `clean verify`)
-- `DOCKER_PLATFORM` (default `linux/amd64,linux/arm64`; release publish platforms)
-- `OCIR_REPOSITORY` (optional fallback override for cleanup lookup)
-- `PRUNE_OLD_IMAGES` (`true` by default)
-- `KEEP_IMAGE_COUNT` (`2` by default; minimum enforced to 2)
-
-Cleanup behavior:
-- release cleanup uses foundation output `ocir_repository_id` when available
-- if repository resolution fails, deployment still succeeds and cleanup is skipped with a warning
+DevOps stack requires:
+- `github_connection_token_secret_ocid` in `infrastructure/oci/devops/terraform.tfvars`
+- `image_registry_username` in `infrastructure/oci/devops/terraform.tfvars`
+- `image_registry_password_secret_ocid` in `infrastructure/oci/devops/terraform.tfvars`
 
 `release.auto.tfvars` is generated with:
 - `image_tag`
@@ -164,8 +161,8 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
 - DevOps provisions the GitHub external-connection secret-read policy scoped to the configured PAT secret OCID.
 - The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
-- The DevOps shell stage is provisioned on private OCI networking for this bootstrap path, but it is intentionally blocked from applying local Terraform state until backend handling is migrated away from laptop-local state files.
-- The DevOps build spec currently computes and publishes commit/image metadata plus a release bundle into OCI-managed release-handoff storage; it does not yet publish the runtime image itself through OCI DevOps.
+- The DevOps shell stage is provisioned on private OCI networking for this bootstrap path and must consume OCI-managed release metadata instead of laptop-local `foundation` / `data` state files.
+- The OCI DevOps build stage is the intended normal path for verification and runtime image publication.
 
 ## Naming Convention
 

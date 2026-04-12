@@ -9,9 +9,11 @@ RUNTIME_DIR="${SCRIPT_DIR}/runtime"
 DEVOPS_DIR="${SCRIPT_DIR}/devops"
 MODE="${1:-all}"
 BOOTSTRAP_RUNTIME_DB_ROLE_SCRIPT="${DATA_DIR}/bootstrap-runtime-db-role.sh"
+RUNTIME_STATE_KEY="runtime/terraform.tfstate"
 
-if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "devops" && "${MODE}" != "data" && "${MODE}" != "db-role" && "${MODE}" != "runtime" && "${MODE}" != "release" && "${MODE}" != "rollout" ]]; then
-  echo "Usage: $0 [all|foundation|devops|data|db-role|runtime|release|rollout]" >&2
+if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "devops" && "${MODE}" != "data" && "${MODE}" != "db-role" && "${MODE}" != "runtime" ]]; then
+  echo "Usage: $0 [all|foundation|devops|data|db-role|runtime]" >&2
+  echo "Normal production releases must run through ./infrastructure/oci/devops/run-release.sh." >&2
   exit 1
 fi
 
@@ -87,6 +89,20 @@ upsert_tfvars_string() {
   mv "${tmp}" "${file}"
 }
 
+resolve_output_or_env() {
+  local env_name="$1"
+  local dir="$2"
+  local output_name="$3"
+  local value="${!env_name:-}"
+
+  if [[ -n "${value}" ]]; then
+    printf '%s' "${value}"
+    return 0
+  fi
+
+  terraform -chdir="${dir}" output -raw "${output_name}"
+}
+
 resolve_runtime_image_tag() {
   local existing_tag
   local deployed_image_url
@@ -109,24 +125,8 @@ resolve_runtime_image_tag() {
     return 0
   fi
 
-  echo "Missing image_tag for runtime apply. Set IMAGE_TAG or run release first so runtime state has deployed_image_url." >&2
+  echo "Missing image_tag for runtime apply. Set IMAGE_TAG or ensure runtime state has deployed_image_url." >&2
   exit 1
-}
-
-ensure_clean_rollout_worktree() {
-  if [[ "${ALLOW_DIRTY_ROLLOUT:-false}" == "true" ]]; then
-    echo "Skipping rollout clean-worktree preflight because ALLOW_DIRTY_ROLLOUT=true."
-    return
-  fi
-
-  local pending
-  pending="$(git -C "${REPO_ROOT}" status --short -- . ':(exclude)assets/images/new')"
-  if [[ -n "${pending}" ]]; then
-    echo "Rollout aborted: pending git changes detected outside assets/images/new." >&2
-    echo "${pending}" >&2
-    echo "Commit or stash these changes, or set ALLOW_DIRTY_ROLLOUT=true for an intentional one-off rollout." >&2
-    exit 1
-  fi
 }
 
 apply_foundation() {
@@ -138,25 +138,112 @@ apply_foundation() {
 write_devops_stack_vars() {
   local region
   local home_region
+  local tenancy_ocid
   local compartment_ocid
   local devops_subnet_id
   local devops_nsg_id
   local devops_dynamic_group_name
+  local image_repository
+  local image_registry_endpoint
+  local image_registry_username
+  local image_registry_password_secret_ocid
+  local runtime_state_bucket_name
+  local runtime_subnet_id
+  local load_balancer_subnet_id
+  local nsg_id
+  local load_balancer_nsg_id
+  local load_balancer_public_ip_id
+  local load_balancer_public_ip
+  local app_port
+  local management_port
+  local lb_listener_port
+  local https_listener_port
+  local load_balancer_min_bandwidth_mbps
+  local load_balancer_max_bandwidth_mbps
+  local runtime_db_url
+  local runtime_db_username
+  local runtime_db_password_secret_ocid
+  local runtime_db_ssl_root_cert_base64
+  local postgresql_admin_username
+  local postgresql_admin_password_secret_ocid
+  local postgresql_host
+  local postgresql_port
+  local postgresql_database_name
 
   region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
   home_region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw home_region)"
+  tenancy_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw tenancy_ocid)"
   compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
   devops_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_subnet_id)"
   devops_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_nsg_id)"
   devops_dynamic_group_name="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_dynamic_group_name)"
+  image_repository="$(terraform -chdir="${FOUNDATION_DIR}" output -raw image_repository)"
+  image_registry_endpoint="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_registry)"
+  runtime_state_bucket_name="$(terraform -chdir="${FOUNDATION_DIR}" output -raw terraform_state_bucket_name)"
+  runtime_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw runtime_subnet_id)"
+  load_balancer_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_subnet_id)"
+  nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw nsg_id)"
+  load_balancer_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_nsg_id)"
+  load_balancer_public_ip_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_public_ip_id)"
+  load_balancer_public_ip="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_public_ip)"
+  app_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw app_port)"
+  management_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw management_port)"
+  lb_listener_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw lb_listener_port)"
+  https_listener_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw https_listener_port)"
+  load_balancer_min_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_min_bandwidth_mbps)"
+  load_balancer_max_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_max_bandwidth_mbps)"
+
+  runtime_db_url="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_url)"
+  runtime_db_username="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_username)"
+  runtime_db_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_password_secret_ocid)"
+  runtime_db_ssl_root_cert_base64="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_ssl_root_cert_base64)"
+  postgresql_admin_username="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_admin_username)"
+  postgresql_admin_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_admin_password_secret_ocid)"
+  postgresql_host="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_fqdn)"
+  postgresql_port="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_port)"
+  postgresql_database_name="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_database_name)"
+
+  image_registry_username="${IMAGE_REGISTRY_USERNAME:-$(read_tfvars_string "${DEVOPS_DIR}/terraform.tfvars" "image_registry_username")}"
+  image_registry_password_secret_ocid="${IMAGE_REGISTRY_PASSWORD_SECRET_OCID:-$(read_tfvars_string "${DEVOPS_DIR}/terraform.tfvars" "image_registry_password_secret_ocid")}"
+
+  require_var image_registry_username
+  require_var image_registry_password_secret_ocid
 
   cat > "${DEVOPS_DIR}/foundation.auto.tfvars" <<DEVOPSEOF
 region = "${region}"
+region_runtime = "${region}"
 home_region = "${home_region}"
+tenancy_ocid = "${tenancy_ocid}"
 compartment_ocid = "${compartment_ocid}"
 devops_subnet_id = "${devops_subnet_id}"
 devops_nsg_id = "${devops_nsg_id}"
 devops_dynamic_group_name = "${devops_dynamic_group_name}"
+image_repository = "${image_repository}"
+image_registry_endpoint = "${image_registry_endpoint}"
+image_registry_username = "${image_registry_username}"
+image_registry_password_secret_ocid = "${image_registry_password_secret_ocid}"
+runtime_state_bucket_name = "${runtime_state_bucket_name}"
+runtime_subnet_id = "${runtime_subnet_id}"
+load_balancer_subnet_id = "${load_balancer_subnet_id}"
+nsg_id = "${nsg_id}"
+load_balancer_nsg_id = "${load_balancer_nsg_id}"
+load_balancer_public_ip_id = "${load_balancer_public_ip_id}"
+load_balancer_public_ip = "${load_balancer_public_ip}"
+app_port = ${app_port}
+management_port = ${management_port}
+lb_listener_port = ${lb_listener_port}
+https_listener_port = ${https_listener_port}
+load_balancer_min_bandwidth_mbps = ${load_balancer_min_bandwidth_mbps}
+load_balancer_max_bandwidth_mbps = ${load_balancer_max_bandwidth_mbps}
+runtime_db_url = "${runtime_db_url}"
+runtime_db_username = "${runtime_db_username}"
+runtime_db_password_secret_ocid = "${runtime_db_password_secret_ocid}"
+runtime_db_ssl_root_cert_base64 = "${runtime_db_ssl_root_cert_base64}"
+postgresql_admin_username = "${postgresql_admin_username}"
+postgresql_admin_password_secret_ocid = "${postgresql_admin_password_secret_ocid}"
+postgresql_host = "${postgresql_host}"
+postgresql_port = "${postgresql_port}"
+postgresql_database_name = "${postgresql_database_name}"
 DEVOPSEOF
 }
 
@@ -227,28 +314,28 @@ write_runtime_stack_vars() {
   local load_balancer_min_bandwidth_mbps
   local load_balancer_max_bandwidth_mbps
 
-  region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
-  tenancy_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw tenancy_ocid)"
-  compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
-  runtime_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw runtime_subnet_id)"
-  load_balancer_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_subnet_id)"
-  nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw nsg_id)"
-  load_balancer_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_nsg_id)"
-  load_balancer_public_ip_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_public_ip_id)"
-  load_balancer_public_ip="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_public_ip)"
-  image_repository="$(terraform -chdir="${FOUNDATION_DIR}" output -raw image_repository)"
-  image_registry_endpoint="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_registry)"
-  app_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw app_port)"
-  management_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw management_port)"
-  lb_listener_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw lb_listener_port)"
-  https_listener_port="$(terraform -chdir="${FOUNDATION_DIR}" output -raw https_listener_port)"
-  load_balancer_min_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_min_bandwidth_mbps)"
-  load_balancer_max_bandwidth_mbps="$(terraform -chdir="${FOUNDATION_DIR}" output -raw load_balancer_max_bandwidth_mbps)"
+  region="$(resolve_output_or_env REGION "${FOUNDATION_DIR}" region)"
+  tenancy_ocid="$(resolve_output_or_env TENANCY_OCID "${FOUNDATION_DIR}" tenancy_ocid)"
+  compartment_ocid="$(resolve_output_or_env COMPARTMENT_OCID "${FOUNDATION_DIR}" compartment_ocid)"
+  runtime_subnet_id="$(resolve_output_or_env RUNTIME_SUBNET_ID "${FOUNDATION_DIR}" runtime_subnet_id)"
+  load_balancer_subnet_id="$(resolve_output_or_env LOAD_BALANCER_SUBNET_ID "${FOUNDATION_DIR}" load_balancer_subnet_id)"
+  nsg_id="$(resolve_output_or_env NSG_ID "${FOUNDATION_DIR}" nsg_id)"
+  load_balancer_nsg_id="$(resolve_output_or_env LOAD_BALANCER_NSG_ID "${FOUNDATION_DIR}" load_balancer_nsg_id)"
+  load_balancer_public_ip_id="$(resolve_output_or_env LOAD_BALANCER_PUBLIC_IP_ID "${FOUNDATION_DIR}" load_balancer_public_ip_id)"
+  load_balancer_public_ip="$(resolve_output_or_env LOAD_BALANCER_PUBLIC_IP "${FOUNDATION_DIR}" load_balancer_public_ip)"
+  image_repository="$(resolve_output_or_env IMAGE_REPOSITORY "${FOUNDATION_DIR}" image_repository)"
+  image_registry_endpoint="$(resolve_output_or_env IMAGE_REGISTRY_ENDPOINT "${FOUNDATION_DIR}" ocir_registry)"
+  app_port="$(resolve_output_or_env APP_PORT "${FOUNDATION_DIR}" app_port)"
+  management_port="$(resolve_output_or_env MANAGEMENT_PORT "${FOUNDATION_DIR}" management_port)"
+  lb_listener_port="$(resolve_output_or_env LB_LISTENER_PORT "${FOUNDATION_DIR}" lb_listener_port)"
+  https_listener_port="$(resolve_output_or_env HTTPS_LISTENER_PORT "${FOUNDATION_DIR}" https_listener_port)"
+  load_balancer_min_bandwidth_mbps="$(resolve_output_or_env LOAD_BALANCER_MIN_BANDWIDTH_MBPS "${FOUNDATION_DIR}" load_balancer_min_bandwidth_mbps)"
+  load_balancer_max_bandwidth_mbps="$(resolve_output_or_env LOAD_BALANCER_MAX_BANDWIDTH_MBPS "${FOUNDATION_DIR}" load_balancer_max_bandwidth_mbps)"
 
-  runtime_db_url="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_url)"
-  runtime_db_username="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_username)"
-  runtime_db_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_password_secret_ocid)"
-  runtime_db_ssl_root_cert_base64="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_ssl_root_cert_base64)"
+  runtime_db_url="$(resolve_output_or_env RUNTIME_DB_URL "${DATA_DIR}" runtime_db_url)"
+  runtime_db_username="$(resolve_output_or_env RUNTIME_DB_USERNAME "${DATA_DIR}" runtime_db_username)"
+  runtime_db_password_secret_ocid="$(resolve_output_or_env RUNTIME_DB_PASSWORD_SECRET_OCID "${DATA_DIR}" runtime_db_password_secret_ocid)"
+  runtime_db_ssl_root_cert_base64="$(resolve_output_or_env RUNTIME_DB_SSL_ROOT_CERT_BASE64 "${DATA_DIR}" runtime_db_ssl_root_cert_base64)"
 
   cat > "${RUNTIME_DIR}/foundation.auto.tfvars" <<RUNTIMEEOF
 region = "${region}"
@@ -275,25 +362,92 @@ load_balancer_max_bandwidth_mbps = ${load_balancer_max_bandwidth_mbps}
 RUNTIMEEOF
 }
 
+write_runtime_backend_config() {
+  local backend_config_file="$1"
+  local region
+  local namespace
+  local bucket_name
+
+  region="$(resolve_output_or_env REGION "${FOUNDATION_DIR}" region)"
+  namespace="$(resolve_output_or_env OCI_NAMESPACE "${FOUNDATION_DIR}" ocir_namespace)"
+  bucket_name="$(resolve_output_or_env RUNTIME_STATE_BUCKET_NAME "${FOUNDATION_DIR}" terraform_state_bucket_name)"
+
+  cat > "${backend_config_file}" <<EOF
+region = "${region}"
+namespace = "${namespace}"
+bucket = "${bucket_name}"
+key = "${RUNTIME_STATE_KEY}"
+EOF
+
+  if [[ "${OCI_CLI_AUTH:-}" == "resource_principal" ]]; then
+    printf 'auth = "ResourcePrincipal"\n' >> "${backend_config_file}"
+  fi
+}
+
+init_runtime_backend() {
+  local backend_config_file
+  backend_config_file="$(mktemp)"
+  trap 'rm -f "${backend_config_file}"' RETURN
+
+  require_command terraform
+  write_runtime_backend_config "${backend_config_file}"
+
+  if [[ -f "${RUNTIME_DIR}/terraform.tfstate" && "${RUNTIME_BACKEND_MIGRATE:-false}" != "true" ]]; then
+    echo "Runtime local state detected at ${RUNTIME_DIR}/terraform.tfstate." >&2
+    echo "Re-run with RUNTIME_BACKEND_MIGRATE=true to migrate it into the OCI backend before OCI DevOps rollout is enabled." >&2
+    exit 1
+  fi
+
+  if [[ "${RUNTIME_BACKEND_MIGRATE:-false}" == "true" ]]; then
+    terraform -chdir="${RUNTIME_DIR}" init -upgrade -reconfigure -migrate-state -force-copy -backend-config="${backend_config_file}"
+    return
+  fi
+
+  terraform -chdir="${RUNTIME_DIR}" init -upgrade -reconfigure -backend-config="${backend_config_file}"
+}
+
+assert_runtime_execution_context() {
+  if [[ "${RUNTIME_BACKEND_MIGRATE:-false}" == "true" ]]; then
+    return 0
+  fi
+
+  if [[ "${OCI_CLI_AUTH:-}" == "resource_principal" ]]; then
+    return 0
+  fi
+
+  echo "Production runtime apply is restricted to OCI DevOps. Use ./infrastructure/oci/devops/run-release.sh for releases, or set RUNTIME_BACKEND_MIGRATE=true for the one-time backend migration." >&2
+  exit 1
+}
+
 apply_runtime() {
   local release_vars_file="${RUNTIME_DIR}/release.auto.tfvars"
   local image_tag
+  local image_registry_username
+  local image_registry_password
 
-  terraform -chdir="${RUNTIME_DIR}" init -upgrade
-
+  assert_runtime_execution_context
+  init_runtime_backend
   write_runtime_stack_vars
   image_tag="$(resolve_runtime_image_tag)"
 
-  if [[ -n "${OCI_USERNAME:-}" && -n "${OCI_AUTH_TOKEN:-}" ]]; then
+  image_registry_username="${IMAGE_REGISTRY_USERNAME:-}"
+  image_registry_password="${IMAGE_REGISTRY_PASSWORD:-}"
+
+  if [[ -z "${image_registry_username}" && -n "${OCI_USERNAME:-}" && -n "${OCI_AUTH_TOKEN:-}" ]]; then
     local ocir_namespace
     ocir_namespace="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace)"
+    image_registry_username="${ocir_namespace}/${OCI_USERNAME}"
+    image_registry_password="${OCI_AUTH_TOKEN}"
+  fi
+
+  if [[ -n "${image_registry_username}" && -n "${image_registry_password}" ]]; then
     cat > "${release_vars_file}" <<EOFVARS
 image_tag               = "${image_tag}"
-image_registry_username = "${ocir_namespace}/${OCI_USERNAME}"
-image_registry_password = "${OCI_AUTH_TOKEN}"
+image_registry_username = "${image_registry_username}"
+image_registry_password = "${image_registry_password}"
 EOFVARS
   elif [[ ! -f "${release_vars_file}" ]]; then
-    echo "Missing runtime registry credentials. Set OCI_USERNAME and OCI_AUTH_TOKEN or provide runtime/release.auto.tfvars." >&2
+    echo "Missing runtime registry credentials. Set IMAGE_REGISTRY_USERNAME and IMAGE_REGISTRY_PASSWORD, or provide runtime/release.auto.tfvars." >&2
     exit 1
   else
     upsert_tfvars_string "${release_vars_file}" "image_tag" "${image_tag}"
@@ -301,131 +455,6 @@ EOFVARS
 
   terraform -chdir="${RUNTIME_DIR}" fmt
   terraform -chdir="${RUNTIME_DIR}" apply -auto-approve -input=false
-}
-
-delete_old_images() {
-  local compartment_ocid="$1"
-  local repository_name="$2"
-  local keep_count="$3"
-  local repository_id
-  local image_ids
-  local total
-  local i
-
-  if (( keep_count < 2 )); then
-    echo "KEEP_IMAGE_COUNT must be at least 2 for safe rollback; using 2." >&2
-    keep_count=2
-  fi
-
-  repository_id="$(oci artifacts container repository list \
-    --profile "${OCI_PROFILE}" \
-    --compartment-id "${compartment_ocid}" \
-    --display-name "${repository_name}" \
-    --all \
-    --query 'data[0].id' \
-    --raw-output)"
-
-  if [[ -z "${repository_id}" || "${repository_id}" == "null" ]]; then
-    echo "Unable to resolve OCIR repository id for ${repository_name}." >&2
-    exit 1
-  fi
-
-  mapfile -t image_ids < <(oci artifacts container image list \
-    --profile "${OCI_PROFILE}" \
-    --compartment-id "${compartment_ocid}" \
-    --repository-id "${repository_id}" \
-    --all \
-    --query 'reverse(sort_by(data, &"time-created"))[].id' \
-    --raw-output)
-
-  total="${#image_ids[@]}"
-  if (( total <= keep_count )); then
-    echo "Image cleanup skipped: ${total} image(s) found, keep count is ${keep_count}."
-    return
-  fi
-
-  echo "Pruning old images: keeping ${keep_count}, deleting $((total - keep_count))."
-  for (( i=keep_count; i<total; i++ )); do
-    oci artifacts container image delete \
-      --profile "${OCI_PROFILE}" \
-      --image-id "${image_ids[$i]}" \
-      --force
-  done
-}
-
-deploy_release() {
-  local oci_repository
-  local ocir_namespace
-  local image_repository
-  local registry_host
-  local image_tag
-  local image
-  local verify_image
-  local verify_image_repository
-  local release_platforms
-  local compartment_ocid
-  local keep_count
-
-  require_command terraform
-  require_command docker
-  require_command git
-  require_command oci
-  require_command "${REPO_ROOT}/mvnw"
-  require_var OCI_USERNAME
-  require_var OCI_AUTH_TOKEN
-
-  OCI_PROFILE="${OCI_PROFILE:-FRANKFURT}"
-  image_tag="${IMAGE_TAG:-$(git -C "${REPO_ROOT}" rev-parse --short=12 HEAD)}"
-  keep_count="${KEEP_IMAGE_COUNT:-2}"
-  verify_image_repository="$(basename "${REPO_ROOT}")"
-  verify_image="${VERIFY_IMAGE_TAG:-${verify_image_repository}:verify-release}"
-  release_platforms="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
-
-  compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
-  oci_repository="${OCIR_REPOSITORY:-$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_repository_name)}"
-  ocir_namespace="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace)"
-  image_repository="$(terraform -chdir="${FOUNDATION_DIR}" output -raw image_repository)"
-  registry_host="${image_repository%%/*}"
-
-  image="${image_repository}:${image_tag}"
-
-  echo "Running pre-release verification: ./mvnw clean verify -Dverify.container.image=${verify_image}"
-  "${REPO_ROOT}/mvnw" clean verify "-Dverify.container.image=${verify_image}"
-
-  echo "Logging into OCIR: ${registry_host}"
-  printf '%s' "${OCI_AUTH_TOKEN}" | docker login "${registry_host}" \
-    --username "${ocir_namespace}/${OCI_USERNAME}" \
-    --password-stdin
-
-  docker image inspect "${verify_image}" >/dev/null 2>&1 || {
-    echo "Verified image not found locally: ${verify_image}" >&2
-    exit 1
-  }
-
-  echo "Publishing multi-architecture release image '${image}' for platforms '${release_platforms}'"
-  docker buildx build \
-    --file "${REPO_ROOT}/container/Dockerfile" \
-    --platform "${release_platforms}" \
-    --tag "${image}" \
-    --push \
-    "${REPO_ROOT}"
-
-  write_runtime_stack_vars
-  cat > "${RUNTIME_DIR}/release.auto.tfvars" <<EOFVARS
-image_tag               = "${image_tag}"
-image_registry_username = "${ocir_namespace}/${OCI_USERNAME}"
-image_registry_password = "${OCI_AUTH_TOKEN}"
-EOFVARS
-
-  terraform -chdir="${RUNTIME_DIR}" init -upgrade
-  terraform -chdir="${RUNTIME_DIR}" fmt
-  terraform -chdir="${RUNTIME_DIR}" apply -auto-approve -input=false
-
-  if [[ "${PRUNE_OLD_IMAGES:-true}" == "true" ]]; then
-    delete_old_images "${compartment_ocid}" "${oci_repository}" "${keep_count}"
-  else
-    echo "Skipping image cleanup because PRUNE_OLD_IMAGES=false."
-  fi
 }
 
 case "${MODE}" in
@@ -443,15 +472,6 @@ case "${MODE}" in
     ;;
   runtime)
     apply_runtime
-    ;;
-  release)
-    deploy_release
-    ;;
-  rollout)
-    ensure_clean_rollout_worktree
-    apply_foundation
-    apply_data
-    deploy_release
     ;;
   all)
     apply_foundation

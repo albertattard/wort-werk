@@ -50,15 +50,18 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to read buckets");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects");
+        assertThat(foundationMain).contains("terraform_state_bucket_name");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-container-instances");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics");
         assertThat(foundationOutputs).contains("output \"devops_dynamic_group_name\"");
+        assertThat(foundationOutputs).contains("output \"terraform_state_bucket_name\"");
         assertThat(deployScript).contains("devops_dynamic_group_name");
 
         assertThat(devopsVariables).contains("variable \"home_region\"");
         assertThat(devopsVariables).contains("variable \"devops_dynamic_group_name\"");
+        assertThat(devopsVariables).contains("variable \"image_registry_password_secret_ocid\"");
         assertThat(devopsMain).contains("provider \"oci\" {\n  alias  = \"home\"");
         assertThat(devopsMain).contains("resource \"oci_identity_policy\" \"github_connection_secret_read\"");
         assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family");
@@ -76,11 +79,14 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(Path.of("infrastructure/oci/devops/build_spec.yaml")).exists();
         assertThat(Path.of("infrastructure/oci/devops/command_spec.yaml")).exists();
         assertThat(Path.of("infrastructure/oci/devops/run-release.sh")).exists();
+        assertThat(Path.of("infrastructure/oci/runtime/versions.tf")).exists();
 
         String devopsMain = read("infrastructure/oci/devops/main.tf");
         String buildSpec = read("infrastructure/oci/devops/build_spec.yaml");
         String commandSpec = read("infrastructure/oci/devops/command_spec.yaml");
         String runReleaseScript = read("infrastructure/oci/devops/run-release.sh");
+        String deployScript = read("infrastructure/oci/deploy.sh");
+        String runtimeVersions = read("infrastructure/oci/runtime/versions.tf");
 
         assertThat(devopsMain).contains("resource \"oci_devops_project\"");
         assertThat(devopsMain).contains("resource \"oci_devops_build_pipeline\"");
@@ -101,15 +107,26 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("COMMIT_SHA");
         assertThat(buildSpec).contains("IMAGE_TAG");
         assertThat(buildSpec).contains("exportedVariables");
+        assertThat(buildSpec).contains("./mvnw clean verify");
+        assertThat(buildSpec).contains("docker buildx build");
+        assertThat(buildSpec).contains("oci secrets secret-bundle get");
         assertThat(buildSpec).contains("git archive --format=tar.gz --output=release-bundle.tgz \"${release_ref}\"");
         assertThat(buildSpec).contains("oci os object put");
         assertThat(buildSpec).contains(". ./release-metadata.env");
-        assertThat(commandSpec).contains("ROLLBACK");
+        assertThat(commandSpec).contains("ROLLBACK: \"${ROLLBACK}\"");
+        assertThat(commandSpec).contains("RELEASE_VERSION: \"${releaseVersion}\"");
         assertThat(commandSpec).contains("oci os object get");
         assertThat(commandSpec).contains("terraform");
+        assertThat(commandSpec).doesNotContain("${NAMESPACE}");
+        assertThat(commandSpec).doesNotContain("${BUCKET_NAME}");
         assertThat(runReleaseScript).contains("oci devops build-run create");
         assertThat(runReleaseScript).contains("commit_hash");
         assertThat(runReleaseScript).contains("repository_branch");
+        assertThat(runReleaseScript).contains("\"name\": \"imageRepository\"");
+        assertThat(runtimeVersions).contains("backend \"oci\"");
+        assertThat(deployScript).doesNotContain("\"release\"");
+        assertThat(deployScript).doesNotContain("\"rollout\"");
+        assertThat(deployScript).contains("devops/run-release.sh");
     }
 
     private String read(String relativePath) throws IOException {

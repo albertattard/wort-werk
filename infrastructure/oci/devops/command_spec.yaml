@@ -3,54 +3,74 @@ component: command
 timeoutInSeconds: 3600
 shell: bash
 
+env:
+  variables:
+    ROLLBACK: "${ROLLBACK}"
+    RELEASE_VERSION: "${releaseVersion}"
+
 steps:
   - type: Command
     name: Preflight private rollout
     command: |
       set -euo pipefail
 
-      ROLLBACK="${ROLLBACK}"
-      TF_BACKEND_MODE="${tfBackendMode}"
-
-      if [[ "${ROLLBACK}" == "true" ]]; then
+      if [[ "$ROLLBACK" == "true" ]]; then
         echo "ROLLBACK=true is reserved for a future rollback path and is not implemented yet." >&2
         exit 1
       fi
 
-      if [[ "${TF_BACKEND_MODE}" != "remote" ]]; then
-        echo "Refusing to run terraform from OCI DevOps while runtime state is still laptop-local. Migrate backend handling first, then re-run with tfBackendMode=remote." >&2
-        exit 1
-      fi
+      base64_decode() {
+        if base64 --help 2>&1 | grep -q -- '--decode'; then
+          base64 --decode
+          return 0
+        fi
+
+        base64 -D
+      }
 
       export OCI_CLI_AUTH=resource_principal
 
-      RELEASE_VERSION="${releaseVersion}"
       NAMESPACE="$(oci os ns get --query 'data' --raw-output)"
       BUCKET_NAME="wort-werk-release-handoff"
-      OBJECT_PREFIX="releases/${RELEASE_VERSION}"
-      RELEASE_BUNDLE="$(pwd)/release-bundle.tgz"
-      RELEASE_METADATA="$(pwd)/release-metadata.env"
+      OBJECT_PREFIX="releases/$RELEASE_VERSION"
+      RELEASE_BUNDLE="$PWD/release-bundle.tgz"
+      RELEASE_METADATA="$PWD/release-metadata.env"
 
       oci os object get \
-        --namespace "${NAMESPACE}" \
-        --bucket-name "${BUCKET_NAME}" \
-        --name "${OBJECT_PREFIX}/release-bundle.tgz" \
-        --file "${RELEASE_BUNDLE}"
+        --namespace "$NAMESPACE" \
+        --bucket-name "$BUCKET_NAME" \
+        --name "$OBJECT_PREFIX/release-bundle.tgz" \
+        --file "$RELEASE_BUNDLE"
 
       oci os object get \
-        --namespace "${NAMESPACE}" \
-        --bucket-name "${BUCKET_NAME}" \
-        --name "${OBJECT_PREFIX}/release-metadata.env" \
-        --file "${RELEASE_METADATA}"
+        --namespace "$NAMESPACE" \
+        --bucket-name "$BUCKET_NAME" \
+        --name "$OBJECT_PREFIX/release-metadata.env" \
+        --file "$RELEASE_METADATA"
 
-      test -n "${RELEASE_BUNDLE}"
-      test -n "${RELEASE_METADATA}"
+      set -a
+      . "$RELEASE_METADATA"
+      set +a
+
+      if [[ "$TF_BACKEND_MODE" != "remote" ]]; then
+        echo "Refusing to run terraform from OCI DevOps until TF_BACKEND_MODE=remote." >&2
+        exit 1
+      fi
+
+      oci os object head \
+        --namespace "$NAMESPACE" \
+        --bucket-name "$RUNTIME_STATE_BUCKET_NAME" \
+        --name "runtime/terraform.tfstate" >/dev/null
+
+      IMAGE_REGISTRY_PASSWORD="$(oci secrets secret-bundle get \
+        --secret-id "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID" \
+        --query 'data."secret-bundle-content".content' \
+        --raw-output | base64_decode)"
+      export IMAGE_REGISTRY_PASSWORD
 
       RELEASE_DIR="$(mktemp -d)"
-      tar -xzf "${RELEASE_BUNDLE}" -C "${RELEASE_DIR}"
-      . "${RELEASE_METADATA}"
+      tar -xzf "$RELEASE_BUNDLE" -C "$RELEASE_DIR"
 
-      cd "${RELEASE_DIR}"
+      cd "$RELEASE_DIR"
       ./infrastructure/oci/data/bootstrap-runtime-db-role.sh
-      terraform -chdir=./infrastructure/oci/runtime init -upgrade
-      IMAGE_TAG="${IMAGE_TAG}" ./infrastructure/oci/deploy.sh runtime
+      ./infrastructure/oci/deploy.sh runtime

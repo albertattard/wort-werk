@@ -58,10 +58,11 @@ docs/
 
 ## OCI Release Note
 
-- The in-progress OCI DevOps release path is provisioned through `infrastructure/oci/devops/`.
+- The OCI DevOps release path is provisioned through `infrastructure/oci/devops/`.
 - This path depends on explicit OCI IAM bindings for the DevOps runner; private networking alone is not sufficient.
 - Private DevOps runners also need a dedicated outbound path for external SCM fetches; do not assume the runtime subnet's private-only network policy is sufficient for release execution.
-- Release-bundle handoff is moving to an explicit OCI Object Storage boundary so build and deploy stages share a deterministic, inspectable transfer contract.
+- Release-bundle handoff uses an explicit OCI Object Storage boundary so build and deploy stages share a deterministic, inspectable transfer contract.
+- Normal production release publication is expected to run through OCI DevOps rather than laptop-local `deploy.sh release` or `tools/rollout`.
 - Treat DevOps dynamic groups and compartment-scoped policies as part of the release infrastructure contract, not as post-apply console cleanup.
 
 ## Container

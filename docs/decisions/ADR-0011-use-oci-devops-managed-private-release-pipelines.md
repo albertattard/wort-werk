@@ -17,12 +17,14 @@ Adopt OCI DevOps managed pipelines as the default Wort-Werk release foundation i
 
 The intended structure is:
 
-1. Use an OCI DevOps build pipeline to check out a specific git reference, run verification, and publish a commit-traceable image.
+1. Use an OCI DevOps build pipeline to check out a specific git reference, run verification, and publish a commit-traceable multi-architecture image.
 2. Use an OCI DevOps deployment pipeline to execute private-network rollout steps from inside OCI.
 3. Run private PostgreSQL bootstrap steps from a deployment shell stage inside a private subnet rather than from an operator laptop.
 4. Prefer ephemeral or OCI-managed execution over long-lived general-purpose deployment hosts.
 5. Provide external SCM reachability for private DevOps runners through a dedicated outbound path for the DevOps subnet rather than by widening runtime subnet internet access.
 6. Use explicit OCI-managed storage as the release handoff boundary between build and deploy stages when OCI DevOps managed deliver-artifact stages are not operationally reliable enough for the required release bundle transfer.
+7. Keep OCI-resident deployment independent from laptop-local `foundation` or `data` state by passing required deployment inputs through OCI-managed release metadata and by using a remote runtime Terraform backend.
+8. Treat OCI DevOps as the sole supported production release path; operator laptops must not publish or deploy production releases.
 
 ## Consequences
 
@@ -38,11 +40,13 @@ Negative:
 - Build and deployment concerns must be modeled explicitly instead of hidden in local shell scripts.
 - Private runners that need external SCM access still require deliberate outbound design, such as NAT plus scoped NSG egress.
 - Build and deploy stages must now coordinate on explicit object naming and bucket lifecycle rules.
+- Runtime state migration becomes an explicit one-time operational step before OCI DevOps can own production rollout safely.
 
 Risks:
 - If the pipeline is allowed to deploy anything other than an explicit git reference, traceability will still be weak.
 - If the deployment shell stage receives broader network or IAM access than necessary, the managed pipeline will just become a different form of over-privileged control plane.
 - If Object Storage permissions are scoped too broadly, the release handoff bucket could become an unnecessary escalation path.
+- If the remote runtime backend is missing or empty and the deploy stage is not guarded against that condition, OCI DevOps could attempt an unsafe runtime apply from an untracked state.
 
 ## Alternatives Considered
 

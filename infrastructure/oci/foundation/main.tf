@@ -30,6 +30,7 @@ locals {
   devops_runner_policy_name         = "${local.stack_name}-devops-runner"
   devops_runner_policy_description  = "Least-privilege policy for Wort-Werk OCI DevOps runners"
   release_handoff_bucket_name       = "${local.stack_name}-release-handoff"
+  terraform_state_bucket_name       = "${local.stack_name}-terraform-state"
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
   devops_nat_gateway_name           = "${local.stack_name}-devops"
   service_gateway_name              = "${local.stack_name}-services"
@@ -435,9 +436,19 @@ resource "oci_identity_policy" "devops_runner" {
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to read buckets in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects in compartment id ${oci_identity_compartment.wort_werk.id} where target.bucket.name = '${local.release_handoff_bucket_name}'",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects in compartment id ${oci_identity_compartment.wort_werk.id} where target.bucket.name = '${local.terraform_state_bucket_name}'",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-container-instances in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers in compartment id ${oci_identity_compartment.wort_werk.id}"
   ]
+}
+
+resource "oci_objectstorage_bucket" "terraform_state" {
+  compartment_id = oci_identity_compartment.wort_werk.id
+  namespace      = data.oci_objectstorage_namespace.this.namespace
+  name           = local.terraform_state_bucket_name
+  access_type    = "NoPublicAccess"
+  storage_tier   = "Standard"
+  versioning     = "Enabled"
 }
 
 resource "oci_artifacts_container_repository" "wort_werk" {
