@@ -28,7 +28,7 @@ steps:
     name: Package release bundle
     command: |
       set -euo pipefail
-      tar --exclude=.git -czf release-bundle.tgz .
+      tar --exclude=.git --exclude=release-bundle.tgz --exclude=release-metadata.env -czf release-bundle.tgz .
 
 outputArtifacts:
   - name: release-bundle
