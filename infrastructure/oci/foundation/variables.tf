@@ -54,6 +54,12 @@ variable "app_port" {
   default     = 8080
 }
 
+variable "management_port" {
+  description = "Internal Spring Actuator management port exposed only to the OCI Load Balancer for health checks."
+  type        = number
+  default     = 8081
+}
+
 variable "lb_listener_port" {
   description = "Public HTTP listener port on the OCI Load Balancer."
   type        = number

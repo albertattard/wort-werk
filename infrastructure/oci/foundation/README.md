@@ -67,6 +67,7 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 - `load_balancer_public_ip`
 - `lb_listener_port`
 - `https_listener_port`
+- `management_port`
 - `ocir_namespace`
 - `ocir_repository_name`
 - `ocir_repository_id`
@@ -74,3 +75,9 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 - `vault_id`
 - `vault_key_id`
 - `runtime_dynamic_group_name`
+
+## Network Boundaries
+
+- The Load Balancer NSG accepts public ingress only on `80` and `443`.
+- The container NSG accepts the application port and the internal management port only from the Load Balancer NSG.
+- The management port exists for Spring Actuator readiness checks and is not exposed through a public listener.

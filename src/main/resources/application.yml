@@ -7,6 +7,21 @@ spring:
     password: ${WORTWERK_DB_PASSWORD:wortwerk}
     driver-class-name: org.postgresql.Driver
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+        liveness:
+          include: livenessState
+
 wortwerk:
   articles-csv: assets/articles.csv
   assets-dir: assets

@@ -101,6 +101,12 @@ variable "app_port" {
   default     = 8080
 }
 
+variable "management_port" {
+  description = "Spring Actuator management port used only for internal readiness health checks."
+  type        = number
+  default     = 8081
+}
+
 variable "lb_listener_port" {
   description = "Public HTTP listener port on the Load Balancer."
   type        = number
@@ -185,7 +191,7 @@ variable "load_balancer_max_bandwidth_mbps" {
 variable "lb_healthcheck_path" {
   description = "HTTP path used by load balancer backend health checks."
   type        = string
-  default     = "/login"
+  default     = "/actuator/health/readiness"
 }
 
 variable "lb_healthcheck_return_code" {

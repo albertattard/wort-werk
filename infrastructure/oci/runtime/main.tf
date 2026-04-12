@@ -16,6 +16,7 @@ locals {
     {
       WORTWERK_WEBAUTHN_RP_ID           = var.tls_redirect_host
       WORTWERK_WEBAUTHN_ALLOWED_ORIGINS = local.public_origin
+      MANAGEMENT_SERVER_PORT            = tostring(var.management_port)
     },
     var.runtime_db_url != "" ? {
       WORTWERK_DB_URL                  = var.runtime_db_url
@@ -96,7 +97,7 @@ resource "oci_load_balancer_backend_set" "wort_werk" {
 
   health_checker {
     protocol    = "HTTP"
-    port        = var.app_port
+    port        = var.management_port
     url_path    = var.lb_healthcheck_path
     return_code = var.lb_healthcheck_return_code
   }

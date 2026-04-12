@@ -63,6 +63,11 @@ output "app_port" {
   value       = var.app_port
 }
 
+output "management_port" {
+  description = "Internal Spring Actuator management port used by load balancer health checks."
+  value       = var.management_port
+}
+
 output "lb_listener_port" {
   description = "Public listener port exposed by the OCI Load Balancer."
   value       = var.lb_listener_port

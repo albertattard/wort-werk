@@ -43,6 +43,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/actuator/health",
+                                "/actuator/health/**",
                                 "/login",
                                 "/register",
                                 "/login/webauthn",

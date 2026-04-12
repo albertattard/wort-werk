@@ -68,6 +68,7 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation and da
 - `image_repository`
 - `image_registry_endpoint`
 - `app_port`
+- `management_port`
 - `lb_listener_port`
 - `https_listener_port`
 - `load_balancer_min_bandwidth_mbps`
@@ -109,6 +110,13 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Terraform runtime manages load balancer certificate and HTTPS listener resources.
 - Certificate issuance and renewal remain manual (Let's Encrypt DNS challenge), then certificate files are copied to `infrastructure/oci/runtime/tls/wortwerk.xyz/`.
 - Runtime Terraform reads these files during `terraform apply`.
+
+## Health Check Design
+
+- OCI runtime injects `MANAGEMENT_SERVER_PORT` so Spring Actuator listens on a dedicated internal port.
+- The Load Balancer health checker targets `/actuator/health/readiness` on that management port.
+- Foundation NSGs allow the management port only from the Load Balancer NSG; no public listener is created for it.
+- Readiness includes database health, so OCI only routes traffic when the app and PostgreSQL dependency are both ready.
 
 ## Database Security Model
 

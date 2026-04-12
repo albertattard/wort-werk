@@ -100,6 +100,21 @@ resource "oci_core_network_security_group_security_rule" "ingress_http" {
   }
 }
 
+resource "oci_core_network_security_group_security_rule" "ingress_management" {
+  network_security_group_id = oci_core_network_security_group.wort_werk.id
+  direction                 = "INGRESS"
+  protocol                  = "6"
+  source                    = oci_core_network_security_group.load_balancer.id
+  source_type               = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = var.management_port
+      max = var.management_port
+    }
+  }
+}
+
 resource "oci_core_network_security_group_security_rule" "egress_all" {
   network_security_group_id = oci_core_network_security_group.wort_werk.id
   direction                 = "EGRESS"
@@ -164,6 +179,21 @@ resource "oci_core_network_security_group_security_rule" "lb_egress_to_container
     destination_port_range {
       min = var.app_port
       max = var.app_port
+    }
+  }
+}
+
+resource "oci_core_network_security_group_security_rule" "lb_egress_to_container_management" {
+  network_security_group_id = oci_core_network_security_group.load_balancer.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = oci_core_network_security_group.wort_werk.id
+  destination_type          = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = var.management_port
+      max = var.management_port
     }
   }
 }

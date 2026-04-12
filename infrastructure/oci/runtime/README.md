@@ -22,6 +22,7 @@ Outputs from `infrastructure/oci/foundation`:
 - `load_balancer_public_ip_id`
 - `image_repository`
 - `image_registry_endpoint`
+- `management_port`
 
 Outputs from `infrastructure/oci/data`:
 - `runtime_db_url`
@@ -52,10 +53,11 @@ Runtime applies use two mechanisms to reduce transient `502` during image replac
 - Container Instance resource uses `create_before_destroy`.
 - Load Balancer backend resource uses `create_before_destroy`.
 
-Backend health checks use HTTP readiness (`/login` expecting `200`) instead of TCP-only socket checks.
-This reduces premature routing, but single-instance rollouts can still show brief disruption in worst-case timing.
+Backend health checks use Spring Actuator readiness (`/actuator/health/readiness` expecting `200`) instead of TCP-only socket checks.
+This reduces premature routing, while keeping health probing off learner-facing routes.
 
-`/login` is used because it remains publicly reachable after the learner-facing root path (`/`) is protected by passkey authentication.
+Runtime injects `MANAGEMENT_SERVER_PORT`, so Spring Actuator can listen on a dedicated internal port.
+The Load Balancer probes that port directly, but runtime does not add any public listener for it.
 
 Use immutable image tags (git commit hash recommended) for repeatable rollouts and rollback.
 Use `container_instance_shape` to switch between Arm and AMD64 when needed.
@@ -71,11 +73,13 @@ Runtime injects:
 - `WORTWERK_DB_USERNAME`
 - `WORTWERK_DB_PASSWORD_SECRET_OCID`
 - `WORTWERK_DB_SSL_ROOT_CERT_BASE64`
+- `MANAGEMENT_SERVER_PORT`
 
 The application then:
 - fetches the DB password from OCI Vault via container-instance resource principal
 - materializes the PostgreSQL CA certificate locally at startup
 - verifies PostgreSQL TLS with `sslmode=verify-full`
+- exposes Actuator readiness with database health on the internal management port
 
 Current limitation:
 - runtime defaults to the PostgreSQL admin username until a separate least-privilege application role bootstrap flow exists

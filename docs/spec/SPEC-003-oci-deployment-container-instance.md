@@ -56,6 +56,7 @@ Repeatable operator flow:
 - the rollout wrapper must ensure local verify credentials exist for the release-stage `./mvnw clean verify` gate, while preserving any explicit operator-provided values
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
 - load balancer health checks must target a stable unauthenticated route so auth changes do not strand an otherwise healthy backend behind `502`
+- production health checks should use a dedicated Spring Actuator management endpoint rather than a learner-facing UI route
 
 ## Acceptance Criteria
 
@@ -79,6 +80,8 @@ Repeatable operator flow:
 - [x] Deployment exposes a stable public endpoint through OCI Load Balancer with reserved public IP.
 - [x] Runtime deploy strategy minimizes 502 windows by keeping old backend alive until replacement backend is registered.
 - [x] Load balancer health checks use HTTP readiness instead of raw TCP to reduce premature traffic routing.
+- [x] Runtime exposes a dedicated management port for Spring Actuator health checks without adding a new public listener.
+- [x] Load balancer health checks use Spring Actuator readiness instead of a learner-facing route.
 - [x] Release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
 - [x] Deployment script provides a single repeatable command that runs `foundation -> release` in order, where `release` performs runtime apply after publishing the image.
 - [x] Rollout preflight blocks deployment when git working tree is dirty outside `assets/images/new`, with an explicit override knob for intentional exceptions.
