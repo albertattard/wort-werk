@@ -52,6 +52,7 @@ Repeatable operator flow:
 - OCI DevOps is the recommended repeatable release path for normal production rollout
 - operators should trigger a release from an explicit git reference through `infrastructure/oci/devops/run-release.sh`
 - laptop-local helper scripts may still exist for targeted infrastructure administration, but they are not the source of truth for verified image publication
+- OCI DevOps build environments used for normal release publication must provide a Java 25 toolchain compatible with the repository baseline, even when the managed runner default is older
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
 - load balancer health checks must target a stable unauthenticated route so auth changes do not strand an otherwise healthy backend behind `502`
 - production health checks should use a dedicated Spring Actuator management endpoint rather than a learner-facing UI route
@@ -87,6 +88,7 @@ Repeatable operator flow:
 - [x] Runtime retains private access to required OCI regional services after container public IP removal.
 - [ ] OCI DevOps release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
 - [ ] The recommended repeatable release entrypoint is `infrastructure/oci/devops/run-release.sh` rather than a laptop-local wrapper.
+- [ ] OCI DevOps release automation provisions or selects a Java 25 toolchain before running Maven verification and packaging steps.
 - [x] Runtime stage resolves `image_tag` automatically (existing deployed tag) when not explicitly provided, and only fails when no prior runtime tag exists.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
