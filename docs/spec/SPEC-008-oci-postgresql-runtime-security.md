@@ -59,6 +59,7 @@ The apply order must be:
 - Add OCI-managed PostgreSQL infrastructure.
 - Add private subnet and network security rules for database access.
 - Decide and document how DB credentials are stored and injected into runtime.
+- Decide and document how release and deployment execution move inside OCI instead of relying on an operator laptop for private-network steps.
 - Prevent operator workflows from configuring a runtime DB secret that cannot authenticate the currently configured runtime DB user.
 - Introduce a dedicated non-admin runtime DB role and document its privilege boundary.
 - Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
@@ -66,6 +67,17 @@ The apply order must be:
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
 - Remove direct public-IP exposure from runtime container instances while preserving access to OCI regional services needed at startup.
 - Document the operational steps needed for first deployment and future rotation of DB credentials.
+
+## Release Execution Model
+
+Secure release and deployment execution must satisfy all of the following:
+
+1. The build and deployment control path must run from OCI-managed infrastructure rather than an operator laptop when private-network access is required.
+2. A release must target an explicit git reference, with the exact commit recorded in the produced image tag or deployment metadata.
+3. The runner that performs private-network deployment steps should be ephemeral or OCI-managed rather than a long-lived manually administered VM unless an ADR explicitly accepts that tradeoff.
+4. The runner must execute inside OCI networking that can reach the private PostgreSQL endpoint without exposing the database publicly.
+5. Release automation must keep administrator credentials, runtime credentials, and image registry credentials out of repository-tracked files.
+6. Database role bootstrap and runtime rollout must be part of the reproducible release path rather than an undocumented side step.
 
 ## Out of Scope
 
@@ -86,4 +98,7 @@ The apply order must be:
 - [x] Secret bootstrap workflow prevents mismatched runtime credentials for the configured runtime DB user.
 - [x] Runtime DB connectivity no longer defaults to the PostgreSQL administrator account.
 - [x] Repository docs define the least-privilege boundary for the runtime DB role and the bootstrap path that provisions it.
+- [ ] Repository docs define an OCI-resident release runner or pipeline that can execute private-network deployment steps reproducibly.
+- [ ] Release execution is documented to target an explicit git reference and preserve commit-to-image traceability.
+- [ ] Repository docs define how private-network DB bootstrap is executed from OCI-managed infrastructure instead of an operator laptop.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

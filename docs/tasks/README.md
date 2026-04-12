@@ -87,6 +87,7 @@ Use one of these `category` values for new tasks:
 - [TASK-045: Split OCI PostgreSQL into Dedicated Data Stack](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
 - [TASK-047: Place OCI Runtime in Private Subnet](./infrastructure/TASK-047-place-oci-runtime-in-private-subnet.md)
 - [TASK-048: Introduce Least-Privilege OCI Runtime DB Role](./infrastructure/TASK-048-introduce-least-privilege-oci-runtime-db-role.md)
+- [TASK-049: Adopt OCI DevOps Private Release Runner](./infrastructure/TASK-049-adopt-oci-devops-private-release-runner.md)
 
 ## Pending
 
@@ -96,6 +97,7 @@ Use one of these `category` values for new tasks:
 ## In Progress
 
 - [ ] [TASK-045: Split OCI PostgreSQL into Dedicated Data Stack](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
+- [ ] [TASK-049: Adopt OCI DevOps Private Release Runner](./infrastructure/TASK-049-adopt-oci-devops-private-release-runner.md)
 
 ## Done
 
