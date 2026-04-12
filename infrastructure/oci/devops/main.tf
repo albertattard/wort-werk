@@ -2,28 +2,35 @@ provider "oci" {
   region = var.region
 }
 
+provider "oci" {
+  alias  = "home"
+  region = var.home_region
+}
+
 locals {
-  stack_name                     = "wort-werk"
-  topic_name                     = "${local.stack_name}-devops"
-  project_name                   = "${local.stack_name}-release"
-  log_group_name                 = "${local.stack_name}-devops"
-  project_log_name               = "${local.stack_name}-devops-project"
-  github_connection_name         = "${local.stack_name}-github"
-  build_pipeline_name            = "${local.stack_name}-build"
-  deploy_pipeline_name           = "${local.stack_name}-deploy"
-  build_stage_name               = "checkout-and-package"
-  deliver_bundle_stage_name      = "publish-release-bundle"
-  deliver_metadata_stage_name    = "publish-release-metadata"
-  trigger_deploy_stage_name      = "trigger-private-rollout"
-  shell_stage_name               = "private-rollout"
-  release_repository_name        = "${local.stack_name}-release-bundles"
-  release_bundle_artifact_name   = "release-bundle"
-  release_metadata_artifact_name = "release-metadata"
-  command_spec_artifact_name     = "private-rollout-command-spec"
-  release_bundle_path            = "${local.stack_name}/release-bundle.tgz"
-  release_metadata_path          = "${local.stack_name}/release-metadata.env"
-  build_source_name              = "wortwerk"
-  build_spec_path                = "infrastructure/oci/devops/build_spec.yaml"
+  stack_name                                  = "wort-werk"
+  topic_name                                  = "${local.stack_name}-devops"
+  project_name                                = "${local.stack_name}-release"
+  log_group_name                              = "${local.stack_name}-devops"
+  project_log_name                            = "${local.stack_name}-devops-project"
+  github_connection_secret_policy_name        = "${local.stack_name}-devops-github-connection"
+  github_connection_secret_policy_description = "Allow Wort-Werk OCI DevOps resources to read the GitHub external-connection token secret"
+  github_connection_name                      = "${local.stack_name}-github"
+  build_pipeline_name                         = "${local.stack_name}-build"
+  deploy_pipeline_name                        = "${local.stack_name}-deploy"
+  build_stage_name                            = "checkout-and-package"
+  deliver_bundle_stage_name                   = "publish-release-bundle"
+  deliver_metadata_stage_name                 = "publish-release-metadata"
+  trigger_deploy_stage_name                   = "trigger-private-rollout"
+  shell_stage_name                            = "private-rollout"
+  release_repository_name                     = "${local.stack_name}-release-bundles"
+  release_bundle_artifact_name                = "release-bundle"
+  release_metadata_artifact_name              = "release-metadata"
+  command_spec_artifact_name                  = "private-rollout-command-spec"
+  release_bundle_path                         = "${local.stack_name}/release-bundle.tgz"
+  release_metadata_path                       = "${local.stack_name}/release-metadata.env"
+  build_source_name                           = "wortwerk"
+  build_spec_path                             = "infrastructure/oci/devops/build_spec.yaml"
 }
 
 resource "oci_ons_notification_topic" "devops" {
@@ -65,6 +72,17 @@ resource "oci_logging_log" "project" {
       source_type = "OCISERVICE"
     }
   }
+}
+
+resource "oci_identity_policy" "github_connection_secret_read" {
+  provider       = oci.home
+  compartment_id = var.compartment_ocid
+  name           = local.github_connection_secret_policy_name
+  description    = local.github_connection_secret_policy_description
+  statements = [
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'"
+  ]
 }
 
 resource "oci_devops_connection" "github" {

@@ -7,6 +7,7 @@ This stack provisions the OCI-native release runner foundation described by `TAS
 - OCI DevOps project
 - OCI Logging log group and DevOps project service log
 - GitHub access-token connection
+- GitHub secret-read policy scoped to the configured Vault secret OCID
 - build pipeline that checks out an explicit git revision
 - generic artifact repository for release bundle handoff
 - deploy pipeline with a private shell stage on the dedicated DevOps subnet
@@ -36,9 +37,11 @@ Current status:
 Set or write the following values into `terraform.tfvars` or `foundation.auto.tfvars`:
 
 - `region`
+- `home_region`
 - `compartment_ocid`
 - `devops_subnet_id`
 - `devops_nsg_id`
+- `devops_dynamic_group_name`
 - `github_connection_token_secret_ocid`
 
 Optional inputs:
@@ -61,6 +64,7 @@ terraform apply
 ```
 
 The stack now provisions the DevOps project log through OCI Logging, so build runs do not depend on a manual "enable logs" console step.
+The stack also provisions the secret-read policy for the external GitHub connection token, while `foundation` provisions the baseline DevOps dynamic group and compartment-scoped runner policy.
 
 ## Trigger A Release
 

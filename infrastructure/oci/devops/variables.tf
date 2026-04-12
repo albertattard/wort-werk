@@ -3,6 +3,11 @@ variable "region" {
   type        = string
 }
 
+variable "home_region" {
+  description = "OCI home region used for identity resources such as DevOps IAM policies."
+  type        = string
+}
+
 variable "compartment_ocid" {
   description = "Compartment OCID used by Wort-Werk OCI resources."
   type        = string
@@ -15,6 +20,11 @@ variable "devops_subnet_id" {
 
 variable "devops_nsg_id" {
   description = "NSG OCID applied to OCI DevOps private build and shell stages."
+  type        = string
+}
+
+variable "devops_dynamic_group_name" {
+  description = "Dynamic group name assigned to OCI DevOps build and deploy resources."
   type        = string
 }
 

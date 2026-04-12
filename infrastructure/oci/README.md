@@ -97,9 +97,11 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation and da
 
 The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs:
 - `region`
+- `home_region`
 - `compartment_ocid`
 - `devops_subnet_id`
 - `devops_nsg_id`
+- `devops_dynamic_group_name`
 
 Release mode requires:
 - `OCI_USERNAME`
@@ -157,7 +159,9 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Runtime uses the dedicated non-admin role `wortwerk_app` by default.
 - The container instance reads the runtime DB password from OCI Vault by using OCI resource principal.
 - Foundation provisions Vault, key, dynamic group, and shared network boundaries; secret values themselves must be created or rotated outside Terraform.
+- Foundation also provisions the DevOps runner dynamic group plus baseline least-privilege runner policies for `devops-family`, private-network attachment, artifact delivery, and shell-stage container instances.
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
+- DevOps provisions the GitHub external-connection secret-read policy scoped to the configured PAT secret OCID.
 - The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
 - The DevOps shell stage is provisioned on private OCI networking for this bootstrap path, but it is intentionally blocked from applying local Terraform state until backend handling is migrated away from laptop-local state files.
 - The DevOps build spec currently computes and publishes commit/image metadata plus a release bundle; it does not yet publish the runtime image itself through OCI DevOps.

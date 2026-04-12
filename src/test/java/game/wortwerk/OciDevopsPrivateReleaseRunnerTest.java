@@ -30,6 +30,39 @@ class OciDevopsPrivateReleaseRunnerTest {
     }
 
     @Test
+    void shouldDefineLeastPrivilegeIamForTheDevopsRunner() throws IOException {
+        String foundationMain = read("infrastructure/oci/foundation/main.tf");
+        String foundationOutputs = read("infrastructure/oci/foundation/outputs.tf");
+        String deployScript = read("infrastructure/oci/deploy.sh");
+        String devopsMain = read("infrastructure/oci/devops/main.tf");
+        String devopsVariables = read("infrastructure/oci/devops/variables.tf");
+
+        assertThat(foundationMain).contains("devops_dynamic_group_name");
+        assertThat(foundationMain).contains("resource \"oci_identity_dynamic_group\" \"devops\"");
+        assertThat(foundationMain).contains("resource \"oci_identity_policy\" \"devops_runner\"");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage devops-family");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use subnets");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use vnics");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use generic-artifacts");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to read all-artifacts");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-container-instances");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics");
+        assertThat(foundationOutputs).contains("output \"devops_dynamic_group_name\"");
+        assertThat(deployScript).contains("devops_dynamic_group_name");
+
+        assertThat(devopsVariables).contains("variable \"home_region\"");
+        assertThat(devopsVariables).contains("variable \"devops_dynamic_group_name\"");
+        assertThat(devopsMain).contains("provider \"oci\" {\n  alias  = \"home\"");
+        assertThat(devopsMain).contains("resource \"oci_identity_policy\" \"github_connection_secret_read\"");
+        assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family");
+        assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles");
+        assertThat(devopsMain).contains("target.secret.id = '${var.github_connection_token_secret_ocid}'");
+    }
+
+    @Test
     void shouldProvideAnOciDevopsReleaseStackDrivenByExplicitGitReference() throws IOException {
         assertThat(Path.of("infrastructure/oci/devops/main.tf")).exists();
         assertThat(Path.of("infrastructure/oci/devops/variables.tf")).exists();

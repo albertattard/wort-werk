@@ -133,6 +133,11 @@ output "runtime_dynamic_group_name" {
   value       = oci_identity_dynamic_group.runtime.name
 }
 
+output "devops_dynamic_group_name" {
+  description = "Dynamic group name for Wort-Werk OCI DevOps runners."
+  value       = oci_identity_dynamic_group.devops.name
+}
+
 output "ocir_repository_name" {
   description = "OCIR repository display name."
   value       = oci_artifacts_container_repository.wort_werk.display_name

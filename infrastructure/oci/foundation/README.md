@@ -17,6 +17,7 @@ Foundation Terraform stack for Wort-Werk OCI environment setup.
 - OCIR repository
 - OCI Vault + key for runtime secrets
 - dynamic group for container-instance secret reads
+- dynamic group and baseline IAM policy for OCI DevOps build/deploy runners
 - reserved public IP for Load Balancer
 
 Key rotation note:
@@ -82,6 +83,7 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 - `vault_id`
 - `vault_key_id`
 - `runtime_dynamic_group_name`
+- `devops_dynamic_group_name`
 
 ## Network Boundaries
 
@@ -92,3 +94,4 @@ OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
 - The runtime route table provides private access to OCI regional services through the service gateway.
 - The DevOps NSG can reach PostgreSQL and OCI regional services, but does not receive public ingress.
 - The management port exists for Spring Actuator readiness checks and is not exposed through a public listener.
+- Foundation also owns the baseline DevOps runner IAM boundary: a dedicated dynamic group plus least-privilege compartment-scoped policies for `devops-family`, private VNIC attachments, generic artifact delivery, and shell-stage container instances.

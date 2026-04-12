@@ -24,6 +24,10 @@ locals {
   devops_subnet_name                = "${local.stack_name}-devops"
   runtime_dynamic_group_name        = "${local.stack_name}-container-runtime"
   runtime_dynamic_group_description = "Container instances for Wort-Werk runtime"
+  devops_dynamic_group_name         = "${local.stack_name}-devops-runner"
+  devops_dynamic_group_description  = "OCI DevOps build and deploy pipelines for Wort-Werk"
+  devops_runner_policy_name         = "${local.stack_name}-devops-runner"
+  devops_runner_policy_description  = "Least-privilege policy for Wort-Werk OCI DevOps runners"
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
   service_gateway_name              = "${local.stack_name}-services"
 }
@@ -365,6 +369,33 @@ resource "oci_identity_dynamic_group" "runtime" {
   name           = local.runtime_dynamic_group_name
   description    = local.runtime_dynamic_group_description
   matching_rule  = "ALL {resource.type = 'computecontainerinstance', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}"
+}
+
+resource "oci_identity_dynamic_group" "devops" {
+  provider       = oci.home
+  compartment_id = var.tenancy_ocid
+  name           = local.devops_dynamic_group_name
+  description    = local.devops_dynamic_group_description
+  matching_rule  = "ANY {ALL {resource.type = 'devopsbuildpipeline', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}, ALL {resource.type = 'devopsdeploypipeline', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}, ALL {resource.type = 'devopsconnection', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}, ALL {resource.type = 'devopsrepository', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}}"
+}
+
+resource "oci_identity_policy" "devops_runner" {
+  provider       = oci.home
+  compartment_id = oci_identity_compartment.wort_werk.id
+  name           = local.devops_runner_policy_name
+  description    = local.devops_runner_policy_description
+  statements = [
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage devops-family in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to use subnets in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to use vnics in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to use generic-artifacts in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to read all-artifacts in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-container-instances in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers in compartment id ${oci_identity_compartment.wort_werk.id}"
+  ]
 }
 
 resource "oci_artifacts_container_repository" "wort_werk" {

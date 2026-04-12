@@ -137,20 +137,26 @@ apply_foundation() {
 
 write_devops_stack_vars() {
   local region
+  local home_region
   local compartment_ocid
   local devops_subnet_id
   local devops_nsg_id
+  local devops_dynamic_group_name
 
   region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw region)"
+  home_region="$(terraform -chdir="${FOUNDATION_DIR}" output -raw home_region)"
   compartment_ocid="$(terraform -chdir="${FOUNDATION_DIR}" output -raw compartment_ocid)"
   devops_subnet_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_subnet_id)"
   devops_nsg_id="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_nsg_id)"
+  devops_dynamic_group_name="$(terraform -chdir="${FOUNDATION_DIR}" output -raw devops_dynamic_group_name)"
 
   cat > "${DEVOPS_DIR}/foundation.auto.tfvars" <<DEVOPSEOF
 region = "${region}"
+home_region = "${home_region}"
 compartment_ocid = "${compartment_ocid}"
 devops_subnet_id = "${devops_subnet_id}"
 devops_nsg_id = "${devops_nsg_id}"
+devops_dynamic_group_name = "${devops_dynamic_group_name}"
 DEVOPSEOF
 }
 

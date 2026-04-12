@@ -78,6 +78,8 @@ Secure release and deployment execution must satisfy all of the following:
 4. The runner must execute inside OCI networking that can reach the private PostgreSQL endpoint without exposing the database publicly.
 5. Release automation must keep administrator credentials, runtime credentials, and image registry credentials out of repository-tracked files.
 6. Database role bootstrap and runtime rollout must be part of the reproducible release path rather than an undocumented side step.
+7. OCI DevOps runner identities must use explicit dynamic-group and policy bindings instead of inheriting broad tenancy-wide privileges.
+8. Secret-read permissions for external SCM connections must be scoped to the specific secret OCID used by the release path.
 
 ## Out of Scope
 
@@ -101,4 +103,5 @@ Secure release and deployment execution must satisfy all of the following:
 - [ ] Repository docs define an OCI-resident release runner or pipeline that can execute private-network deployment steps reproducibly.
 - [ ] Release execution is documented to target an explicit git reference and preserve commit-to-image traceability.
 - [ ] Repository docs define how private-network DB bootstrap is executed from OCI-managed infrastructure instead of an operator laptop.
+- [ ] Repository docs define the DevOps runner IAM model, including dynamic groups and least-privilege policies for private-network execution and external-connection secret reads.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

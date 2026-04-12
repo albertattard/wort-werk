@@ -37,6 +37,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - OCI DevOps provides a stronger default foundation than a hand-maintained build VM because it separates build orchestration, deployment orchestration, and OCI-managed identity concerns.
 - A shell-based deployment stage running inside a private subnet is the intended place for private-network steps such as DB role bootstrap.
 - A dedicated runner image with pinned tooling versions may still be needed, but that image should be an implementation detail of the managed pipeline rather than an always-on control-plane VM.
+- The release runner requires an explicit OCI IAM layer: a dedicated DevOps dynamic group plus policies for `devops-family`, private-network attachments, artifact delivery, and external-connection secret reads.
 
 ## Out of Scope
 
@@ -51,3 +52,12 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - [ ] The release path is documented to execute DB role bootstrap and runtime rollout from inside OCI private networking.
 - [ ] IAM, secret, and network boundaries for the release runner are explicit.
 - [ ] Follow-on implementation steps are broken down before infrastructure changes begin.
+
+## Implementation Notes
+
+- The current Terraform now provisions the DevOps project, private subnet placement, and project logging.
+- A live build-run exposed the next missing slice: OCI resource-principal IAM for the DevOps runner.
+- The next implementation step is to provision:
+  - a dedicated DevOps dynamic group
+  - baseline compartment-scoped policies for `devops-family`, private-network VNIC attachment, and generic artifact delivery
+  - a secret-read policy scoped to the GitHub PAT secret used by the external connection

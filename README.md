@@ -56,6 +56,12 @@ docs/
   3. `./mvnw clean verify`
 - Use `./mvnw clean verify` as the required pre-commit validation command.
 
+## OCI Release Note
+
+- The in-progress OCI DevOps release path is provisioned through `infrastructure/oci/devops/`.
+- This path depends on explicit OCI IAM bindings for the DevOps runner; private networking alone is not sufficient.
+- Treat DevOps dynamic groups and compartment-scoped policies as part of the release infrastructure contract, not as post-apply console cleanup.
+
 ## Container
 
 Use the production image definition in `container/Dockerfile`.
