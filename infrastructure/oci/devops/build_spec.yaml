@@ -10,9 +10,22 @@ env:
 
 steps:
   - type: Command
+    name: Install Java 25 toolchain
+    command: |
+      set -euo pipefail
+      yum -y install graalvm-25-native-image
+      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export PATH="$JAVA_HOME/bin:$PATH"
+      java -version
+      mvn -version
+
+  - type: Command
     name: Resolve release metadata
     command: |
       set -euo pipefail
+
+      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export PATH="$JAVA_HOME/bin:$PATH"
 
       export OCI_CLI_AUTH=resource_principal
 
@@ -141,6 +154,9 @@ steps:
     command: |
       set -euo pipefail
 
+      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export PATH="$JAVA_HOME/bin:$PATH"
+
       export VERIFY_DB_USERNAME="wortwerk_verify"
       export VERIFY_DB_PASSWORD="wortwerk_verify"
 
@@ -150,6 +166,9 @@ steps:
     name: Publish runtime image
     command: |
       set -euo pipefail
+
+      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export PATH="$JAVA_HOME/bin:$PATH"
 
       export OCI_CLI_AUTH=resource_principal
       . ./release-metadata.env
@@ -186,6 +205,8 @@ steps:
     name: Package release bundle
     command: |
       set -euo pipefail
+      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export PATH="$JAVA_HOME/bin:$PATH"
       release_ref="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-HEAD}"
       git archive --format=tar.gz --output=release-bundle.tgz "${release_ref}"
 
@@ -193,6 +214,9 @@ steps:
     name: Upload release handoff objects
     command: |
       set -euo pipefail
+
+      export JAVA_HOME=/usr/lib64/graalvm/graalvm-java25
+      export PATH="$JAVA_HOME/bin:$PATH"
 
       export OCI_CLI_AUTH=resource_principal
       . ./release-metadata.env

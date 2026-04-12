@@ -108,6 +108,8 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("COMMIT_SHA");
         assertThat(buildSpec).contains("IMAGE_TAG");
         assertThat(buildSpec).contains("exportedVariables");
+        assertThat(buildSpec).contains("yum -y install graalvm-25-native-image");
+        assertThat(buildSpec).contains("JAVA_HOME=/usr/lib64/graalvm/graalvm-java25");
         assertThat(buildSpec).contains("./mvnw clean verify");
         assertThat(buildSpec).contains("docker buildx build");
         assertThat(buildSpec).contains("oci secrets secret-bundle get");
