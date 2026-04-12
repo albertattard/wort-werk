@@ -47,6 +47,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - The release runner requires an explicit OCI IAM layer: a dedicated DevOps dynamic group plus policies for `devops-family`, private-network attachments, constrained Object Storage release handoff, and external-connection secret reads.
 - The release handoff should prefer a simple OCI primitive that can be inspected independently of OCI DevOps stage internals; commit-addressed Object Storage objects are a better fit than opaque managed deliver-artifact stages.
 - OCI-resident deploy stages should consume explicit release metadata produced by the build stage rather than reaching back into a laptop-local workspace for `foundation` or `data` outputs.
+- OCI DevOps build-run arguments should carry only per-run selectors; stable runtime inputs belong on the pipeline definition, and oversized runtime material such as PostgreSQL CA certificates must be resolved inside OCI instead of being inlined into build-run arguments.
 - The legacy laptop `release` / `rollout` helpers should not remain a second normal release path once OCI DevOps owns verified image publication and private rollout.
 
 ## Out of Scope
@@ -81,3 +82,5 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
   - deploy-stage download of those same objects from the private shell stage
   - a remote runtime Terraform backend accessible from the OCI deploy runner
   - removal or blocking of the legacy laptop-local release wrappers
+- OCI DevOps pipeline parameter defaults now carry the stable runtime deployment contract, while `run-release.sh` only passes `releaseVersion` and `tfBackendMode`.
+- PostgreSQL CA material is now resolved inside OCI from the DB system connection-details API so the build pipeline no longer exceeds OCI DevOps parameter size limits.

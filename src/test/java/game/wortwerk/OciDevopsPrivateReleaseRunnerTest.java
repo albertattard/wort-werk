@@ -110,9 +110,12 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("./mvnw clean verify");
         assertThat(buildSpec).contains("docker buildx build");
         assertThat(buildSpec).contains("oci secrets secret-bundle get");
+        assertThat(buildSpec).contains("oci psql connection-details get");
+        assertThat(buildSpec).contains("POSTGRESQL_DB_SYSTEM_ID");
         assertThat(buildSpec).contains("git archive --format=tar.gz --output=release-bundle.tgz \"${release_ref}\"");
         assertThat(buildSpec).contains("oci os object put");
         assertThat(buildSpec).contains(". ./release-metadata.env");
+        assertThat(buildSpec).doesNotContain("runtimeDbSslRootCertBase64");
         assertThat(commandSpec).contains("ROLLBACK: \"${ROLLBACK}\"");
         assertThat(commandSpec).contains("RELEASE_VERSION: \"${releaseVersion}\"");
         assertThat(commandSpec).contains("oci os object get");
@@ -122,7 +125,10 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(runReleaseScript).contains("oci devops build-run create");
         assertThat(runReleaseScript).contains("commit_hash");
         assertThat(runReleaseScript).contains("repository_branch");
-        assertThat(runReleaseScript).contains("\"name\": \"imageRepository\"");
+        assertThat(runReleaseScript).doesNotContain("\"name\": \"imageRepository\"");
+        assertThat(runReleaseScript).doesNotContain("runtime_db_ssl_root_cert_base64");
+        assertThat(devopsMain).contains("postgresqlDbSystemId");
+        assertThat(devopsMain).doesNotContain("runtimeDbSslRootCertBase64");
         assertThat(runtimeVersions).contains("backend \"oci\"");
         assertThat(deployScript).doesNotContain("\"release\"");
         assertThat(deployScript).doesNotContain("\"rollout\"");

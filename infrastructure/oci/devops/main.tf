@@ -253,9 +253,9 @@ resource "oci_devops_build_pipeline" "release" {
     }
 
     items {
-      name          = "runtimeDbSslRootCertBase64"
-      default_value = var.runtime_db_ssl_root_cert_base64
-      description   = "Base64-encoded PostgreSQL CA certificate used by the runtime."
+      name          = "postgresqlDbSystemId"
+      default_value = var.postgresql_db_system_id
+      description   = "OCI PostgreSQL DB system OCID used to resolve connection details for runtime TLS."
     }
 
     items {

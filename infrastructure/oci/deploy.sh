@@ -163,7 +163,7 @@ write_devops_stack_vars() {
   local runtime_db_url
   local runtime_db_username
   local runtime_db_password_secret_ocid
-  local runtime_db_ssl_root_cert_base64
+  local postgresql_db_system_id
   local postgresql_admin_username
   local postgresql_admin_password_secret_ocid
   local postgresql_host
@@ -196,7 +196,7 @@ write_devops_stack_vars() {
   runtime_db_url="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_url)"
   runtime_db_username="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_username)"
   runtime_db_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_password_secret_ocid)"
-  runtime_db_ssl_root_cert_base64="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_ssl_root_cert_base64)"
+  postgresql_db_system_id="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_db_system_id)"
   postgresql_admin_username="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_admin_username)"
   postgresql_admin_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_admin_password_secret_ocid)"
   postgresql_host="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_fqdn)"
@@ -238,7 +238,7 @@ load_balancer_max_bandwidth_mbps = ${load_balancer_max_bandwidth_mbps}
 runtime_db_url = "${runtime_db_url}"
 runtime_db_username = "${runtime_db_username}"
 runtime_db_password_secret_ocid = "${runtime_db_password_secret_ocid}"
-runtime_db_ssl_root_cert_base64 = "${runtime_db_ssl_root_cert_base64}"
+postgresql_db_system_id = "${postgresql_db_system_id}"
 postgresql_admin_username = "${postgresql_admin_username}"
 postgresql_admin_password_secret_ocid = "${postgresql_admin_password_secret_ocid}"
 postgresql_host = "${postgresql_host}"

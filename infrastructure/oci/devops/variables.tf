@@ -155,10 +155,9 @@ variable "runtime_db_password_secret_ocid" {
   type        = string
 }
 
-variable "runtime_db_ssl_root_cert_base64" {
-  description = "Base64-encoded PostgreSQL CA certificate used by the runtime."
+variable "postgresql_db_system_id" {
+  description = "OCI PostgreSQL DB system OCID used to resolve connection details during the build."
   type        = string
-  sensitive   = true
 }
 
 variable "postgresql_admin_username" {

@@ -109,6 +109,30 @@ The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs
 - `devops_subnet_id`
 - `devops_nsg_id`
 - `devops_dynamic_group_name`
+- `image_repository`
+- `image_registry_endpoint`
+- `runtime_state_bucket_name`
+- `runtime_subnet_id`
+- `load_balancer_subnet_id`
+- `nsg_id`
+- `load_balancer_nsg_id`
+- `load_balancer_public_ip_id`
+- `load_balancer_public_ip`
+- `app_port`
+- `management_port`
+- `lb_listener_port`
+- `https_listener_port`
+- `load_balancer_min_bandwidth_mbps`
+- `load_balancer_max_bandwidth_mbps`
+- `runtime_db_url`
+- `runtime_db_username`
+- `runtime_db_password_secret_ocid`
+- `postgresql_db_system_id`
+- `postgresql_admin_username`
+- `postgresql_admin_password_secret_ocid`
+- `postgresql_host`
+- `postgresql_port`
+- `postgresql_database_name`
 
 Runtime apply still honors:
 - `IMAGE_TAG` when you want to pin runtime apply to a specific tag.

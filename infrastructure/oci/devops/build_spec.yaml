@@ -18,9 +18,21 @@ steps:
 
       resolve_build_argument() {
         local name="$1"
-        oci devops build-run get \
+        local value
+
+        value="$(oci devops build-run get \
           --build-run-id "$OCI_BUILD_RUN_ID" \
           --query "data.\"build-run-arguments\".items[?name=='$name'] | [0].value" \
+          --raw-output)"
+
+        if [[ -n "$value" && "$value" != "null" ]]; then
+          printf '%s' "$value"
+          return 0
+        fi
+
+        oci devops build-pipeline get \
+          --build-pipeline-id "$OCI_BUILD_PIPELINE_ID" \
+          --query "data.\"build-pipeline-parameters\".items[?name=='$name'] | [0].\"default-value\"" \
           --raw-output
       }
 
@@ -36,6 +48,10 @@ steps:
       COMMIT_SHA="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-$(git rev-parse HEAD)}"
       IMAGE_TAG="$(printf '%s' "$COMMIT_SHA" | cut -c1-12)"
       RELEASE_VERSION="$IMAGE_TAG"
+      OCI_BUILD_PIPELINE_ID="$(oci devops build-run get \
+        --build-run-id "$OCI_BUILD_RUN_ID" \
+        --query 'data."build-pipeline-id"' \
+        --raw-output)"
 
       TF_BACKEND_MODE="$(resolve_build_argument tfBackendMode)"
       IMAGE_REPOSITORY="$(resolve_build_argument imageRepository)"
@@ -60,7 +76,7 @@ steps:
       RUNTIME_DB_URL="$(resolve_build_argument runtimeDbUrl)"
       RUNTIME_DB_USERNAME="$(resolve_build_argument runtimeDbUsername)"
       RUNTIME_DB_PASSWORD_SECRET_OCID="$(resolve_build_argument runtimeDbPasswordSecretOcid)"
-      RUNTIME_DB_SSL_ROOT_CERT_BASE64="$(resolve_build_argument runtimeDbSslRootCertBase64)"
+      POSTGRESQL_DB_SYSTEM_ID="$(resolve_build_argument postgresqlDbSystemId)"
       POSTGRESQL_ADMIN_USERNAME="$(resolve_build_argument postgresqlAdminUsername)"
       POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID="$(resolve_build_argument postgresqlAdminPasswordSecretOcid)"
       POSTGRESQL_HOST="$(resolve_build_argument postgresqlHost)"
@@ -73,7 +89,13 @@ steps:
       require_argument imageRegistryEndpoint "$IMAGE_REGISTRY_ENDPOINT"
       require_argument imageRegistryUsername "$IMAGE_REGISTRY_USERNAME"
       require_argument imageRegistryPasswordSecretOcid "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID"
+      require_argument postgresqlDbSystemId "$POSTGRESQL_DB_SYSTEM_ID"
       require_argument runtimeStateBucketName "$RUNTIME_STATE_BUCKET_NAME"
+
+      RUNTIME_DB_SSL_ROOT_CERT_BASE64="$(OCI_CLI_REGION="$REGION" oci psql connection-details get \
+        --db-system-id "$POSTGRESQL_DB_SYSTEM_ID" \
+        --query 'data."ca-certificate"' \
+        --raw-output | base64 | tr -d '\n')"
 
       export COMMIT_SHA IMAGE_TAG RELEASE_VERSION
 
@@ -105,6 +127,7 @@ steps:
       RUNTIME_DB_USERNAME=$RUNTIME_DB_USERNAME
       RUNTIME_DB_PASSWORD_SECRET_OCID=$RUNTIME_DB_PASSWORD_SECRET_OCID
       RUNTIME_DB_SSL_ROOT_CERT_BASE64=$RUNTIME_DB_SSL_ROOT_CERT_BASE64
+      POSTGRESQL_DB_SYSTEM_ID=$POSTGRESQL_DB_SYSTEM_ID
       POSTGRESQL_ADMIN_USERNAME=$POSTGRESQL_ADMIN_USERNAME
       POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID=$POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID
       POSTGRESQL_HOST=$POSTGRESQL_HOST

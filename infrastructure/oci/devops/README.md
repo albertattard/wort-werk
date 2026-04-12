@@ -79,7 +79,8 @@ By default it:
 - reads `build_pipeline_id` from Terraform output when possible
 - targets the current git `HEAD`
 - derives `releaseVersion` from the selected commit short SHA
-- passes the OCI-managed runtime deployment inputs needed by the build/deploy stages
+- passes only per-run release selectors; OCI-managed runtime deployment defaults stay on the pipeline definition
+- resolves the PostgreSQL CA certificate inside OCI from the configured DB system OCID instead of pushing the certificate through build-run arguments
 
 Before the first OCI DevOps rollout, migrate runtime state into the OCI backend once:
 
