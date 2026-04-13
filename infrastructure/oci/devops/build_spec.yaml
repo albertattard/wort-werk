@@ -151,6 +151,19 @@ steps:
       EOF
 
   - type: Command
+    name: Install Playwright browser dependencies
+    command: |
+      set -euo pipefail
+
+      export JAVA_HOME=/usr/java/jdk-25
+      export PATH="$JAVA_HOME/bin:$PATH"
+
+      ./mvnw -q exec:java \
+        -Dexec.classpathScope=test \
+        -Dexec.mainClass=com.microsoft.playwright.CLI \
+        '-Dexec.args=install --with-deps chromium'
+
+  - type: Command
     name: Verify release candidate
     command: |
       set -euo pipefail

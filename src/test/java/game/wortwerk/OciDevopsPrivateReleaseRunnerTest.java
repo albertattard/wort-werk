@@ -112,6 +112,9 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("yum -y install oracle-java-jdk-release-el8");
         assertThat(buildSpec).contains("yum -y install jdk-25-headful");
         assertThat(buildSpec).contains("JAVA_HOME=/usr/java/jdk-25");
+        assertThat(buildSpec).contains("Install Playwright browser dependencies");
+        assertThat(buildSpec).contains("com.microsoft.playwright.CLI");
+        assertThat(buildSpec).contains("install --with-deps chromium");
         assertThat(buildSpec).contains("./mvnw clean verify");
         assertThat(buildSpec).contains("-Dverify.environment.backend=podman");
         assertThat(buildSpec).doesNotContain("COMPOSE_SHA256=");
