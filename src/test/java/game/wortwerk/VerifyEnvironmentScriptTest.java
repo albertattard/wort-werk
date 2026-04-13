@@ -105,6 +105,10 @@ class VerifyEnvironmentScriptTest {
                   exit 1
                 fi
                 if [[ "${1:-}" == "inspect" ]]; then
+                  if [[ "${*}" == *".State.Health"* ]]; then
+                    printf 'starting'
+                    exit 0
+                  fi
                   printf 'running'
                   exit 0
                 fi

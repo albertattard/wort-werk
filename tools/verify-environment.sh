@@ -47,8 +47,13 @@ podman_db_health() {
     "${VERIFY_DB_CONTAINER_NAME}" 2>/dev/null || true
 }
 
+podman_db_status() {
+  podman inspect --format '{{.State.Status}}' \
+    "${VERIFY_DB_CONTAINER_NAME}" 2>/dev/null || true
+}
+
 podman_db_is_running() {
-  [[ "$(podman_db_health)" == "running" ]]
+  [[ "$(podman_db_status)" == "running" ]]
 }
 
 podman_db_is_ready() {
