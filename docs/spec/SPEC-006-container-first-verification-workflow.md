@@ -49,6 +49,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - Keep OCI DevOps verification daemonless; managed runners must not depend on a Docker daemon socket in order to execute `./mvnw clean verify`.
 - Repository-owned verification helper scripts must choose the correct orchestration backend explicitly instead of embedding runner-specific container commands directly inside Maven plugin XML.
 - OCI DevOps verification must use a Podman-native backend that is compatible with the managed runner environment.
+- OCI DevOps verification readiness must not rely solely on container health-state metadata when managed runners can report delayed or missing health transitions; repository helpers must actively confirm PostgreSQL readiness before failing the run.
 - Let Compose service naming provide container-to-container hostnames inside the verification stack; avoid redundant environment variables for values Compose can derive directly.
 - Keep verification DB credentials out of the repository; `verify` must read them from environment variables and fail fast if they are missing.
 - Treat `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites in workflow documentation, not hidden assumptions.
@@ -66,6 +67,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - [x] `./mvnw test` excludes both `@Tag("db")` and `@Tag("e2e")`.
 - [x] `verify` starts/stops the verification environment through repository-owned helpers after tests.
 - [ ] OCI DevOps verification environments use a Podman-native backend and do not require a Docker daemon socket.
+- [ ] OCI DevOps verification waits for PostgreSQL readiness using a runner-compatible probe instead of depending only on Podman health status.
 - [x] The Compose-managed app uses the `db` service hostname directly for database connectivity instead of a redundant injected Compose JDBC URL variable.
 - [x] `verify` reads DB verification credentials from environment variables rather than repository-stored defaults.
 - [x] Workflow docs show `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites before `./mvnw clean verify`.

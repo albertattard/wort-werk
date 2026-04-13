@@ -47,6 +47,17 @@ podman_db_health() {
     "${VERIFY_DB_CONTAINER_NAME}" 2>/dev/null || true
 }
 
+podman_db_is_running() {
+  [[ "$(podman_db_health)" == "running" ]]
+}
+
+podman_db_is_ready() {
+  podman exec "${VERIFY_DB_CONTAINER_NAME}" \
+    pg_isready \
+    --username="${VERIFY_DB_USERNAME}" \
+    --dbname="${VERIFY_DB_NAME}" >/dev/null 2>&1
+}
+
 print_logs() {
   case "${VERIFY_ENV_BACKEND}" in
     compose)
@@ -121,6 +132,9 @@ podman_wait_for_db() {
   for attempt in $(seq 1 60); do
     status="$(podman_db_health)"
     if [[ "${status}" == "healthy" ]]; then
+      return 0
+    fi
+    if podman_db_is_running && podman_db_is_ready; then
       return 0
     fi
     sleep 1

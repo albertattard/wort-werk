@@ -19,6 +19,7 @@ Ensure the OCI DevOps build pipeline runs Wort-Werk verification and packaging w
 - Document the Java 25 requirement in the OCI deployment workflow.
 - Update the OCI DevOps build execution path so Maven runs with Java 25.
 - Replace the OCI DevOps verification orchestration path so it no longer depends on a Docker daemon-backed Docker Compose execution model.
+- Harden the OCI DevOps Podman verification readiness gate so PostgreSQL startup is detected reliably on managed runners.
 - Verify the pipeline setup is reproducible on managed OCI runners rather than relying on operator laptop tooling.
 - Cover the build-spec contract with a focused test so Java toolchain regressions fail early in the repository.
 - Keep the verification and production container image path on Oracle-distributed Java and Linux base images.
@@ -30,6 +31,7 @@ Ensure the OCI DevOps build pipeline runs Wort-Werk verification and packaging w
 - The pipeline must use a supported Oracle-distributed Java 25 toolchain available to OCI-managed runners.
 - Toolchain setup must be explicit in repository-tracked configuration so a fresh runner can reproduce the build without manual steps.
 - OCI DevOps verification must run on daemonless managed runners without assuming a Docker daemon socket is present.
+- OCI DevOps verification must not depend exclusively on Podman health-state transitions when managed runners can report container readiness differently from local hosts.
 - The repository should expose one verification-helper contract while allowing local Docker Compose and OCI Podman-native execution underneath.
 - Verification image builds must stay on Oracle-distributed Java and Linux base images.
 - The verification path should prefer Oracle no-fee images that are anonymously pullable rather than adding a second Oracle registry-auth prerequisite to the normal repository gate.
@@ -46,6 +48,7 @@ Ensure the OCI DevOps build pipeline runs Wort-Werk verification and packaging w
 - [ ] The OCI DevOps build path installs or selects Java 25 before Maven verification and packaging.
 - [ ] The OCI DevOps build path runs verification without depending on a Docker daemon-backed `docker compose up`.
 - [ ] Repository-owned verification helper scripts select a Podman-native backend for OCI DevOps and a Compose backend for local verification.
+- [ ] OCI DevOps Podman verification confirms PostgreSQL readiness with an explicit runner-compatible probe before launching the application container.
 - [ ] A repository test covers the expected Java 25 build-spec contract.
 - [ ] The verification image Dockerfile uses Oracle-distributed Java and Linux base images from Oracle's no-fee image path.
 - [ ] Local verification and OCI DevOps builds do not require a separate Oracle base-image registry login before building the verification image.

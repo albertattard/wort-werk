@@ -89,6 +89,59 @@ class VerifyEnvironmentScriptTest {
     }
 
     @Test
+    void shouldUsePgIsReadyProbeWhenPodmanHealthDoesNotTurnHealthy() throws Exception {
+        TestHarness harness = prepareHarness();
+        Path captureFile = harness.repoRoot().resolve("podman-args.txt");
+        Path probeCounterFile = harness.repoRoot().resolve("pg-isready-count.txt");
+
+        Path podmanStub = harness.binDir().resolve("podman");
+        Files.writeString(
+                podmanStub,
+                """
+                #!/usr/bin/env bash
+                set -euo pipefail
+                printf '%s\n' "$*" >> "${VERIFY_CAPTURE_FILE:?}"
+                if [[ "${1:-}" == "network" && "${2:-}" == "exists" ]]; then
+                  exit 1
+                fi
+                if [[ "${1:-}" == "inspect" ]]; then
+                  printf 'running'
+                  exit 0
+                fi
+                if [[ "${1:-}" == "exec" ]]; then
+                  count_file="${VERIFY_PROBE_COUNT_FILE:?}"
+                  count=0
+                  if [[ -f "${count_file}" ]]; then
+                    count="$(cat "${count_file}")"
+                  fi
+                  count="$((count + 1))"
+                  printf '%s' "${count}" > "${count_file}"
+                  if [[ "${count}" -lt 3 ]]; then
+                    exit 1
+                  fi
+                  exit 0
+                fi
+                exit 0
+                """,
+                StandardCharsets.UTF_8);
+        setExecutable(podmanStub);
+
+        ProcessResult result = runScript(harness, "up", Map.of(
+                "VERIFY_ENV_BACKEND", "podman",
+                "VERIFY_CAPTURE_FILE", captureFile.toString(),
+                "VERIFY_PROBE_COUNT_FILE", probeCounterFile.toString()));
+
+        assertThat(result.exitCode())
+                .withFailMessage("stdout=%s%nstderr=%s", result.stdout(), result.stderr())
+                .isZero();
+        assertThat(Files.readString(captureFile, StandardCharsets.UTF_8))
+                .contains("inspect --format")
+                .contains("exec wort-werk-verify-db pg_isready --username=wortwerk_verify --dbname=wortwerk_verify")
+                .contains("run --replace --detach --name wort-werk-verify-app");
+        assertThat(Files.readString(probeCounterFile, StandardCharsets.UTF_8)).isEqualTo("3");
+    }
+
+    @Test
     void shouldWireMavenVerifyLifecycleThroughRepositoryHelper() throws IOException {
         String pom = Files.readString(Path.of("pom.xml"), StandardCharsets.UTF_8);
 
