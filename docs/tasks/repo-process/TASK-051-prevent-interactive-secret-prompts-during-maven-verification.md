@@ -7,7 +7,7 @@ related_features:
   - SPEC-006
 owner: @aattard
 created: 2026-04-12
-updated: 2026-04-12
+updated: 2026-04-13
 ---
 
 ## Summary

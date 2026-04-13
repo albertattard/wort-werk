@@ -50,6 +50,13 @@ class DeployScriptRuntimeGuardTest {
         processBuilder.directory(script.getParent().toFile());
 
         Map<String, String> environment = processBuilder.environment();
+        environment.remove("OCI_CLI_AUTH");
+        environment.remove("OCI_RESOURCE_PRINCIPAL_VERSION");
+        environment.remove("OCI_RESOURCE_PRINCIPAL_REGION");
+        environment.remove("OCI_RESOURCE_PRINCIPAL_RPST");
+        environment.remove("OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM");
+        environment.remove("OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM_PASSPHRASE");
+        environment.remove("OCI_RESOURCE_PRINCIPAL_SESSION_TOKEN");
         environment.putAll(extraEnvironment);
 
         Process process = processBuilder.start();
