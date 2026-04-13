@@ -46,6 +46,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - Keep commands documented and copy-paste ready.
 - Keep `./mvnw clean verify` as the single command for container-based DB-backed and e2e verification.
 - Use Docker Compose to describe and orchestrate the local verification stack.
+- Automation environments that run `./mvnw clean verify` must provision a compatible Docker Compose CLI before Maven reaches the Compose-backed verification steps.
 - Let Compose service naming provide container-to-container hostnames inside the verification stack; avoid redundant environment variables for values Compose can derive directly.
 - Keep verification DB credentials out of the repository; `verify` must read them from environment variables and fail fast if they are missing.
 - Treat `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites in workflow documentation, not hidden assumptions.
@@ -62,6 +63,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - [x] `verify` provisions PostgreSQL and runs DB-backed tests and Playwright e2e against that environment via Docker Compose.
 - [x] `./mvnw test` excludes both `@Tag("db")` and `@Tag("e2e")`.
 - [x] `verify` starts/stops the verification environment through Docker Compose after tests.
+- [ ] OCI DevOps verification environments provision Docker Compose before invoking the Compose-backed Maven verification steps.
 - [x] The Compose-managed app uses the `db` service hostname directly for database connectivity instead of a redundant injected Compose JDBC URL variable.
 - [x] `verify` reads DB verification credentials from environment variables rather than repository-stored defaults.
 - [x] Workflow docs show `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites before `./mvnw clean verify`.
