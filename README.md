@@ -63,11 +63,14 @@ docs/
 - Private DevOps runners also need a dedicated outbound path for external SCM fetches; do not assume the runtime subnet's private-only network policy is sufficient for release execution.
 - Release-bundle handoff uses an explicit OCI Object Storage boundary so build and deploy stages share a deterministic, inspectable transfer contract.
 - Normal production release publication is expected to run through OCI DevOps rather than laptop-local `deploy.sh release` or `tools/rollout`.
+- OCI DevOps releases provision Java 25 before running Maven verification and packaging.
+- The verification image built by `./mvnw clean verify` uses a pinned Oracle no-fee Oracle JDK builder image together with an Oracle Linux runtime base, so OCI DevOps and local verification do not need a second Oracle JDK base-image registry login just to run the repository gate.
 - Treat DevOps dynamic groups and compartment-scoped policies as part of the release infrastructure contract, not as post-apply console cleanup.
 
 ## Container
 
 Use the production image definition in `container/Dockerfile`.
+The Dockerfile uses a pinned Oracle no-fee Oracle JDK builder image and a slim Oracle Linux runtime base.
 
 Single-architecture local build (example: amd64):
 

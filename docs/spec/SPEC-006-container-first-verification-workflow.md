@@ -4,7 +4,7 @@ title: Container-First Verification Workflow
 status: done
 priority: high
 owner: @aattard
-last_updated: 2026-04-12
+last_updated: 2026-04-13
 ---
 
 ## Problem
@@ -49,6 +49,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - Let Compose service naming provide container-to-container hostnames inside the verification stack; avoid redundant environment variables for values Compose can derive directly.
 - Keep verification DB credentials out of the repository; `verify` must read them from environment variables and fail fast if they are missing.
 - Treat `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites in workflow documentation, not hidden assumptions.
+- Keep any optional registry publishing credentials out of the repository; `verify` itself must not require a separate Oracle base-image registry login when using the Oracle no-fee verification image path.
 - Repository automation and tests that exercise operator helper scripts must not block on interactive secret prompts during `./mvnw test` or `./mvnw clean verify`; automated invocations must fail fast with an explicit non-interactive error instead.
 - Do not use a dedicated Spring profile purely to select the only supported database; single-database datasource settings belong in the base application configuration.
 - Keep registry publishing out of `verify`; image publication belongs to release automation.

@@ -18,7 +18,7 @@ locals {
   log_group_name                              = "${local.stack_name}-devops"
   project_log_name                            = "${local.stack_name}-devops-project"
   github_connection_secret_policy_name        = "${local.stack_name}-devops-github-connection"
-  github_connection_secret_policy_description = "Allow Wort-Werk OCI DevOps resources to read the GitHub external-connection token secret"
+  github_connection_secret_policy_description = "Allow Wort-Werk OCI DevOps resources to read the GitHub and OCIR secrets required by the release pipeline"
   github_connection_name                      = "${local.stack_name}-github"
   build_pipeline_name                         = "${local.stack_name}-build"
   deploy_pipeline_name                        = "${local.stack_name}-deploy"

@@ -2,6 +2,8 @@
 
 This project ships a production image definition at `container/Dockerfile`.
 Local verification stack definition: `container/compose.verify.yml` (invoked by `./mvnw clean verify`).
+The production Dockerfile intentionally uses a pinned Oracle no-fee Oracle JDK builder image on Oracle Linux plus a slim Oracle Linux runtime base.
+That keeps local verification and OCI DevOps verification on Oracle-provided images without adding a second Oracle JDK base-image login step.
 
 For local Maven verification, the required order is:
 

@@ -1,4 +1,4 @@
-FROM container-registry.oracle.com/java/jdk:25.0.2 AS builder
+FROM container-registry.oracle.com/java/jdk-no-fee-term:25.0.2-oraclelinux9 AS builder
 
 # Build a minimized runtime JRE.
 WORKDIR /opt

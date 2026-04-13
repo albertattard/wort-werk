@@ -48,6 +48,14 @@ Validate namespace lookup:
 echo "${OCIR_NAMESPACE}"
 ```
 
+Authenticate Docker to OCIR (use OCI auth token as password):
+
+```bash
+docker login "${OCI_REGION}.ocir.io" \
+  --username "${OCIR_NAMESPACE}/${OCI_USERNAME}" \
+  --password-stdin
+```
+
 Build from repository root:
 
 ```bash
@@ -57,14 +65,6 @@ docker buildx build \
   --tag "${IMAGE}" \
   --push \
   .
-```
-
-Authenticate Docker to OCIR (use OCI auth token as password):
-
-```bash
-docker login "${OCI_REGION}.ocir.io" \
-  --username "${OCIR_NAMESPACE}/${OCI_USERNAME}" \
-  --password-stdin
 ```
 
 `OCI_PROFILE="FRANKFURT"` is expected to target the Frankfurt region endpoint (`fra`).

@@ -68,6 +68,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family");
         assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles");
         assertThat(devopsMain).contains("target.secret.id = '${var.github_connection_token_secret_ocid}'");
+        assertThat(devopsMain).doesNotContain("oracle_registry_password_secret_ocid");
     }
 
     @Test
@@ -113,6 +114,8 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("JAVA_HOME=/usr/java/jdk-25");
         assertThat(buildSpec).contains("./mvnw clean verify");
         assertThat(buildSpec).contains("docker buildx build");
+        assertThat(buildSpec).doesNotContain("ORACLE_REGISTRY_USERNAME");
+        assertThat(buildSpec).doesNotContain("ORACLE_REGISTRY_PASSWORD_SECRET_OCID");
         assertThat(buildSpec).contains("oci secrets secret-bundle get");
         assertThat(buildSpec).contains("oci psql connection-details get");
         assertThat(buildSpec).contains("POSTGRESQL_DB_SYSTEM_ID");
