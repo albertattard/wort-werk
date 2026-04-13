@@ -48,7 +48,7 @@ docs/
 - Use `@Tag("e2e")` for browser-driven end-to-end tests.
 - Use `./mvnw test` for fast tests only; it excludes both `@Tag("db")` and `@Tag("e2e")`.
 - Use `./mvnw clean verify` to run the full pipeline, including `@Tag("db")` and `@Tag("e2e")` tests.
-- Maven uses Docker Compose to orchestrate the local verification `app` + PostgreSQL stack during `verify`.
+- Maven uses a repository-owned verification helper during `verify`: Docker Compose locally, Podman-native orchestration on OCI DevOps managed runners.
 - Set `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` in the environment before `./mvnw clean verify`; verification fails fast if either is missing.
 - Recommended pre-commit order:
   1. `export VERIFY_DB_USERNAME='<username>'`
@@ -64,6 +64,7 @@ docs/
 - Release-bundle handoff uses an explicit OCI Object Storage boundary so build and deploy stages share a deterministic, inspectable transfer contract.
 - Normal production release publication is expected to run through OCI DevOps rather than laptop-local `deploy.sh release` or `tools/rollout`.
 - OCI DevOps releases provision Java 25 before running Maven verification and packaging.
+- OCI DevOps releases run the same Maven verification contract with a Podman-native backend instead of assuming a Docker daemon-backed Compose runtime on the managed runner.
 - The verification image built by `./mvnw clean verify` uses a pinned Oracle no-fee Oracle JDK builder image together with an Oracle Linux runtime base, so OCI DevOps and local verification do not need a second Oracle JDK base-image registry login just to run the repository gate.
 - Treat DevOps dynamic groups and compartment-scoped policies as part of the release infrastructure contract, not as post-apply console cleanup.
 

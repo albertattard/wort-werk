@@ -112,10 +112,10 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("yum -y install oracle-java-jdk-release-el8");
         assertThat(buildSpec).contains("yum -y install jdk-25-headful");
         assertThat(buildSpec).contains("JAVA_HOME=/usr/java/jdk-25");
-        assertThat(buildSpec).contains("COMPOSE_SHA256=");
-        assertThat(buildSpec).contains("sha256sum --check");
-        assertThat(buildSpec).contains("docker compose version");
         assertThat(buildSpec).contains("./mvnw clean verify");
+        assertThat(buildSpec).contains("-Dverify.environment.backend=podman");
+        assertThat(buildSpec).doesNotContain("COMPOSE_SHA256=");
+        assertThat(buildSpec).doesNotContain("docker compose version");
         assertThat(buildSpec).contains("docker buildx build");
         assertThat(buildSpec).doesNotContain("ORACLE_REGISTRY_USERNAME");
         assertThat(buildSpec).doesNotContain("ORACLE_REGISTRY_PASSWORD_SECRET_OCID");

@@ -13,7 +13,7 @@ Current verification targets the production container image built from current s
 
 ## Goal
 
-Define one primary pre-commit workflow where `./mvnw clean verify` validates a freshly built container image with the existing Playwright e2e tests and any database-backed integration tests against PostgreSQL, while Docker Compose owns local verification environment orchestration.
+Define one primary pre-commit workflow where `./mvnw clean verify` validates a freshly built container image with the existing Playwright e2e tests and any database-backed integration tests against PostgreSQL, while repository-owned verification helpers select a compatible container orchestration backend for the current execution environment.
 
 ## Required Order
 
@@ -24,7 +24,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
    - `./mvnw clean verify`
 3. During `verify`, Maven must execute:
    1. build a local single-platform container image from current workspace code,
-   2. start the verification environment through Docker Compose using that exact image tag,
+   2. start the verification environment through the repository-owned verification helper using that exact image tag,
    3. provision PostgreSQL for verification,
    4. run the application container against PostgreSQL,
    5. run tagged database integration tests and Playwright e2e against that environment,
@@ -46,7 +46,9 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - Keep commands documented and copy-paste ready.
 - Keep `./mvnw clean verify` as the single command for container-based DB-backed and e2e verification.
 - Use Docker Compose to describe and orchestrate the local verification stack.
-- Automation environments that run `./mvnw clean verify` must provision a compatible Docker Compose CLI before Maven reaches the Compose-backed verification steps.
+- Keep OCI DevOps verification daemonless; managed runners must not depend on a Docker daemon socket in order to execute `./mvnw clean verify`.
+- Repository-owned verification helper scripts must choose the correct orchestration backend explicitly instead of embedding runner-specific container commands directly inside Maven plugin XML.
+- OCI DevOps verification must use a Podman-native backend that is compatible with the managed runner environment.
 - Let Compose service naming provide container-to-container hostnames inside the verification stack; avoid redundant environment variables for values Compose can derive directly.
 - Keep verification DB credentials out of the repository; `verify` must read them from environment variables and fail fast if they are missing.
 - Treat `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites in workflow documentation, not hidden assumptions.
@@ -62,12 +64,13 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - [x] `verify` builds a fresh local single-platform image from current code and does not rely on stale tags.
 - [x] `verify` provisions PostgreSQL and runs DB-backed tests and Playwright e2e against that environment via Docker Compose.
 - [x] `./mvnw test` excludes both `@Tag("db")` and `@Tag("e2e")`.
-- [x] `verify` starts/stops the verification environment through Docker Compose after tests.
-- [ ] OCI DevOps verification environments provision Docker Compose before invoking the Compose-backed Maven verification steps.
+- [x] `verify` starts/stops the verification environment through repository-owned helpers after tests.
+- [ ] OCI DevOps verification environments use a Podman-native backend and do not require a Docker daemon socket.
 - [x] The Compose-managed app uses the `db` service hostname directly for database connectivity instead of a redundant injected Compose JDBC URL variable.
 - [x] `verify` reads DB verification credentials from environment variables rather than repository-stored defaults.
 - [x] Workflow docs show `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites before `./mvnw clean verify`.
 - [x] Automated tests covering helper scripts fail fast rather than prompting on `/dev/tty` during Maven verification.
 - [x] The single supported PostgreSQL datasource is configured without a dedicated database-selection Spring profile.
 - [x] `verify` does not push images to any remote registry.
+- [ ] The repository contains a testable verification-helper boundary instead of duplicating orchestration commands across Maven exec blocks.
 - [x] Current workflow docs are aligned (no conflicting mandatory gate language).

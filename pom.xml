@@ -25,6 +25,8 @@
         <verify.container.port>18080</verify.container.port>
         <verify.container.image>${project.artifactId}:verify-${maven.build.timestamp}</verify.container.image>
         <verify.container.base-url>http://localhost:${verify.container.port}</verify.container.base-url>
+        <verify.environment.backend>compose</verify.environment.backend>
+        <verify.environment.script>${project.basedir}/tools/verify-environment.sh</verify.environment.script>
         <verify.compose.file>${project.basedir}/container/compose.verify.yml</verify.compose.file>
         <verify.compose.project>${project.artifactId}-verify</verify.compose.project>
         <verify.db.port>15432</verify.db.port>
@@ -191,8 +193,11 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>sh</executable>
+                            <executable>bash</executable>
                             <environmentVariables>
+                                <VERIFY_ENV_BACKEND>${verify.environment.backend}</VERIFY_ENV_BACKEND>
+                                <VERIFY_COMPOSE_FILE>${verify.compose.file}</VERIFY_COMPOSE_FILE>
+                                <VERIFY_COMPOSE_PROJECT>${verify.compose.project}</VERIFY_COMPOSE_PROJECT>
                                 <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
                                 <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
                                 <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
@@ -201,8 +206,8 @@
                                 <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
                             </environmentVariables>
                             <arguments>
-                                <argument>-c</argument>
-                                <argument>docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' down --volumes --remove-orphans >/dev/null 2&gt;&amp;1 || true</argument>
+                                <argument>${verify.environment.script}</argument>
+                                <argument>down</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -213,8 +218,11 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>docker</executable>
+                            <executable>bash</executable>
                             <environmentVariables>
+                                <VERIFY_ENV_BACKEND>${verify.environment.backend}</VERIFY_ENV_BACKEND>
+                                <VERIFY_COMPOSE_FILE>${verify.compose.file}</VERIFY_COMPOSE_FILE>
+                                <VERIFY_COMPOSE_PROJECT>${verify.compose.project}</VERIFY_COMPOSE_PROJECT>
                                 <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
                                 <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
                                 <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
@@ -223,13 +231,8 @@
                                 <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
                             </environmentVariables>
                             <arguments>
-                                <argument>compose</argument>
-                                <argument>--file</argument>
-                                <argument>${verify.compose.file}</argument>
-                                <argument>--project-name</argument>
-                                <argument>${verify.compose.project}</argument>
+                                <argument>${verify.environment.script}</argument>
                                 <argument>up</argument>
-                                <argument>--detach</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -240,8 +243,11 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>sh</executable>
+                            <executable>bash</executable>
                             <environmentVariables>
+                                <VERIFY_ENV_BACKEND>${verify.environment.backend}</VERIFY_ENV_BACKEND>
+                                <VERIFY_COMPOSE_FILE>${verify.compose.file}</VERIFY_COMPOSE_FILE>
+                                <VERIFY_COMPOSE_PROJECT>${verify.compose.project}</VERIFY_COMPOSE_PROJECT>
                                 <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
                                 <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
                                 <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
@@ -250,8 +256,8 @@
                                 <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
                             </environmentVariables>
                             <arguments>
-                                <argument>-c</argument>
-                                <argument>ok=0; for i in $(seq 1 10); do if curl --silent --show-error --fail --connect-timeout 1 --max-time 1 '${verify.container.base-url}/login' >/dev/null; then ok=$((ok+1)); [ $ok -ge 2 ] &amp;&amp; exit 0; else ok=0; fi; sleep 2; done; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' logs --no-color app db; exit 1</argument>
+                                <argument>${verify.environment.script}</argument>
+                                <argument>wait</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -262,8 +268,11 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>sh</executable>
+                            <executable>bash</executable>
                             <environmentVariables>
+                                <VERIFY_ENV_BACKEND>${verify.environment.backend}</VERIFY_ENV_BACKEND>
+                                <VERIFY_COMPOSE_FILE>${verify.compose.file}</VERIFY_COMPOSE_FILE>
+                                <VERIFY_COMPOSE_PROJECT>${verify.compose.project}</VERIFY_COMPOSE_PROJECT>
                                 <VERIFY_CONTAINER_IMAGE>${verify.container.image}</VERIFY_CONTAINER_IMAGE>
                                 <VERIFY_CONTAINER_PORT>${verify.container.port}</VERIFY_CONTAINER_PORT>
                                 <VERIFY_DB_PORT>${verify.db.port}</VERIFY_DB_PORT>
@@ -272,8 +281,9 @@
                                 <VERIFY_DB_PASSWORD>${env.VERIFY_DB_PASSWORD}</VERIFY_DB_PASSWORD>
                             </environmentVariables>
                             <arguments>
-                                <argument>-c</argument>
-                                <argument>mkdir -p '${project.build.directory}'; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' logs --no-color app &gt; '${project.build.directory}/verify-container.log' 2&gt;&amp;1 || true; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' logs --no-color db &gt; '${project.build.directory}/verify-postgres.log' 2&gt;&amp;1 || true; docker compose --file '${verify.compose.file}' --project-name '${verify.compose.project}' down --volumes --remove-orphans >/dev/null 2&gt;&amp;1 || true</argument>
+                                <argument>${verify.environment.script}</argument>
+                                <argument>capture-and-down</argument>
+                                <argument>${project.build.directory}</argument>
                             </arguments>
                         </configuration>
                     </execution>

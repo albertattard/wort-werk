@@ -13,21 +13,12 @@ steps:
     name: Install Java 25 toolchain
     command: |
       set -euo pipefail
-      COMPOSE_VERSION=2.39.1
-      COMPOSE_SHA256=a5ea28722d5da628b59226626f7d6c33c89a7ed19e39f750645925242044c9d2
       yum -y install oracle-java-jdk-release-el8
       yum -y install jdk-25-headful
-      yum -y install curl
-      mkdir -p /usr/local/lib/docker/cli-plugins
-      curl -fsSL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
-        -o /usr/local/lib/docker/cli-plugins/docker-compose
-      printf '%s  %s\n' "$COMPOSE_SHA256" /usr/local/lib/docker/cli-plugins/docker-compose | sha256sum --check --
-      chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
       export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
       java -version
       mvn -version
-      docker compose version
 
   - type: Command
     name: Resolve release metadata
@@ -170,7 +161,9 @@ steps:
       export VERIFY_DB_USERNAME="wortwerk_verify"
       export VERIFY_DB_PASSWORD="wortwerk_verify"
 
-      ./mvnw clean verify "-Dverify.container.image=wort-werk:verify-release"
+      ./mvnw clean verify \
+        "-Dverify.container.image=wort-werk:verify-release" \
+        "-Dverify.environment.backend=podman"
 
   - type: Command
     name: Publish runtime image
