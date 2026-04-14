@@ -134,13 +134,17 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("grep -q -- '--use'");
         assertThat(buildSpec).contains("grep -q -- '--push'");
         assertThat(buildSpec).contains("grep -q -- '--load'");
+        assertThat(buildSpec).contains("grep -q -- '--manifest'");
         assertThat(buildSpec).contains("docker buildx inspect wortwerk-release-builder");
         assertThat(buildSpec).contains("docker buildx create --name wortwerk-release-builder --driver docker-container");
         assertThat(buildSpec).contains("docker buildx create --driver docker-container --use");
         assertThat(buildSpec).contains("does not expose create; using the default builder");
         assertThat(buildSpec).contains("does not support --push; using --load followed by docker push");
+        assertThat(buildSpec).contains("does not support --push or --load; using --manifest followed by docker push");
         assertThat(buildSpec).contains("docker buildx build");
         assertThat(buildSpec).contains("\"${BUILDX_PUBLISH_ARGS[@]}\"");
+        assertThat(buildSpec).contains("\"${BUILDX_IMAGE_REF_ARGS[@]}\"");
+        assertThat(buildSpec).contains("--manifest \"$IMAGE_REPOSITORY:$IMAGE_TAG\"");
         assertThat(buildSpec).contains("docker push \"$IMAGE_REPOSITORY:$IMAGE_TAG\"");
         assertThat(buildSpec).contains("\"${BUILDX_ARGS[@]}\"");
         assertThat(buildSpec).doesNotContain("docker buildx use");

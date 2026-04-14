@@ -8,7 +8,7 @@ related_features:
   - SPEC-006
 owner: @aattard
 created: 2026-04-06
-updated: 2026-04-06
+updated: 2026-04-14
 ---
 
 ## Summary
@@ -18,7 +18,7 @@ Enforce separation between verification and release publishing: `./mvnw clean ve
 ## Scope
 
 - Update Maven verify container build step to local-only image build (no push).
-- Update OCI release automation to publish multi-arch image with `docker buildx build --platform ... --push`.
+- Update OCI release automation to publish a multi-arch image with an OCI-runner-compatible publication flow rather than assuming local Docker Buildx `--push` semantics.
 - Keep runtime deploy consuming immutable `image_tag`.
 - Update OCI and workflow docs to match the split.
 

@@ -52,8 +52,8 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - OCI DevOps verification readiness must not rely solely on container health-state metadata when managed runners can report delayed or missing health transitions; repository helpers must actively confirm PostgreSQL readiness before failing the run.
 - OCI DevOps verification runners must provision the Playwright browser runtime dependencies required for the repository e2e suite before `./mvnw clean verify` starts the browser-backed tests.
 - Oracle Linux OCI runners must install browser host packages through the native RPM package manager instead of relying on Playwright's Ubuntu-only `apt-get` fallback.
-- OCI DevOps image publication must use buildx commands that are supported by the managed runner's Docker CLI implementation instead of assuming every local subcommand or flag is available.
-- OCI DevOps build scripts should detect whether the runner exposes `docker buildx create` and `docker buildx build` publication flags at all, and only use builder bootstrap or inline push flags when the managed runner actually supports them.
+- OCI DevOps image publication must use runner-compatible build tooling instead of assuming the managed OCI surface behaves like a full local Docker Buildx installation.
+- OCI DevOps build scripts should detect whether the runner exposes `docker buildx create`, inline publication flags, or Podman-style manifest publication and only use the capabilities that are actually present on the managed runner.
 - Let Compose service naming provide container-to-container hostnames inside the verification stack; avoid redundant environment variables for values Compose can derive directly.
 - Keep verification DB credentials out of the repository; `verify` must read them from environment variables and fail fast if they are missing.
 - Treat `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites in workflow documentation, not hidden assumptions.
@@ -75,7 +75,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - [ ] OCI DevOps verification provisions the Playwright browser runtime dependencies needed by the e2e suite before Maven verify runs on the managed runner.
 - [ ] OCI DevOps verification installs browser host packages on Oracle Linux through repository-tracked RPM commands rather than Playwright's Ubuntu fallback helpers.
 - [ ] OCI DevOps image publication avoids runner-incompatible `docker buildx` subcommands and can publish the runtime image from the managed runner.
-- [ ] OCI DevOps publish scripts adapt to the managed runner's available `docker buildx` subcommands and publication flags instead of assuming builder-bootstrap or inline push support.
+- [ ] OCI DevOps publish scripts adapt to the managed runner's available build subcommands and publication modes instead of assuming builder-bootstrap or inline push support.
 - [x] The Compose-managed app uses the `db` service hostname directly for database connectivity instead of a redundant injected Compose JDBC URL variable.
 - [x] `verify` reads DB verification credentials from environment variables rather than repository-stored defaults.
 - [x] Workflow docs show `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites before `./mvnw clean verify`.

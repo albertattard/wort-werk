@@ -56,7 +56,7 @@ docker login "${OCI_REGION}.ocir.io" \
   --password-stdin
 ```
 
-Build from repository root:
+Build from repository root with a full Docker Buildx installation:
 
 ```bash
 docker buildx build \
@@ -68,6 +68,8 @@ docker buildx build \
 ```
 
 `OCI_PROFILE="FRANKFURT"` is expected to target the Frankfurt region endpoint (`fra`).
+
+On OCI-managed runners, the available build surface may be Podman-compatible rather than full Docker Buildx. In that case the repository release automation may fall back to manifest-based publication instead of inline `--push`.
 
 If needed, push explicitly:
 

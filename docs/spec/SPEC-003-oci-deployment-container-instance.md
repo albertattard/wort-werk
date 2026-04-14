@@ -88,7 +88,7 @@ Repeatable operator flow:
 - [x] Runtime container instances use private IPs only and do not receive public IP assignment.
 - [x] Public ingress terminates at the OCI Load Balancer while the runtime backend stays on private VCN addressing.
 - [x] Runtime retains private access to required OCI regional services after container public IP removal.
-- [ ] OCI DevOps release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply.
+- [ ] OCI DevOps release automation executes `./mvnw clean verify`, then publishes a multi-architecture (`linux/amd64,linux/arm64`) image tag before runtime apply using whatever OCI-runner-compatible publication mode is available.
 - [ ] The recommended repeatable release entrypoint is `infrastructure/oci/devops/run-release.sh` rather than a laptop-local wrapper.
 - [ ] OCI DevOps release automation provisions or selects a Java 25 toolchain before running Maven verification and packaging steps.
 - [ ] `./mvnw clean verify` and OCI DevOps release automation can build the verification image from Oracle no-fee Oracle-based images without requiring a separate Oracle base-image registry login.

@@ -253,16 +253,23 @@ steps:
 
       BUILDX_BUILD_HELP="$(docker buildx build --help 2>&1 || true)"
       BUILDX_PUBLISH_ARGS=()
+      BUILDX_IMAGE_REF_ARGS=()
       BUILD_AND_PUSH_SEPARATELY=false
 
       if printf '%s' "$BUILDX_BUILD_HELP" | grep -q -- '--push'; then
         BUILDX_PUBLISH_ARGS+=(--push)
+        BUILDX_IMAGE_REF_ARGS+=(--tag "$IMAGE_REPOSITORY:$IMAGE_TAG")
       elif printf '%s' "$BUILDX_BUILD_HELP" | grep -q -- '--load'; then
         echo "Managed runner docker buildx build does not support --push; using --load followed by docker push." >&2
         BUILDX_PUBLISH_ARGS+=(--load)
+        BUILDX_IMAGE_REF_ARGS+=(--tag "$IMAGE_REPOSITORY:$IMAGE_TAG")
+        BUILD_AND_PUSH_SEPARATELY=true
+      elif printf '%s' "$BUILDX_BUILD_HELP" | grep -q -- '--manifest'; then
+        echo "Managed runner docker buildx build does not support --push or --load; using --manifest followed by docker push." >&2
+        BUILDX_IMAGE_REF_ARGS+=(--manifest "$IMAGE_REPOSITORY:$IMAGE_TAG")
         BUILD_AND_PUSH_SEPARATELY=true
       else
-        echo "Managed runner docker buildx build does not support --push or --load." >&2
+        echo "Managed runner docker buildx build does not support --push, --load, or --manifest." >&2
         echo "buildx build help output:" >&2
         printf '%s\n' "$BUILDX_BUILD_HELP" >&2
         exit 1
@@ -271,9 +278,9 @@ steps:
       docker buildx build \
         "${BUILDX_ARGS[@]}" \
         "${BUILDX_PUBLISH_ARGS[@]}" \
+        "${BUILDX_IMAGE_REF_ARGS[@]}" \
         --file container/Dockerfile \
         --platform linux/amd64,linux/arm64 \
-        --tag "$IMAGE_REPOSITORY:$IMAGE_TAG" \
         .
 
       if [[ "$BUILD_AND_PUSH_SEPARATELY" == true ]]; then
