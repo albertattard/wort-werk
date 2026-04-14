@@ -232,10 +232,11 @@ steps:
         --username "$IMAGE_REGISTRY_USERNAME" \
         --password-stdin
 
-      docker buildx create --name wortwerk-release-builder --driver docker-container --use >/dev/null 2>&1 || \
-        docker buildx use wortwerk-release-builder
+      docker buildx inspect wortwerk-release-builder >/dev/null 2>&1 || \
+        docker buildx create --name wortwerk-release-builder --driver docker-container >/dev/null
 
       docker buildx build \
+        --builder wortwerk-release-builder \
         --file container/Dockerfile \
         --platform linux/amd64,linux/arm64 \
         --tag "$IMAGE_REPOSITORY:$IMAGE_TAG" \
