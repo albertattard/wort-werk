@@ -232,11 +232,26 @@ steps:
         --username "$IMAGE_REGISTRY_USERNAME" \
         --password-stdin
 
-      docker buildx inspect wortwerk-release-builder >/dev/null 2>&1 || \
-        docker buildx create --name wortwerk-release-builder --driver docker-container >/dev/null
+      BUILDX_CREATE_HELP="$(docker buildx create --help 2>&1 || true)"
+      BUILDX_ARGS=()
+
+      if printf '%s' "$BUILDX_CREATE_HELP" | grep -q -- '--name'; then
+        docker buildx inspect wortwerk-release-builder >/dev/null 2>&1 || \
+          docker buildx create --name wortwerk-release-builder --driver docker-container >/dev/null
+        BUILDX_ARGS+=(--builder wortwerk-release-builder)
+      else
+        if printf '%s' "$BUILDX_CREATE_HELP" | grep -q -- '--use'; then
+          docker buildx create --driver docker-container --use >/dev/null
+        else
+          echo "Managed runner docker buildx create does not support --name or --use." >&2
+          echo "buildx create help output:" >&2
+          printf '%s\n' "$BUILDX_CREATE_HELP" >&2
+          exit 1
+        fi
+      fi
 
       docker buildx build \
-        --builder wortwerk-release-builder \
+        "${BUILDX_ARGS[@]}" \
         --file container/Dockerfile \
         --platform linux/amd64,linux/arm64 \
         --tag "$IMAGE_REPOSITORY:$IMAGE_TAG" \

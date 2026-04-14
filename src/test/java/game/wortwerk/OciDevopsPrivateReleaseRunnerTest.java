@@ -123,10 +123,15 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("-Dverify.environment.backend=podman");
         assertThat(buildSpec).doesNotContain("COMPOSE_SHA256=");
         assertThat(buildSpec).doesNotContain("docker compose version");
+        assertThat(buildSpec).contains("BUILDX_CREATE_HELP");
+        assertThat(buildSpec).contains("docker buildx create --help");
+        assertThat(buildSpec).contains("grep -q -- '--name'");
+        assertThat(buildSpec).contains("grep -q -- '--use'");
         assertThat(buildSpec).contains("docker buildx inspect wortwerk-release-builder");
         assertThat(buildSpec).contains("docker buildx create --name wortwerk-release-builder --driver docker-container");
+        assertThat(buildSpec).contains("docker buildx create --driver docker-container --use");
         assertThat(buildSpec).contains("docker buildx build");
-        assertThat(buildSpec).contains("--builder wortwerk-release-builder");
+        assertThat(buildSpec).contains("\"${BUILDX_ARGS[@]}\"");
         assertThat(buildSpec).doesNotContain("docker buildx use");
         assertThat(buildSpec).doesNotContain("ORACLE_REGISTRY_USERNAME");
         assertThat(buildSpec).doesNotContain("ORACLE_REGISTRY_PASSWORD_SECRET_OCID");

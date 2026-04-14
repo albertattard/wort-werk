@@ -19,7 +19,7 @@ The private PostgreSQL endpoint and runtime rollout path should not depend on an
 This stack moves the release control plane into OCI-managed infrastructure and binds the private shell stage to the dedicated DevOps subnet and NSG.
 OCI DevOps managed build runners currently ship JDK 17 by default, so the build spec enables the Oracle JDK repository on Oracle Linux and installs Oracle JDK 25 before running the repository verification flow.
 The same build spec must also install the Playwright host libraries with Oracle Linux RPM packages because the managed runners are not Ubuntu hosts and Playwright's `--with-deps` helper falls back to `apt-get`.
-The publish step must also use only the `docker buildx` subcommands available on the managed runner, so the repository pins the builder by name on the `build` invocation instead of assuming `docker buildx use` exists.
+The publish step must also use only the `docker buildx` subcommands available on the managed runner, so the repository probes the runner's supported `buildx create` flags before deciding whether it can use a named builder or must fall back to the default selection path.
 The verification image built through `./mvnw clean verify` uses a pinned Oracle no-fee Oracle JDK builder image and an Oracle Linux runtime base, so the build pipeline does not need a separate Oracle JDK base-image registry login before verification.
 The managed runner executes `./mvnw clean verify` with the repository Podman-native verification backend, because the managed environment does not provide a reliable Docker daemon-backed Compose runtime.
 
