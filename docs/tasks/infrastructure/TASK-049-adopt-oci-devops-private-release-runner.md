@@ -77,7 +77,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - The repository-side source checkout and release packaging path now succeeds on OCI DevOps private runners.
 - Repeated build runs then failed in both OCI DevOps `DELIVER_ARTIFACT` stages with the same OCI-managed internal error, even after the packaged release bundle was saved successfully.
 - The next implementation step is to extend that release handoff with:
-  - build-stage verification and multi-arch image publication to OCIR
+  - build-stage verification and OCI-managed image publication to OCIR
   - build-stage upload of commit-addressed metadata that includes the OCI-resident deployment inputs
   - deploy-stage download of those same objects from the private shell stage
   - a remote runtime Terraform backend accessible from the OCI deploy runner
@@ -85,3 +85,4 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - OCI DevOps pipeline parameter defaults now carry the stable runtime deployment contract, while `run-release.sh` only passes `releaseVersion` and `tfBackendMode`.
 - PostgreSQL CA material is now resolved inside OCI from the DB system connection-details API so the build pipeline no longer exceeds OCI DevOps parameter size limits.
 - The DevOps dynamic-group policy must include `read postgres-db-systems` so the build runner can call `GetConnectionDetails` against the managed PostgreSQL system.
+- Current managed OCI runners can publish `linux/amd64`, but they fail `linux/arm64` image builds with `exec format error` during target-architecture `RUN` steps because no arm emulation or native `arm64` builder is available. The release contract is therefore temporarily constrained to `linux/amd64`.

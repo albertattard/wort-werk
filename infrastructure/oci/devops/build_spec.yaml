@@ -275,12 +275,14 @@ steps:
         exit 1
       fi
 
+      OCI_RELEASE_PLATFORMS="linux/amd64"
+
       docker buildx build \
         "${BUILDX_ARGS[@]}" \
         "${BUILDX_PUBLISH_ARGS[@]}" \
         "${BUILDX_IMAGE_REF_ARGS[@]}" \
         --file container/Dockerfile \
-        --platform linux/amd64,linux/arm64 \
+        --platform "$OCI_RELEASE_PLATFORMS" \
         .
 
       if [[ "$BUILD_AND_PUSH_SEPARATELY" == true ]]; then

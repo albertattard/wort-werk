@@ -25,3 +25,4 @@
 - Make OCI deploy profile configurable with explicit environment/tenant mapping instead of defaulting to `FRANKFURT`
 - Replace runtime registry password in Terraform state with OCI-managed secret integration for private OCIR pulls
 - Run container e2e verification on both `linux/amd64` and `linux/arm64` (currently validated on one architecture only)
+- Restore OCI DevOps runtime image publication for `linux/arm64` by introducing either a native arm64 release builder or a container build layout that does not execute target-architecture binaries during image assembly

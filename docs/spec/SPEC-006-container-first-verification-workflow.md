@@ -54,6 +54,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - Oracle Linux OCI runners must install browser host packages through the native RPM package manager instead of relying on Playwright's Ubuntu-only `apt-get` fallback.
 - OCI DevOps image publication must use runner-compatible build tooling instead of assuming the managed OCI surface behaves like a full local Docker Buildx installation.
 - OCI DevOps build scripts should detect whether the runner exposes `docker buildx create`, inline publication flags, or Podman-style manifest publication and only use the capabilities that are actually present on the managed runner.
+- OCI DevOps managed runners must not claim `linux/arm64` release publication unless the selected builder can actually execute the target-architecture build steps; the current managed runner contract is explicitly `linux/amd64` only.
 - Let Compose service naming provide container-to-container hostnames inside the verification stack; avoid redundant environment variables for values Compose can derive directly.
 - Keep verification DB credentials out of the repository; `verify` must read them from environment variables and fail fast if they are missing.
 - Treat `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites in workflow documentation, not hidden assumptions.
@@ -76,6 +77,7 @@ Define one primary pre-commit workflow where `./mvnw clean verify` validates a f
 - [ ] OCI DevOps verification installs browser host packages on Oracle Linux through repository-tracked RPM commands rather than Playwright's Ubuntu fallback helpers.
 - [ ] OCI DevOps image publication avoids runner-incompatible `docker buildx` subcommands and can publish the runtime image from the managed runner.
 - [ ] OCI DevOps publish scripts adapt to the managed runner's available build subcommands and publication modes instead of assuming builder-bootstrap or inline push support.
+- [ ] OCI DevOps managed release publication stays on `linux/amd64` until a runner-capable `arm64` publication path is available and documented.
 - [x] The Compose-managed app uses the `db` service hostname directly for database connectivity instead of a redundant injected Compose JDBC URL variable.
 - [x] `verify` reads DB verification credentials from environment variables rather than repository-stored defaults.
 - [x] Workflow docs show `VERIFY_DB_USERNAME` and `VERIFY_DB_PASSWORD` as explicit prerequisites before `./mvnw clean verify`.

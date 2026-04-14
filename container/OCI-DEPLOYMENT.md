@@ -69,7 +69,7 @@ docker buildx build \
 
 `OCI_PROFILE="FRANKFURT"` is expected to target the Frankfurt region endpoint (`fra`).
 
-On OCI-managed runners, the available build surface may be Podman-compatible rather than full Docker Buildx. In that case the repository release automation may fall back to manifest-based publication instead of inline `--push`.
+On OCI-managed runners, the available build surface may be Podman-compatible rather than full Docker Buildx. In that case the repository release automation may fall back to manifest-based publication instead of inline `--push`. The current OCI-managed release path is temporarily constrained to `linux/amd64` because the managed runner cannot execute the `linux/arm64` build steps used by the current container build.
 
 If needed, push explicitly:
 

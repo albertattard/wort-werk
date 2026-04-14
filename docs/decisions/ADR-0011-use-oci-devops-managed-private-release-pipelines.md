@@ -19,7 +19,7 @@ Adopt OCI DevOps managed pipelines as the default Wort-Werk release foundation i
 
 The intended structure is:
 
-1. Use an OCI DevOps build pipeline to check out a specific git reference, run verification, and publish a commit-traceable multi-architecture image.
+1. Use an OCI DevOps build pipeline to check out a specific git reference, run verification, and publish a commit-traceable runtime image. On the current managed runner that publication path is temporarily limited to `linux/amd64` until a native `arm64` or cross-build-capable release builder exists.
 2. Use an OCI DevOps deployment pipeline to execute private-network rollout steps from inside OCI.
 3. Run private PostgreSQL bootstrap steps from a deployment shell stage inside a private subnet rather than from an operator laptop.
 4. Prefer ephemeral or OCI-managed execution over long-lived general-purpose deployment hosts.
@@ -39,6 +39,7 @@ Positive:
 - Runtime and release tiers can keep different egress boundaries instead of collapsing into one broader private-subnet policy.
 - A commit-addressed Object Storage handoff is simpler to inspect and reason about than opaque OCI DevOps artifact-delivery stage internals.
 - The build pipeline can stay on OCI-managed runners without introducing a custom VM purely to recover a Docker-daemon assumption that the managed service does not make.
+- The build pipeline remains usable on OCI-managed runners even though the current managed environment cannot execute the repository's `linux/arm64` container build steps during release publication.
 
 Negative:
 - OCI DevOps resources, permissions, and pipeline definitions add new infrastructure surface area.
@@ -54,6 +55,7 @@ Risks:
 - If Object Storage permissions are scoped too broadly, the release handoff bucket could become an unnecessary escalation path.
 - If the remote runtime backend is missing or empty and the deploy stage is not guarded against that condition, OCI DevOps could attempt an unsafe runtime apply from an untracked state.
 - If local and OCI verification backends diverge in behavior, engineers could get false confidence from a passing local run that does not reflect the CI path.
+- If the temporary `linux/amd64` release constraint is not documented and tracked explicitly, the repository could continue claiming multi-architecture release support that the managed OCI runner does not actually provide.
 
 ## Alternatives Considered
 

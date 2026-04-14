@@ -145,6 +145,9 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).contains("\"${BUILDX_PUBLISH_ARGS[@]}\"");
         assertThat(buildSpec).contains("\"${BUILDX_IMAGE_REF_ARGS[@]}\"");
         assertThat(buildSpec).contains("--manifest \"$IMAGE_REPOSITORY:$IMAGE_TAG\"");
+        assertThat(buildSpec).contains("OCI_RELEASE_PLATFORMS=\"linux/amd64\"");
+        assertThat(buildSpec).contains("--platform \"$OCI_RELEASE_PLATFORMS\"");
+        assertThat(buildSpec).doesNotContain("--platform linux/amd64,linux/arm64");
         assertThat(buildSpec).contains("docker push \"$IMAGE_REPOSITORY:$IMAGE_TAG\"");
         assertThat(buildSpec).contains("\"${BUILDX_ARGS[@]}\"");
         assertThat(buildSpec).doesNotContain("docker buildx use");
