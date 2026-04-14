@@ -158,10 +158,35 @@ steps:
       export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
 
+      yum -y install \
+        alsa-lib \
+        atk \
+        at-spi2-atk \
+        cups-libs \
+        gtk3 \
+        libX11 \
+        libX11-xcb \
+        libXcomposite \
+        libXcursor \
+        libXdamage \
+        libXext \
+        libXi \
+        libXrandr \
+        libXrender \
+        libXtst \
+        libdrm \
+        libxcb \
+        libxkbcommon \
+        mesa-libgbm \
+        nspr \
+        nss \
+        pango \
+        liberation-fonts
+
       ./mvnw -q exec:java \
         -Dexec.classpathScope=test \
         -Dexec.mainClass=com.microsoft.playwright.CLI \
-        '-Dexec.args=install --with-deps chromium'
+        '-Dexec.args=install chromium'
 
   - type: Command
     name: Verify release candidate
