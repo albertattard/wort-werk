@@ -43,6 +43,18 @@ class BootstrapRuntimeDbRoleScriptTest {
         assertThat(psqlInput).contains("ALTER SEQUENCE");
     }
 
+    @Test
+    void shouldAcceptRuntimeCertificateEnvironmentVariableAlias() throws Exception {
+        TestHarness harness = prepareHarness();
+
+        ProcessResult result = runScript(harness, Map.of(
+                "RUNTIME_DB_SSL_ROOT_CERT_BASE64", "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=="));
+
+        assertThat(result.exitCode())
+                .withFailMessage("stdout=%s%nstderr=%s", result.stdout(), result.stderr())
+                .isZero();
+    }
+
     private TestHarness prepareHarness() throws IOException {
         Path repoRoot = tempDir.resolve("repo");
         Path dataDir = Files.createDirectories(repoRoot.resolve("infrastructure/oci/data"));

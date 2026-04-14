@@ -91,7 +91,7 @@ RUNTIME_DB_PASSWORD_SECRET_OCID="${RUNTIME_DB_PASSWORD_SECRET_OCID:-$(read_tfvar
 POSTGRESQL_HOST="${POSTGRESQL_HOST:-$(terraform -chdir="${DATA_DIR}" output -raw postgresql_fqdn)}"
 POSTGRESQL_PORT="${POSTGRESQL_PORT:-$(terraform -chdir="${DATA_DIR}" output -raw postgresql_port)}"
 POSTGRESQL_DATABASE_NAME="${POSTGRESQL_DATABASE_NAME:-$(terraform -chdir="${DATA_DIR}" output -raw postgresql_database_name)}"
-POSTGRESQL_SSL_ROOT_CERT_BASE64="${POSTGRESQL_SSL_ROOT_CERT_BASE64:-$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_ssl_root_cert_base64)}"
+POSTGRESQL_SSL_ROOT_CERT_BASE64="${POSTGRESQL_SSL_ROOT_CERT_BASE64:-${RUNTIME_DB_SSL_ROOT_CERT_BASE64:-$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_ssl_root_cert_base64)}}"
 
 require_non_empty "POSTGRESQL_ADMIN_USERNAME" "${POSTGRESQL_ADMIN_USERNAME}"
 require_non_empty "RUNTIME_DB_USERNAME" "${RUNTIME_DB_USERNAME}"

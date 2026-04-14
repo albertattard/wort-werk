@@ -52,6 +52,8 @@ steps:
       . "$RELEASE_METADATA"
       set +a
 
+      export POSTGRESQL_SSL_ROOT_CERT_BASE64="${POSTGRESQL_SSL_ROOT_CERT_BASE64:-${RUNTIME_DB_SSL_ROOT_CERT_BASE64:-}}"
+
       if [[ "$TF_BACKEND_MODE" != "remote" ]]; then
         echo "Refusing to run terraform from OCI DevOps until TF_BACKEND_MODE=remote." >&2
         exit 1
