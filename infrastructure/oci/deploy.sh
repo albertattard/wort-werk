@@ -399,7 +399,7 @@ init_runtime_backend() {
   fi
 
   if [[ "${RUNTIME_BACKEND_MIGRATE:-false}" == "true" ]]; then
-    terraform -chdir="${RUNTIME_DIR}" init -upgrade -reconfigure -migrate-state -force-copy -backend-config="${backend_config_file}"
+    terraform -chdir="${RUNTIME_DIR}" init -upgrade -migrate-state -force-copy -backend-config="${backend_config_file}"
     return
   fi
 

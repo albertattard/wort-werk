@@ -28,6 +28,14 @@ class DeployScriptRuntimeGuardTest {
         assertThat(result.stderr()).contains("Production runtime apply is restricted to OCI DevOps");
     }
 
+    @Test
+    void shouldUseValidTerraformInitFlagsForRuntimeStateMigration() throws IOException {
+        String script = Files.readString(Path.of("infrastructure/oci/deploy.sh"), StandardCharsets.UTF_8);
+
+        assertThat(script).contains("init -upgrade -migrate-state -force-copy");
+        assertThat(script).doesNotContain("init -upgrade -reconfigure -migrate-state");
+    }
+
     private Path prepareTempRepo() throws IOException {
         Path repoRoot = tempDir.resolve("repo");
         Path ociDir = Files.createDirectories(repoRoot.resolve("infrastructure/oci"));
