@@ -7,7 +7,7 @@ related_features:
   - SPEC-008
 owner: @aattard
 created: 2026-04-12
-updated: 2026-04-12
+updated: 2026-04-15
 ---
 
 ## Summary
@@ -67,6 +67,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - [ ] The release handoff boundary is documented, including why Object Storage is used instead of OCI DevOps managed deliver-artifact stages.
 - [ ] OCI deploy stages receive the runtime inputs they need through OCI-managed release metadata or equivalent OCI-resident inputs rather than laptop-local Terraform state.
 - [ ] Runtime Terraform uses a remote OCI backend that the OCI deploy stage can access safely.
+- [ ] The private OCI DevOps shell stage provisions the PostgreSQL client tooling required by the repository bootstrap script instead of assuming `psql` is preinstalled on the managed shell image.
 - [ ] Legacy laptop release helpers are removed or blocked for standard production releases.
 - [ ] Follow-on implementation steps are broken down before infrastructure changes begin.
 
@@ -85,4 +86,5 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - OCI DevOps pipeline parameter defaults now carry the stable runtime deployment contract, while `run-release.sh` only passes `releaseVersion` and `tfBackendMode`.
 - PostgreSQL CA material is now resolved inside OCI from the DB system connection-details API so the build pipeline no longer exceeds OCI DevOps parameter size limits.
 - The DevOps dynamic-group policy must include `read postgres-db-systems` so the build runner can call `GetConnectionDetails` against the managed PostgreSQL system.
+- A live deployment reached the private DB bootstrap step from the managed shell stage and failed because `psql` was not present on the OCI-managed shell image. The deploy command spec must therefore provision the PostgreSQL client as part of the shell-stage contract rather than assuming the base image already carries it.
 - Current managed OCI runners can publish `linux/amd64`, but they fail `linux/arm64` image builds with `exec format error` during target-architecture `RUN` steps because no arm emulation or native `arm64` builder is available. The release contract is therefore temporarily constrained to `linux/amd64`.

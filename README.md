@@ -65,6 +65,7 @@ docs/
 - Normal production release publication is expected to run through OCI DevOps rather than laptop-local `deploy.sh release` or `tools/rollout`.
 - OCI DevOps releases provision Java 25 before running Maven verification and packaging.
 - OCI DevOps releases run the same Maven verification contract with a Podman-native backend instead of assuming a Docker daemon-backed Compose runtime on the managed runner.
+- OCI DevOps private deployment shells provision the PostgreSQL client required by the repository DB-bootstrap script instead of assuming `psql` is already present on the managed shell image.
 - The verification image built by `./mvnw clean verify` uses a pinned Oracle no-fee Oracle JDK builder image together with an Oracle Linux runtime base, so OCI DevOps and local verification do not need a second Oracle JDK base-image registry login just to run the repository gate.
 - Treat DevOps dynamic groups and compartment-scoped policies as part of the release infrastructure contract, not as post-apply console cleanup.
 

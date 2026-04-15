@@ -4,7 +4,7 @@ title: OCI Deployment via Container Instance
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-14
+last_updated: 2026-04-15
 ---
 
 ## Problem
@@ -53,6 +53,7 @@ Repeatable operator flow:
 - operators should trigger a release from an explicit git reference through `infrastructure/oci/devops/run-release.sh`
 - laptop-local helper scripts may still exist for targeted infrastructure administration, but they are not the source of truth for verified image publication
 - OCI DevOps build environments used for normal release publication must provide a Java 25 toolchain compatible with the repository baseline, even when the managed runner default is older
+- OCI DevOps deployment shell stages must provision the PostgreSQL client tooling required by repository-owned private DB bootstrap scripts instead of assuming `psql` is already present on the managed shell host
 - Production and verification container builds must use Oracle-distributed technologies for the Java runtime and Linux base image
 - The verification image path should prefer Oracle no-fee container images that remain anonymously pullable so local verification and OCI DevOps verification do not depend on a separate Oracle base-image registry login
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
@@ -91,6 +92,7 @@ Repeatable operator flow:
 - [ ] OCI DevOps release automation executes `./mvnw clean verify`, then publishes a commit-traceable runtime image tag before runtime apply; on the current managed OCI runner this publication path is temporarily limited to `linux/amd64` until a native `arm64` or cross-build-capable release builder is available.
 - [ ] The recommended repeatable release entrypoint is `infrastructure/oci/devops/run-release.sh` rather than a laptop-local wrapper.
 - [ ] OCI DevOps release automation provisions or selects a Java 25 toolchain before running Maven verification and packaging steps.
+- [ ] OCI DevOps private deployment shell execution provisions the PostgreSQL client needed by the repository bootstrap path before invoking `bootstrap-runtime-db-role.sh`.
 - [ ] `./mvnw clean verify` and OCI DevOps release automation can build the verification image from Oracle no-fee Oracle-based images without requiring a separate Oracle base-image registry login.
 - [x] Runtime stage resolves `image_tag` automatically (existing deployed tag) when not explicitly provided, and only fails when no prior runtime tag exists.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.

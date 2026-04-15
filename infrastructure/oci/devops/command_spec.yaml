@@ -58,6 +58,23 @@ steps:
         export POSTGRESQL_SSL_ROOT_CERT_BASE64="$RELEASE_METADATA_SSL_ROOT_CERT_BASE64"
       fi
 
+      ensure_psql() {
+        if command -v psql >/dev/null 2>&1; then
+          return 0
+        fi
+
+        if command -v microdnf >/dev/null 2>&1; then
+          microdnf install -y postgresql
+        elif command -v dnf >/dev/null 2>&1; then
+          dnf install -y postgresql
+        elif command -v yum >/dev/null 2>&1; then
+          yum install -y postgresql
+        else
+          echo "No supported package manager found to install psql." >&2
+          exit 1
+        fi
+      }
+
       if [[ "$TF_BACKEND_MODE" != "remote" ]]; then
         echo "Refusing to run terraform from OCI DevOps until TF_BACKEND_MODE=remote." >&2
         exit 1
@@ -78,5 +95,6 @@ steps:
       tar -xzf "$RELEASE_BUNDLE" -C "$RELEASE_DIR"
 
       cd "$RELEASE_DIR"
+      ensure_psql
       ./infrastructure/oci/data/bootstrap-runtime-db-role.sh
       ./infrastructure/oci/deploy.sh runtime

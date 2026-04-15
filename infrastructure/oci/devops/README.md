@@ -22,12 +22,14 @@ The same build spec must also install the Playwright host libraries with Oracle 
 The publish step must also use only the build commands and publication modes available on the managed runner, so the repository checks whether it has Docker-style builder bootstrap and inline push support or only a Podman-style manifest workflow before choosing how to publish the runtime image. The current managed OCI runner contract is intentionally constrained to `linux/amd64` because the runner cannot execute the `linux/arm64` build stages required by the current Dockerfile.
 The verification image built through `./mvnw clean verify` uses a pinned Oracle no-fee Oracle JDK builder image and an Oracle Linux runtime base, so the build pipeline does not need a separate Oracle JDK base-image registry login before verification.
 The managed runner executes `./mvnw clean verify` with the repository Podman-native verification backend, because the managed environment does not provide a reliable Docker daemon-backed Compose runtime.
+The private shell stage cannot assume `psql` is preinstalled on the managed OCI shell image, so the command spec provisions the PostgreSQL client before invoking the repository-owned DB bootstrap script.
 
 ## Current Boundary
 
 This stack is the intended normal production release path.
 The build stage owns verification, commit-traceable image publication, and release-metadata generation.
 The deploy stage owns private DB bootstrap and runtime rollout from inside OCI.
+That deploy path includes provisioning the PostgreSQL client tooling required by `data/bootstrap-runtime-db-role.sh` on the managed shell host when the base image does not already provide it.
 
 ## Required Inputs
 

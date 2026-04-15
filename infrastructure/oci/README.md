@@ -187,6 +187,7 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - DevOps provisions the GitHub external-connection secret-read policy scoped to the configured PAT secret OCID.
 - The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
 - The DevOps shell stage is provisioned on private OCI networking for this bootstrap path and must consume OCI-managed release metadata instead of laptop-local `foundation` / `data` state files.
+- The DevOps shell stage must also provision the PostgreSQL client tooling required by `data/bootstrap-runtime-db-role.sh` because the managed shell image does not guarantee `psql` out of the box.
 - The OCI DevOps build stage is the intended normal path for verification and runtime image publication.
 
 ## Naming Convention

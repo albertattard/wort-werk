@@ -168,6 +168,12 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(commandSpec).contains("printenv POSTGRESQL_SSL_ROOT_CERT_BASE64");
         assertThat(commandSpec).contains("printenv RUNTIME_DB_SSL_ROOT_CERT_BASE64");
         assertThat(commandSpec).doesNotContain("${POSTGRESQL_SSL_ROOT_CERT_BASE64:-${RUNTIME_DB_SSL_ROOT_CERT_BASE64:-}}");
+        assertThat(commandSpec).contains("ensure_psql()");
+        assertThat(commandSpec).contains("microdnf install -y postgresql");
+        assertThat(commandSpec).contains("dnf install -y postgresql");
+        assertThat(commandSpec).contains("yum install -y postgresql");
+        assertThat(commandSpec).contains("No supported package manager found to install psql.");
+        assertThat(commandSpec).contains("ensure_psql\n      ./infrastructure/oci/data/bootstrap-runtime-db-role.sh");
         assertThat(commandSpec).contains("oci os object get");
         assertThat(commandSpec).contains("terraform");
         assertThat(commandSpec).doesNotContain("${NAMESPACE}");
