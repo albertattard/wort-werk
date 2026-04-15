@@ -184,7 +184,7 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Foundation also provisions the DevOps runner dynamic group plus baseline least-privilege runner policies for `devops-family`, private-network attachment, release-handoff storage access, and shell-stage container instances.
 - That DevOps runner policy also needs `read postgres-db-systems` because the build resolves the PostgreSQL CA certificate from OCI connection details rather than from a passed build argument.
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
-- DevOps provisions the GitHub external-connection secret-read policy scoped to the configured PAT secret OCID.
+- DevOps provisions least-privilege secret-read policy statements scoped to the configured GitHub PAT, OCIR push secret, runtime DB password secret, and PostgreSQL administrator password secret.
 - The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
 - The DevOps shell stage is provisioned on private OCI networking for this bootstrap path and must consume OCI-managed release metadata instead of laptop-local `foundation` / `data` state files.
 - The DevOps shell stage must also provision the PostgreSQL client tooling required by `data/bootstrap-runtime-db-role.sh` because the managed shell image does not guarantee `psql` out of the box.

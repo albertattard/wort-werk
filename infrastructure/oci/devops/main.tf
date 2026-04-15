@@ -81,7 +81,11 @@ resource "oci_identity_policy" "github_connection_secret_read" {
     "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
     "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
     "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'"
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'"
   ]
 }
 

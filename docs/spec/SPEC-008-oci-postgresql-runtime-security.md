@@ -4,7 +4,7 @@ title: OCI PostgreSQL and Secure Runtime Connectivity
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-12
+last_updated: 2026-04-15
 ---
 
 ## Problem
@@ -80,7 +80,7 @@ Secure release and deployment execution must satisfy all of the following:
 5. Release automation must keep administrator credentials, runtime credentials, and image registry credentials out of repository-tracked files.
 6. Database role bootstrap and runtime rollout must be part of the reproducible release path rather than an undocumented side step.
 7. OCI DevOps runner identities must use explicit dynamic-group and policy bindings instead of inheriting broad tenancy-wide privileges.
-8. Secret-read permissions for external SCM connections must be scoped to the specific secret OCID used by the release path.
+8. Secret-read permissions for external SCM connections and OCI-resident deploy/bootstrap steps must be scoped to the specific secret OCIDs used by the release path.
 9. Private DevOps runners must have an explicit egress design for external SCM access; if public internet egress is required, it must be isolated to the DevOps subnet through a controlled outbound path such as NAT and must not be reused by the runtime subnet.
 10. Release bundle handoff between OCI DevOps stages must use a deterministic OCI-managed storage boundary with explicit object naming and IAM scope instead of relying on opaque managed artifact delivery that cannot be diagnosed or reproduced from repository state.
 11. The release handoff must preserve commit-to-artifact traceability by addressing release bundle and metadata objects with the selected release version.
@@ -88,6 +88,7 @@ Secure release and deployment execution must satisfy all of the following:
 13. The runtime Terraform state used by OCI-resident deployment must live in a remote OCI-managed backend, with an explicit guard against applying from an empty or missing remote state object.
 14. Release trigger inputs must remain small and explicit; stable runtime configuration belongs on OCI-managed pipeline defaults, and large PostgreSQL connection material such as CA certificates must be resolved inside OCI from authoritative service APIs rather than being copied through ad hoc build arguments.
 15. OCI DevOps runner IAM must include read access to OCI PostgreSQL database-system connection details when the build resolves runtime TLS material from the OCI PostgreSQL API.
+16. The private OCI DevOps deploy runner must have least-privilege read access to the specific Vault secrets used for runtime image pulls and PostgreSQL bootstrap, including the runtime DB password and PostgreSQL administrator password secrets, without broad secret-family access.
 
 ## Out of Scope
 
@@ -112,7 +113,7 @@ Secure release and deployment execution must satisfy all of the following:
 - [ ] Release execution is documented to target an explicit git reference and preserve commit-to-image traceability.
 - [ ] Repository docs define OCI DevOps as the only supported release-image build/publish path for normal production rollout.
 - [ ] Repository docs define how private-network DB bootstrap is executed from OCI-managed infrastructure instead of an operator laptop.
-- [ ] Repository docs define the DevOps runner IAM model, including dynamic groups and least-privilege policies for private-network execution and external-connection secret reads.
+- [ ] Repository docs define the DevOps runner IAM model, including dynamic groups and least-privilege policies for private-network execution, external-connection secret reads, and the specific Vault secrets required by OCI-resident DB bootstrap and runtime rollout.
 - [ ] Repository docs define the DevOps runner outbound network model, including how private build stages reach external SCM without broadening runtime subnet exposure.
 - [ ] Repository docs define the OCI-native release artifact handoff boundary, including why the chosen storage path is preferred over OCI DevOps managed deliver-artifact stages.
 - [ ] Repository docs define how OCI-resident deploy stages obtain runtime inputs without reading laptop-local `foundation` or `data` Terraform state files.

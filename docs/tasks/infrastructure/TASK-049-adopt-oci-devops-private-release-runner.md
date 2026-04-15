@@ -63,6 +63,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - [ ] OCI DevOps builds and publishes the verified runtime image; laptop-local `deploy.sh release` is no longer the normal release path.
 - [ ] The release path is documented to execute DB role bootstrap and runtime rollout from inside OCI private networking.
 - [ ] IAM, secret, and network boundaries for the release runner are explicit.
+- [ ] The private OCI DevOps deploy runner receives least-privilege read access to the specific Vault secrets required for OCI-resident DB bootstrap and runtime rollout rather than broad secret-family access.
 - [ ] The network design explains how private DevOps runners fetch source from external SCM without widening runtime subnet exposure.
 - [ ] The release handoff boundary is documented, including why Object Storage is used instead of OCI DevOps managed deliver-artifact stages.
 - [ ] OCI deploy stages receive the runtime inputs they need through OCI-managed release metadata or equivalent OCI-resident inputs rather than laptop-local Terraform state.
@@ -87,4 +88,5 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - PostgreSQL CA material is now resolved inside OCI from the DB system connection-details API so the build pipeline no longer exceeds OCI DevOps parameter size limits.
 - The DevOps dynamic-group policy must include `read postgres-db-systems` so the build runner can call `GetConnectionDetails` against the managed PostgreSQL system.
 - A live deployment reached the private DB bootstrap step from the managed shell stage and failed because `psql` was not present on the OCI-managed shell image. The deploy command spec must therefore provision the PostgreSQL client as part of the shell-stage contract rather than assuming the base image already carries it.
+- The next live deployment then proved the shell stage also needs explicit read access to the PostgreSQL administrator and runtime DB password secrets. The DevOps runner policy must stay least-privilege by scoping secret access to those specific OCIDs instead of granting broad Vault reads.
 - Current managed OCI runners can publish `linux/amd64`, but they fail `linux/arm64` image builds with `exec format error` during target-architecture `RUN` steps because no arm emulation or native `arm64` builder is available. The release contract is therefore temporarily constrained to `linux/amd64`.

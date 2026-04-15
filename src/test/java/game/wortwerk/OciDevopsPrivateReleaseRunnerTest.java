@@ -68,6 +68,9 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family");
         assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles");
         assertThat(devopsMain).contains("target.secret.id = '${var.github_connection_token_secret_ocid}'");
+        assertThat(devopsMain).contains("target.secret.id = '${var.image_registry_password_secret_ocid}'");
+        assertThat(devopsMain).contains("target.secret.id = '${var.runtime_db_password_secret_ocid}'");
+        assertThat(devopsMain).contains("target.secret.id = '${var.postgresql_admin_password_secret_ocid}'");
         assertThat(devopsMain).doesNotContain("oracle_registry_password_secret_ocid");
     }
 

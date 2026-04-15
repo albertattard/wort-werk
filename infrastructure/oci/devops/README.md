@@ -70,7 +70,7 @@ terraform apply
 ```
 
 The stack now provisions the DevOps project log through OCI Logging, so build runs do not depend on a manual "enable logs" console step.
-The stack also provisions the secret-read policy for the external GitHub connection token, while `foundation` provisions the baseline DevOps dynamic group and compartment-scoped runner policy.
+The stack also provisions the least-privilege secret-read policy for the external GitHub connection token, the OCIR push secret, and the PostgreSQL bootstrap secrets required by the private deploy stage, while `foundation` provisions the baseline DevOps dynamic group and compartment-scoped runner policy.
 Release handoff is intentionally modeled as Object Storage upload/download rather than OCI DevOps managed `DELIVER_ARTIFACT` stages because the managed artifact publication path repeatedly failed with opaque OCI internal errors after the build stage had already succeeded.
 
 ## Trigger A Release
