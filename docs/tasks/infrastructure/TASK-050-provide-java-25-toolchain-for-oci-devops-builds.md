@@ -73,3 +73,8 @@ Ensure the OCI DevOps build pipeline runs Wort-Werk verification and packaging w
 - [ ] The verification image Dockerfile uses Oracle-distributed Java and Linux base images from Oracle's no-fee image path.
 - [ ] Local verification and OCI DevOps builds do not require a separate Oracle base-image registry login before building the verification image.
 - [ ] A release triggered through OCI DevOps reaches and passes the Maven verification step on the managed runner.
+
+## Implementation Notes
+
+- A live OCI DevOps verification run proved that leaving the runtime base image as the short name `oraclelinux:9-slim` is not reproducible on managed runners. Podman on the OCI runner resolves that short name through its configured alias map back to `container-registry.oracle.com/os/oraclelinux:9-slim`, which currently returns `manifest unknown`.
+- The verification Dockerfile must therefore use a fully qualified Oracle Linux image reference that Podman will not rewrite through the OCI runner's short-name aliases. The managed runner contract depends on the exact image source, not just the logical image family name.

@@ -13,7 +13,7 @@ RUN jlink \
 COPY target/*.jar /opt/app.jar
 RUN java -Djarmode=tools -jar /opt/app.jar extract --layers --destination /opt/extracted
 
-FROM oraclelinux:9-slim
+FROM docker.io/library/oraclelinux:9-slim
 WORKDIR /opt/app
 
 COPY --from=builder /opt/jre /opt/jre
