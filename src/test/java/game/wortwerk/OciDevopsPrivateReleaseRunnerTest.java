@@ -165,6 +165,9 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(commandSpec).contains("version: 0.1");
         assertThat(commandSpec).doesNotContain("version: 1.0");
         assertThat(commandSpec).contains("export POSTGRESQL_SSL_ROOT_CERT_BASE64=");
+        assertThat(commandSpec).contains("printenv POSTGRESQL_SSL_ROOT_CERT_BASE64");
+        assertThat(commandSpec).contains("printenv RUNTIME_DB_SSL_ROOT_CERT_BASE64");
+        assertThat(commandSpec).doesNotContain("${POSTGRESQL_SSL_ROOT_CERT_BASE64:-${RUNTIME_DB_SSL_ROOT_CERT_BASE64:-}}");
         assertThat(commandSpec).contains("oci os object get");
         assertThat(commandSpec).contains("terraform");
         assertThat(commandSpec).doesNotContain("${NAMESPACE}");
