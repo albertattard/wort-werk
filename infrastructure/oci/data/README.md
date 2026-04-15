@@ -101,6 +101,7 @@ The helper:
 - reads the PostgreSQL endpoint and CA certificate from `terraform output`
 - reads the administrator and runtime DB passwords from OCI Vault
 - connects over TLS with `psql`
+- passes the runtime password into `psql` through command-line variables rather than depending on newer client-specific meta-commands such as `\getenv`
 - creates or rotates the `runtime_db_username` role
 - grants only Wort-Werk-owned database/schema privileges on the configured database
 - reassigns existing objects in the `public` schema to the runtime role so Flyway can keep evolving the schema without using the administrator account

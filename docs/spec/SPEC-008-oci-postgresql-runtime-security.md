@@ -89,6 +89,7 @@ Secure release and deployment execution must satisfy all of the following:
 14. Release trigger inputs must remain small and explicit; stable runtime configuration belongs on OCI-managed pipeline defaults, and large PostgreSQL connection material such as CA certificates must be resolved inside OCI from authoritative service APIs rather than being copied through ad hoc build arguments.
 15. OCI DevOps runner IAM must include read access to OCI PostgreSQL database-system connection details when the build resolves runtime TLS material from the OCI PostgreSQL API.
 16. The private OCI DevOps deploy runner must have least-privilege read access to the specific Vault secrets used for runtime image pulls and PostgreSQL bootstrap, including the runtime DB password and PostgreSQL administrator password secrets, without broad secret-family access.
+17. Repository-owned PostgreSQL bootstrap scripts executed from OCI-managed deploy runners must remain compatible with the PostgreSQL client version provisioned on those runners and must not depend on unsupported `psql` meta-commands.
 
 ## Out of Scope
 

@@ -115,7 +115,7 @@ require_non_empty "POSTGRESQL_ADMIN_PASSWORD" "${POSTGRESQL_ADMIN_PASSWORD}"
 require_non_empty "RUNTIME_DB_PASSWORD" "${RUNTIME_DB_PASSWORD}"
 
 SSL_ROOT_CERT_FILE="$(mktemp)"
-trap 'rm -f "${SSL_ROOT_CERT_FILE}"; unset POSTGRESQL_ADMIN_PASSWORD RUNTIME_DB_PASSWORD RUNTIME_DB_BOOTSTRAP_PASSWORD' EXIT
+trap 'rm -f "${SSL_ROOT_CERT_FILE}"; unset POSTGRESQL_ADMIN_PASSWORD RUNTIME_DB_PASSWORD' EXIT
 printf '%s' "${POSTGRESQL_SSL_ROOT_CERT_BASE64}" | base64_decode > "${SSL_ROOT_CERT_FILE}"
 if [[ ! -s "${SSL_ROOT_CERT_FILE}" ]]; then
   echo "Failed to decode PostgreSQL SSL root certificate." >&2
@@ -126,7 +126,6 @@ chmod 600 "${SSL_ROOT_CERT_FILE}"
 export PGPASSWORD="${POSTGRESQL_ADMIN_PASSWORD}"
 export PGSSLMODE="verify-full"
 export PGSSLROOTCERT="${SSL_ROOT_CERT_FILE}"
-export RUNTIME_DB_BOOTSTRAP_PASSWORD="${RUNTIME_DB_PASSWORD}"
 
 psql \
   --host="${POSTGRESQL_HOST}" \
@@ -135,8 +134,8 @@ psql \
   --dbname="${POSTGRESQL_DATABASE_NAME}" \
   --set=ON_ERROR_STOP=1 \
   --set=postgresql_database_name="${POSTGRESQL_DATABASE_NAME}" \
-  --set=runtime_db_username="${RUNTIME_DB_USERNAME}" <<'SQL'
-\getenv runtime_db_password RUNTIME_DB_BOOTSTRAP_PASSWORD
+  --set=runtime_db_username="${RUNTIME_DB_USERNAME}" \
+  --set=runtime_db_password="${RUNTIME_DB_PASSWORD}" <<'SQL'
 
 DO $bootstrap$
 BEGIN
