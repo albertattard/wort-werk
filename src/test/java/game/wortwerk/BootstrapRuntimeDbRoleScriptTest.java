@@ -36,13 +36,18 @@ class BootstrapRuntimeDbRoleScriptTest {
         assertThat(psqlArgs).contains("--username=wortwerk_admin");
         assertThat(psqlArgs).contains("--dbname=postgres");
         assertThat(psqlArgs).contains("--set=runtime_db_username=wortwerk_app");
-        assertThat(psqlArgs).contains("--set=runtime_db_password=runtime-secret");
+        assertThat(psqlArgs).doesNotContain("runtime-secret");
+        assertThat(psqlArgs).doesNotContain("runtime_db_password");
 
         assertThat(psqlInput).contains("GRANT CONNECT, TEMPORARY ON DATABASE");
         assertThat(psqlInput).contains("GRANT USAGE, CREATE ON SCHEMA public");
         assertThat(psqlInput).contains("ALTER TABLE");
         assertThat(psqlInput).contains("ALTER SEQUENCE");
         assertThat(psqlInput).doesNotContain("\\getenv");
+        assertThat(psqlInput).contains("\\set runtime_db_password_base64 'cnVudGltZS1zZWNyZXQ='");
+        assertThat(psqlInput).contains("SELECT CASE");
+        assertThat(psqlInput).contains("convert_from(decode(:'runtime_db_password_base64', 'base64'), 'utf8')");
+        assertThat(psqlInput).doesNotContain("DO $bootstrap$");
     }
 
     @Test

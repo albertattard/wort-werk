@@ -110,12 +110,14 @@ fi
 
 POSTGRESQL_ADMIN_PASSWORD="$(read_secret_value "${POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID}")"
 RUNTIME_DB_PASSWORD="$(read_secret_value "${RUNTIME_DB_PASSWORD_SECRET_OCID}")"
+RUNTIME_DB_PASSWORD_BASE64="$(printf '%s' "${RUNTIME_DB_PASSWORD}" | base64 | tr -d '\n')"
 
 require_non_empty "POSTGRESQL_ADMIN_PASSWORD" "${POSTGRESQL_ADMIN_PASSWORD}"
 require_non_empty "RUNTIME_DB_PASSWORD" "${RUNTIME_DB_PASSWORD}"
+require_non_empty "RUNTIME_DB_PASSWORD_BASE64" "${RUNTIME_DB_PASSWORD_BASE64}"
 
 SSL_ROOT_CERT_FILE="$(mktemp)"
-trap 'rm -f "${SSL_ROOT_CERT_FILE}"; unset POSTGRESQL_ADMIN_PASSWORD RUNTIME_DB_PASSWORD' EXIT
+trap 'rm -f "${SSL_ROOT_CERT_FILE}"; unset POSTGRESQL_ADMIN_PASSWORD RUNTIME_DB_PASSWORD RUNTIME_DB_PASSWORD_BASE64' EXIT
 printf '%s' "${POSTGRESQL_SSL_ROOT_CERT_BASE64}" | base64_decode > "${SSL_ROOT_CERT_FILE}"
 if [[ ! -s "${SSL_ROOT_CERT_FILE}" ]]; then
   echo "Failed to decode PostgreSQL SSL root certificate." >&2
@@ -134,18 +136,21 @@ psql \
   --dbname="${POSTGRESQL_DATABASE_NAME}" \
   --set=ON_ERROR_STOP=1 \
   --set=postgresql_database_name="${POSTGRESQL_DATABASE_NAME}" \
-  --set=runtime_db_username="${RUNTIME_DB_USERNAME}" \
-  --set=runtime_db_password="${RUNTIME_DB_PASSWORD}" <<'SQL'
+  --set=runtime_db_username="${RUNTIME_DB_USERNAME}" <<SQL
+\set runtime_db_password_base64 '${RUNTIME_DB_PASSWORD_BASE64}'
 
-DO $bootstrap$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'runtime_db_username') THEN
-    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'runtime_db_username', :'runtime_db_password');
-  ELSE
-    EXECUTE format('CREATE ROLE %I WITH LOGIN PASSWORD %L', :'runtime_db_username', :'runtime_db_password');
-  END IF;
+SELECT CASE
+  WHEN EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'runtime_db_username')
+    THEN format(
+      'ALTER ROLE %I WITH LOGIN PASSWORD %L',
+      :'runtime_db_username',
+      convert_from(decode(:'runtime_db_password_base64', 'base64'), 'utf8'))
+  ELSE format(
+    'CREATE ROLE %I WITH LOGIN PASSWORD %L',
+    :'runtime_db_username',
+    convert_from(decode(:'runtime_db_password_base64', 'base64'), 'utf8'))
 END
-$bootstrap$;
+\gexec
 
 SELECT format('GRANT CONNECT, TEMPORARY ON DATABASE %I TO %I', :'postgresql_database_name', :'runtime_db_username')
 \gexec

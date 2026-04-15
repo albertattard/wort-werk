@@ -16,7 +16,7 @@ class ContainerDockerfileBaseImageTest {
         String dockerfile = Files.readString(Path.of("container/Dockerfile"), StandardCharsets.UTF_8);
 
         assertThat(dockerfile).contains("FROM container-registry.oracle.com/java/jdk-no-fee-term:25.0.2-oraclelinux9 AS builder");
-        assertThat(dockerfile).contains("FROM container-registry.oracle.com/os/oraclelinux:9-slim");
+        assertThat(dockerfile).contains("FROM oraclelinux:9-slim");
         assertThat(dockerfile).doesNotContain("FROM container-registry.oracle.com/java/jdk-no-fee-term:25 AS builder");
     }
 }
