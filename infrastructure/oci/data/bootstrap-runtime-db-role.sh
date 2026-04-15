@@ -117,7 +117,6 @@ require_non_empty "RUNTIME_DB_PASSWORD" "${RUNTIME_DB_PASSWORD}"
 require_non_empty "RUNTIME_DB_PASSWORD_BASE64" "${RUNTIME_DB_PASSWORD_BASE64}"
 
 SSL_ROOT_CERT_FILE="$(mktemp)"
-trap 'rm -f "${SSL_ROOT_CERT_FILE}"; unset POSTGRESQL_ADMIN_PASSWORD RUNTIME_DB_PASSWORD RUNTIME_DB_PASSWORD_BASE64' EXIT
 printf '%s' "${POSTGRESQL_SSL_ROOT_CERT_BASE64}" | base64_decode > "${SSL_ROOT_CERT_FILE}"
 if [[ ! -s "${SSL_ROOT_CERT_FILE}" ]]; then
   echo "Failed to decode PostgreSQL SSL root certificate." >&2
@@ -129,12 +128,38 @@ export PGPASSWORD="${POSTGRESQL_ADMIN_PASSWORD}"
 export PGSSLMODE="verify-full"
 export PGSSLROOTCERT="${SSL_ROOT_CERT_FILE}"
 
-psql \
+PSQL_ARGS=(
   --host="${POSTGRESQL_HOST}" \
   --port="${POSTGRESQL_PORT}" \
   --username="${POSTGRESQL_ADMIN_USERNAME}" \
   --dbname="${POSTGRESQL_DATABASE_NAME}" \
-  --set=ON_ERROR_STOP=1 \
+  --set=ON_ERROR_STOP=1
+)
+
+runtime_role_membership_granted=false
+
+cleanup_runtime_role_membership() {
+  if [[ "${runtime_role_membership_granted}" != true ]]; then
+    return 0
+  fi
+
+  psql "${PSQL_ARGS[@]}" \
+    --set=postgresql_admin_username="${POSTGRESQL_ADMIN_USERNAME}" \
+    --set=runtime_db_username="${RUNTIME_DB_USERNAME}" <<'SQL' >/dev/null
+SELECT format('REVOKE %I FROM %I', :'runtime_db_username', :'postgresql_admin_username')
+\gexec
+SQL
+}
+
+cleanup() {
+  cleanup_runtime_role_membership || true
+  rm -f "${SSL_ROOT_CERT_FILE}"
+  unset POSTGRESQL_ADMIN_PASSWORD RUNTIME_DB_PASSWORD RUNTIME_DB_PASSWORD_BASE64
+}
+
+trap cleanup EXIT
+
+psql "${PSQL_ARGS[@]}" \
   --set=postgresql_database_name="${POSTGRESQL_DATABASE_NAME}" \
   --set=runtime_db_username="${RUNTIME_DB_USERNAME}" <<SQL
 \set runtime_db_password_base64 '${RUNTIME_DB_PASSWORD_BASE64}'
@@ -166,7 +191,19 @@ SELECT format('GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO %I', :'
 
 SELECT format('GRANT ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA public TO %I', :'runtime_db_username')
 \gexec
+SQL
 
+psql "${PSQL_ARGS[@]}" \
+  --set=postgresql_admin_username="${POSTGRESQL_ADMIN_USERNAME}" \
+  --set=runtime_db_username="${RUNTIME_DB_USERNAME}" <<'SQL'
+SELECT format('GRANT %I TO %I', :'runtime_db_username', :'postgresql_admin_username')
+\gexec
+SQL
+
+runtime_role_membership_granted=true
+
+psql "${PSQL_ARGS[@]}" \
+  --set=runtime_db_username="${RUNTIME_DB_USERNAME}" <<'SQL'
 SELECT format('ALTER TABLE %I.%I OWNER TO %I', schemaname, tablename, :'runtime_db_username')
 FROM pg_tables
 WHERE schemaname = 'public'
@@ -187,6 +224,9 @@ FROM pg_matviews
 WHERE schemaname = 'public'
 \gexec
 SQL
+
+cleanup_runtime_role_membership
+runtime_role_membership_granted=false
 
 cat <<EOF
 Bootstrapped runtime DB role:

@@ -38,9 +38,12 @@ class BootstrapRuntimeDbRoleScriptTest {
         assertThat(psqlArgs).contains("--set=runtime_db_username=wortwerk_app");
         assertThat(psqlArgs).doesNotContain("runtime-secret");
         assertThat(psqlArgs).doesNotContain("runtime_db_password");
+        assertThat(psqlArgs).contains("CALL:");
 
         assertThat(psqlInput).contains("GRANT CONNECT, TEMPORARY ON DATABASE");
         assertThat(psqlInput).contains("GRANT USAGE, CREATE ON SCHEMA public");
+        assertThat(psqlInput).contains("GRANT %I TO %I");
+        assertThat(psqlInput).contains("REVOKE %I FROM %I");
         assertThat(psqlInput).contains("ALTER TABLE");
         assertThat(psqlInput).contains("ALTER SEQUENCE");
         assertThat(psqlInput).doesNotContain("\\getenv");
@@ -140,8 +143,24 @@ class BootstrapRuntimeDbRoleScriptTest {
                 #!/usr/bin/env bash
                 set -euo pipefail
 
-                printf '%s\n' "$*" > "${PSQL_ARGS_CAPTURE_FILE:?}"
-                cat > "${PSQL_INPUT_CAPTURE_FILE:?}"
+                call_number_file="${PSQL_CALL_NUMBER_FILE:?}"
+                call_number=0
+                if [[ -f "${call_number_file}" ]]; then
+                  call_number="$(cat "${call_number_file}")"
+                fi
+                call_number="$((call_number + 1))"
+                printf '%s' "${call_number}" > "${call_number_file}"
+
+                {
+                  printf 'CALL:%s\n' "${call_number}"
+                  printf '%s\n' "$*"
+                } >> "${PSQL_ARGS_CAPTURE_FILE:?}"
+
+                {
+                  printf 'CALL:%s\n' "${call_number}"
+                  cat
+                  printf '\n'
+                } >> "${PSQL_INPUT_CAPTURE_FILE:?}"
                 """,
                 StandardCharsets.UTF_8);
         setExecutable(psqlStub);
@@ -157,6 +176,7 @@ class BootstrapRuntimeDbRoleScriptTest {
         environment.put("PATH", harness.binDir() + ":" + environment.get("PATH"));
         environment.put("PSQL_ARGS_CAPTURE_FILE", harness.psqlArgsCaptureFile().toString());
         environment.put("PSQL_INPUT_CAPTURE_FILE", harness.psqlInputCaptureFile().toString());
+        environment.put("PSQL_CALL_NUMBER_FILE", tempDir.resolve("psql-call-number.txt").toString());
         environment.putAll(extraEnvironment);
 
         Process process = processBuilder.start();
