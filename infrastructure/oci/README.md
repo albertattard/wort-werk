@@ -172,6 +172,9 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - `infrastructure/oci/runtime/terraform.tfvars`
 - or another `*.auto.tfvars` file in `infrastructure/oci/runtime/`
 
+The default production runtime shape remains `CI.Standard.E4.Flex`.
+`CI.Standard.A1.Flex` stays available as an explicit override, but it should not be the default until OCI DevOps rollout has a documented region-capacity-safe Arm path.
+
 ## TLS Ownership
 
 - Terraform runtime manages load balancer certificate and HTTPS listener resources.
@@ -204,6 +207,7 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Runtime Terraform reads load balancer TLS certificate material from OCI Vault by using the apply-time OCI identity.
 - Foundation provisions Vault, key, dynamic group, and shared network boundaries; secret values themselves must be created or rotated outside Terraform.
 - Foundation also provisions the DevOps runner dynamic group plus baseline least-privilege runner policies for `devops-family`, private-network attachment, release-handoff storage access, and shell-stage container instances.
+- That baseline DevOps runner policy must also cover runtime load balancer management and reserved public IP use; otherwise OCI-resident runtime apply can bootstrap the database and container instance but still fail at the ingress layer.
 - That DevOps runner policy also needs `read postgres-db-systems` because the build resolves the PostgreSQL CA certificate from OCI connection details rather than from a passed build argument.
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
 - DevOps provisions least-privilege secret-read policy statements scoped to the configured GitHub PAT, OCIR push secret, runtime DB password secret, and PostgreSQL administrator password secret.
@@ -211,6 +215,7 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - The DevOps shell stage is provisioned on private OCI networking for this bootstrap path and must consume OCI-managed release metadata instead of laptop-local `foundation` / `data` state files.
 - The DevOps shell stage must also provision the PostgreSQL client tooling required by `data/bootstrap-runtime-db-role.sh` because the managed shell image does not guarantee `psql` out of the box.
 - The OCI DevOps build stage is the intended normal path for verification and runtime image publication.
+- If the runtime remote backend still reflects a pre-DevOps environment that contains the container instance but not the live load balancer resources, the deploy helper repairs that drift first by importing the existing load balancer resources into remote state before continuing with `terraform apply`.
 
 ## Naming Convention
 

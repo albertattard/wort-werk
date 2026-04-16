@@ -48,6 +48,8 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use subnets");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use vnics");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage load-balancers");
+        assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to use public-ips");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to read buckets");
         assertThat(foundationMain).contains("Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects");
         assertThat(foundationMain).contains("terraform_state_bucket_name");
@@ -210,10 +212,13 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(runtimeMain).doesNotContain("file(var.tls_public_certificate_path)");
         assertThat(runtimeMain).doesNotContain("file(var.tls_private_key_path)");
         assertThat(runtimeVariables).contains("variable \"oci_auth\"");
+        assertThat(runtimeVariables).contains("default     = \"CI.Standard.E4.Flex\"");
         assertThat(runtimeVariables).contains("variable \"tls_public_certificate_secret_ocid\"");
         assertThat(runtimeVariables).contains("variable \"tls_private_key_secret_ocid\"");
         assertThat(runtimeVariables).contains("variable \"tls_ca_certificate_secret_ocid\"");
         assertThat(deployScript).contains("resolve_object_storage_namespace()");
+        assertThat(deployScript).contains("repair_runtime_load_balancer_state_if_needed()");
+        assertThat(deployScript).contains("import -input=false");
         assertThat(deployScript).contains("oci os ns get --query 'data' --raw-output");
         assertThat(deployScript).contains("export TF_VAR_oci_auth=\"ResourcePrincipal\"");
         assertThat(deployScript).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID");

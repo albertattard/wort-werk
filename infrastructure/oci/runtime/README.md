@@ -75,15 +75,17 @@ Runtime networking uses separate subnet roles:
 - Vault-dependent startup traffic uses the OCI service gateway path from foundation
 
 Use immutable image tags (git commit hash recommended) for repeatable rollouts and rollback.
+Production uses `CI.Standard.E4.Flex` by default.
 Use `container_instance_shape` to switch between Arm and AMD64 when needed.
 Examples:
-- `CI.Standard.A1.Flex` (Arm64)
 - `CI.Standard.E4.Flex` (AMD64)
+- `CI.Standard.A1.Flex` (Arm64, opt-in only while regional capacity remains variable)
 
 When using `../deploy.sh runtime`, runtime inputs are generated from `foundation` and `data` outputs automatically, unless OCI DevOps provides them explicitly through exported release metadata.
 Laptop-local `../deploy.sh runtime` is reserved for the one-time backend migration only; production runtime mutation is expected to happen from OCI DevOps.
 Normal production image publication is expected to run through `../devops/run-release.sh`, not through a laptop-local release helper.
 That same OCI DevOps rollout now expects TLS certificate material to already exist in OCI Vault rather than in repository-local PEM files.
+If a pre-DevOps runtime environment has live load balancer resources that are missing from remote state, `../deploy.sh runtime` now imports those resources into the remote backend before the normal apply continues.
 
 Runtime injects:
 - `WORTWERK_DB_URL`

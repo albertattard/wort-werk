@@ -10,6 +10,19 @@ DEVOPS_DIR="${SCRIPT_DIR}/devops"
 MODE="${1:-all}"
 BOOTSTRAP_RUNTIME_DB_ROLE_SCRIPT="${DATA_DIR}/bootstrap-runtime-db-role.sh"
 RUNTIME_STATE_KEY="runtime/terraform.tfstate"
+RUNTIME_LOAD_BALANCER_ADDRESS="oci_load_balancer_load_balancer.wort_werk"
+RUNTIME_CONTAINER_INSTANCE_ADDRESS="oci_container_instances_container_instance.wort_werk"
+RUNTIME_BACKEND_SET_ADDRESS="oci_load_balancer_backend_set.wort_werk"
+RUNTIME_BACKEND_ADDRESS="oci_load_balancer_backend.wort_werk"
+RUNTIME_HTTP_LISTENER_ADDRESS="oci_load_balancer_listener.http"
+RUNTIME_HTTPS_LISTENER_ADDRESS="oci_load_balancer_listener.https"
+RUNTIME_TLS_CERTIFICATE_ADDRESS="oci_load_balancer_certificate.wort_werk_tls"
+RUNTIME_HTTP_TO_HTTPS_RULE_SET_ADDRESS="oci_load_balancer_rule_set.http_to_https"
+RUNTIME_BACKEND_SET_NAME="wort-werk-backend-set"
+RUNTIME_HTTP_LISTENER_NAME="http"
+RUNTIME_HTTPS_LISTENER_NAME="https"
+RUNTIME_HTTP_TO_HTTPS_RULE_SET_NAME="http_to_https"
+RUNTIME_DEFAULT_TLS_CERTIFICATE_NAME="wortwerk_xyz_terraform"
 
 if [[ "${MODE}" != "all" && "${MODE}" != "foundation" && "${MODE}" != "devops" && "${MODE}" != "data" && "${MODE}" != "db-role" && "${MODE}" != "runtime" ]]; then
   echo "Usage: $0 [all|foundation|devops|data|db-role|runtime]" >&2
@@ -186,6 +199,98 @@ resolve_runtime_image_tag() {
 
   echo "Missing image_tag for runtime apply. Set IMAGE_TAG or ensure runtime state has deployed_image_url." >&2
   exit 1
+}
+
+runtime_state_has_address() {
+  local address="$1"
+  terraform -chdir="${RUNTIME_DIR}" state list 2>/dev/null | grep -Fxq "${address}"
+}
+
+runtime_output_raw() {
+  local output_name="$1"
+  terraform -chdir="${RUNTIME_DIR}" output -raw "${output_name}" 2>/dev/null || true
+}
+
+resolve_runtime_tls_certificate_name() {
+  local tls_certificate_name
+
+  tls_certificate_name="$(resolve_tfvars_or_env TLS_CERTIFICATE_NAME "${RUNTIME_DIR}/terraform.tfvars" tls_certificate_name)"
+  if [[ -n "${tls_certificate_name}" ]]; then
+    printf '%s' "${tls_certificate_name}"
+    return 0
+  fi
+
+  printf '%s' "${RUNTIME_DEFAULT_TLS_CERTIFICATE_NAME}"
+}
+
+resolve_existing_runtime_load_balancer_id() {
+  runtime_output_raw load_balancer_id
+}
+
+resolve_existing_runtime_backend_name() {
+  local load_balancer_id="$1"
+  local backend_name
+
+  require_command oci
+  backend_name="$(oci lb load-balancer get \
+    --load-balancer-id "${load_balancer_id}" \
+    --query "data.\"backend-sets\".\"${RUNTIME_BACKEND_SET_NAME}\".backends[0].name" \
+    --raw-output 2>/dev/null || true)"
+
+  if [[ "${backend_name}" == "null" ]]; then
+    backend_name=""
+  fi
+
+  printf '%s' "${backend_name}"
+}
+
+runtime_import_if_missing() {
+  local address="$1"
+  local import_id="$2"
+
+  if runtime_state_has_address "${address}"; then
+    return 0
+  fi
+
+  terraform -chdir="${RUNTIME_DIR}" import -input=false "${address}" "${import_id}"
+}
+
+repair_runtime_load_balancer_state_if_needed() {
+  local load_balancer_id
+  local backend_name
+  local tls_certificate_name
+
+  if runtime_state_has_address "${RUNTIME_LOAD_BALANCER_ADDRESS}"; then
+    return 0
+  fi
+
+  if ! runtime_state_has_address "${RUNTIME_CONTAINER_INSTANCE_ADDRESS}"; then
+    return 0
+  fi
+
+  load_balancer_id="$(resolve_existing_runtime_load_balancer_id)"
+  if [[ -z "${load_balancer_id}" ]]; then
+    echo "Runtime state tracks the container instance but not the load balancer resources, and no existing load_balancer_id output is available for state repair." >&2
+    exit 1
+  fi
+
+  backend_name="$(resolve_existing_runtime_backend_name "${load_balancer_id}")"
+  if [[ -z "${backend_name}" ]]; then
+    echo "Unable to resolve the existing runtime load balancer backend name for state repair." >&2
+    exit 1
+  fi
+
+  tls_certificate_name="$(resolve_runtime_tls_certificate_name)"
+
+  echo "Repairing runtime load balancer state using existing load balancer ${load_balancer_id}." >&2
+
+  runtime_import_if_missing "${RUNTIME_LOAD_BALANCER_ADDRESS}" "${load_balancer_id}"
+  runtime_import_if_missing "${RUNTIME_BACKEND_SET_ADDRESS}" "loadBalancers/${load_balancer_id}/backendSets/${RUNTIME_BACKEND_SET_NAME}"
+  runtime_import_if_missing "${RUNTIME_BACKEND_ADDRESS}" "loadBalancers/${load_balancer_id}/backendSets/${RUNTIME_BACKEND_SET_NAME}/backends/${backend_name}"
+  runtime_import_if_missing "${RUNTIME_HTTP_LISTENER_ADDRESS}" "loadBalancers/${load_balancer_id}/listeners/${RUNTIME_HTTP_LISTENER_NAME}"
+  runtime_import_if_missing "${RUNTIME_HTTPS_LISTENER_ADDRESS}" "loadBalancers/${load_balancer_id}/listeners/${RUNTIME_HTTPS_LISTENER_NAME}"
+  runtime_import_if_missing "${RUNTIME_TLS_CERTIFICATE_ADDRESS}" "loadBalancers/${load_balancer_id}/certificates/${tls_certificate_name}"
+  runtime_import_if_missing "${RUNTIME_HTTP_TO_HTTPS_RULE_SET_ADDRESS}" "loadBalancers/${load_balancer_id}/ruleSets/${RUNTIME_HTTP_TO_HTTPS_RULE_SET_NAME}"
 }
 
 apply_foundation() {
@@ -512,6 +617,7 @@ apply_runtime() {
     export TF_VAR_oci_auth="ResourcePrincipal"
   fi
   init_runtime_backend
+  repair_runtime_load_balancer_state_if_needed
   write_runtime_stack_vars
   image_tag="$(resolve_runtime_image_tag)"
 

@@ -62,6 +62,8 @@ Repeatable operator flow:
 - production health checks should use a dedicated Spring Actuator management endpoint rather than a learner-facing UI route
 - runtime container instances must not be directly internet-addressable; public ingress must terminate at the OCI Load Balancer
 - runtime networking must preserve private access to required OCI regional services so startup dependencies such as Vault-backed secret reads still work without a container public IP
+- the default production runtime container shape should remain the currently proven AMD64 OCI Container Instance shape until the target OCI region has a repeatable Arm-capacity-safe rollout path; Arm shape selection stays an explicit override
+- OCI DevOps runtime apply must be able to reconcile pre-DevOps runtime environments whose live load balancer resources exist in OCI but are missing from the remote Terraform state
 
 ## Acceptance Criteria
 
@@ -97,6 +99,8 @@ Repeatable operator flow:
 - [ ] `./mvnw clean verify` and OCI DevOps release automation can build the verification image from Oracle no-fee Oracle-based images without requiring a separate Oracle base-image registry login.
 - [x] OCI DevOps private deployment can configure the HTTPS listener without project-local PEM files by reading TLS material from OCI-managed secrets.
 - [x] Runtime stage resolves `image_tag` automatically (existing deployed tag) when not explicitly provided, and only fails when no prior runtime tag exists.
+- [ ] OCI DevOps runner IAM includes the runtime load balancer permissions needed for normal production rollout without broadening unrelated tenancy access.
+- [ ] OCI DevOps runtime apply can import the existing public load balancer resources into remote state when migrating a pre-DevOps environment instead of trying to create a second live ingress stack.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 
 ## Non-goals

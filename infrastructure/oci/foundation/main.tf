@@ -432,6 +432,8 @@ resource "oci_identity_policy" "devops_runner" {
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use subnets in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use vnics in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage load-balancers in compartment id ${oci_identity_compartment.wort_werk.id}",
+    "Allow dynamic-group ${local.devops_dynamic_group_name} to use public-ips in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics in compartment id ${oci_identity_compartment.wort_werk.id}",
     "Allow dynamic-group ${local.devops_dynamic_group_name} to read postgres-db-systems in compartment id ${oci_identity_compartment.wort_werk.id}",

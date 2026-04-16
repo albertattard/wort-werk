@@ -108,3 +108,4 @@ OCI_PROFILE="FRANKFURT" ../runtime/set-tls-secrets.sh
 - The DevOps NSG can reach PostgreSQL, OCI regional services, and outbound HTTPS, but does not receive public ingress.
 - The management port exists for Spring Actuator readiness checks and is not exposed through a public listener.
 - Foundation also owns the baseline DevOps runner IAM boundary: a dedicated dynamic group plus least-privilege compartment-scoped policies for `devops-family`, private VNIC attachments, release-handoff bucket access, and shell-stage container instances.
+- That baseline IAM boundary also needs the runtime ingress permissions required by OCI-resident rollout: load balancer management plus reserved public IP use, scoped to the Wort-Werk compartment rather than broader tenancy access.

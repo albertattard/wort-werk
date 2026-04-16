@@ -65,7 +65,7 @@ variable "container_instance_name" {
 variable "container_instance_shape" {
   description = "Container Instance shape (example: CI.Standard.A1.Flex or CI.Standard.E4.Flex)."
   type        = string
-  default     = "CI.Standard.A1.Flex"
+  default     = "CI.Standard.E4.Flex"
 }
 
 variable "image_repository" {

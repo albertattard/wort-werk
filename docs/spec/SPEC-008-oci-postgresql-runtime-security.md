@@ -93,6 +93,8 @@ Secure release and deployment execution must satisfy all of the following:
 18. Repository-owned PostgreSQL bootstrap scripts executed from OCI-managed deploy runners must remain compatible with the PostgreSQL client version provisioned on those runners and must not depend on unsupported `psql` meta-commands.
 19. OCI-resident Terraform apply must configure the OCI provider auth mode explicitly for managed-runner execution; Terraform must not assume OCI CLI authentication environment variables automatically configure provider authentication.
 20. OCI-resident runtime apply must obtain TLS certificate inputs from OCI-managed secret sources rather than repository-local files so the deploy runner can reproduce HTTPS configuration without laptop-local workspace material.
+21. OCI DevOps runner IAM must include the least-privilege OCI permissions required to manage the runtime load balancer and attach its reserved public IP during OCI-resident rollout.
+22. OCI-resident runtime rollout must detect and repair pre-DevOps Terraform state drift when existing load balancer resources are live in OCI but absent from the remote runtime state.
 
 ## Out of Scope
 
@@ -123,4 +125,6 @@ Secure release and deployment execution must satisfy all of the following:
 - [ ] Repository docs define how OCI-resident deploy stages obtain runtime inputs without reading laptop-local `foundation` or `data` Terraform state files.
 - [ ] Repository docs define the remote runtime Terraform backend used by OCI deployment and the migration guardrails around it.
 - [x] Repository docs define how OCI DevOps rollout obtains HTTPS certificate material without project-local PEM files.
+- [ ] Repository docs define the least-privilege load balancer/public-IP permissions required by the OCI DevOps runner for runtime apply.
+- [ ] Repository docs define how OCI DevOps repairs pre-DevOps runtime load balancer state drift before the normal rollout path is used.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.
