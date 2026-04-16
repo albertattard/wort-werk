@@ -65,6 +65,7 @@ Repeatable operator flow:
 - the default production runtime container shape should remain the currently proven AMD64 OCI Container Instance shape until the target OCI region has a repeatable Arm-capacity-safe rollout path; Arm shape selection stays an explicit override
 - OCI DevOps runtime apply must be able to reconcile pre-DevOps runtime environments whose live load balancer resources exist in OCI but are missing from the remote Terraform state
 - OCI DevOps runtime apply must be able to resume from a partially failed ingress-state migration, re-importing or recreating any missing listener, rule-set, or certificate resources rather than assuming the presence of the load balancer shell in state means ingress management is complete
+- OCI DevOps runtime apply must attempt import only for ingress resources that still exist remotely; if a failed rollout already deleted a listener, rule set, or certificate, the next rollout must skip import for that object and let Terraform recreate it
 - Runtime Terraform must not force destructive load balancer replacement solely because an imported OCI Load Balancer reports the attached reserved public IP through read-only IP address details instead of the original create-time input shape
 
 ## Acceptance Criteria

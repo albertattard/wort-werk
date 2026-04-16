@@ -244,6 +244,69 @@ resolve_existing_runtime_backend_name() {
   printf '%s' "${backend_name}"
 }
 
+runtime_load_balancer_exists() {
+  local load_balancer_id="$1"
+
+  require_command oci
+  oci lb load-balancer get --load-balancer-id "${load_balancer_id}" >/dev/null 2>&1
+}
+
+runtime_backend_set_exists() {
+  local load_balancer_id="$1"
+  local backend_set_name="$2"
+  local backend_set_details
+
+  require_command oci
+  backend_set_details="$(oci lb load-balancer get \
+    --load-balancer-id "${load_balancer_id}" \
+    --query "data.\"backend-sets\".\"${backend_set_name}\"" \
+    2>/dev/null || true)"
+
+  [[ -n "${backend_set_details}" ]]
+}
+
+runtime_listener_exists() {
+  local load_balancer_id="$1"
+  local listener_name="$2"
+  local listener_details
+
+  require_command oci
+  listener_details="$(oci lb load-balancer get \
+    --load-balancer-id "${load_balancer_id}" \
+    --query "data.listeners.\"${listener_name}\"" \
+    2>/dev/null || true)"
+
+  [[ -n "${listener_details}" ]]
+}
+
+runtime_rule_set_exists() {
+  local load_balancer_id="$1"
+  local rule_set_name="$2"
+  local rule_set_details
+
+  require_command oci
+  rule_set_details="$(oci lb load-balancer get \
+    --load-balancer-id "${load_balancer_id}" \
+    --query "data.\"rule-sets\".\"${rule_set_name}\"" \
+    2>/dev/null || true)"
+
+  [[ -n "${rule_set_details}" ]]
+}
+
+runtime_certificate_exists() {
+  local load_balancer_id="$1"
+  local certificate_name="$2"
+  local certificate_exists
+
+  require_command oci
+  certificate_exists="$(oci lb certificate list \
+    --load-balancer-id "${load_balancer_id}" \
+    --query "contains(data[].\"certificate-name\", \`${certificate_name}\`)" \
+    --raw-output 2>/dev/null || true)"
+
+  [[ "${certificate_exists}" == "true" ]]
+}
+
 runtime_import_if_missing() {
   local address="$1"
   local import_id="$2"
@@ -280,13 +343,35 @@ repair_runtime_load_balancer_state_if_needed() {
 
   echo "Repairing runtime load balancer state using existing load balancer ${load_balancer_id}." >&2
 
+  if ! runtime_load_balancer_exists "${load_balancer_id}"; then
+    return 0
+  fi
+
   runtime_import_if_missing "${RUNTIME_LOAD_BALANCER_ADDRESS}" "${load_balancer_id}"
-  runtime_import_if_missing "${RUNTIME_BACKEND_SET_ADDRESS}" "loadBalancers/${load_balancer_id}/backendSets/${RUNTIME_BACKEND_SET_NAME}"
-  runtime_import_if_missing "${RUNTIME_BACKEND_ADDRESS}" "loadBalancers/${load_balancer_id}/backendSets/${RUNTIME_BACKEND_SET_NAME}/backends/${backend_name}"
-  runtime_import_if_missing "${RUNTIME_HTTP_LISTENER_ADDRESS}" "loadBalancers/${load_balancer_id}/listeners/${RUNTIME_HTTP_LISTENER_NAME}"
-  runtime_import_if_missing "${RUNTIME_HTTPS_LISTENER_ADDRESS}" "loadBalancers/${load_balancer_id}/listeners/${RUNTIME_HTTPS_LISTENER_NAME}"
-  runtime_import_if_missing "${RUNTIME_TLS_CERTIFICATE_ADDRESS}" "loadBalancers/${load_balancer_id}/certificates/${tls_certificate_name}"
-  runtime_import_if_missing "${RUNTIME_HTTP_TO_HTTPS_RULE_SET_ADDRESS}" "loadBalancers/${load_balancer_id}/ruleSets/${RUNTIME_HTTP_TO_HTTPS_RULE_SET_NAME}"
+
+  if runtime_backend_set_exists "${load_balancer_id}" "${RUNTIME_BACKEND_SET_NAME}"; then
+    runtime_import_if_missing "${RUNTIME_BACKEND_SET_ADDRESS}" "loadBalancers/${load_balancer_id}/backendSets/${RUNTIME_BACKEND_SET_NAME}"
+  fi
+
+  if [[ -n "${backend_name}" ]]; then
+    runtime_import_if_missing "${RUNTIME_BACKEND_ADDRESS}" "loadBalancers/${load_balancer_id}/backendSets/${RUNTIME_BACKEND_SET_NAME}/backends/${backend_name}"
+  fi
+
+  if runtime_listener_exists "${load_balancer_id}" "${RUNTIME_HTTP_LISTENER_NAME}"; then
+    runtime_import_if_missing "${RUNTIME_HTTP_LISTENER_ADDRESS}" "loadBalancers/${load_balancer_id}/listeners/${RUNTIME_HTTP_LISTENER_NAME}"
+  fi
+
+  if runtime_listener_exists "${load_balancer_id}" "${RUNTIME_HTTPS_LISTENER_NAME}"; then
+    runtime_import_if_missing "${RUNTIME_HTTPS_LISTENER_ADDRESS}" "loadBalancers/${load_balancer_id}/listeners/${RUNTIME_HTTPS_LISTENER_NAME}"
+  fi
+
+  if runtime_certificate_exists "${load_balancer_id}" "${tls_certificate_name}"; then
+    runtime_import_if_missing "${RUNTIME_TLS_CERTIFICATE_ADDRESS}" "loadBalancers/${load_balancer_id}/certificates/${tls_certificate_name}"
+  fi
+
+  if runtime_rule_set_exists "${load_balancer_id}" "${RUNTIME_HTTP_TO_HTTPS_RULE_SET_NAME}"; then
+    runtime_import_if_missing "${RUNTIME_HTTP_TO_HTTPS_RULE_SET_ADDRESS}" "loadBalancers/${load_balancer_id}/ruleSets/${RUNTIME_HTTP_TO_HTTPS_RULE_SET_NAME}"
+  fi
 }
 
 apply_foundation() {
