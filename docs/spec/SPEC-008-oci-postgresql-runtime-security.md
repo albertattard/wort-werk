@@ -4,7 +4,7 @@ title: OCI PostgreSQL and Secure Runtime Connectivity
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-15
+last_updated: 2026-04-16
 ---
 
 ## Problem
@@ -87,9 +87,10 @@ Secure release and deployment execution must satisfy all of the following:
 12. The deployment stage must not depend on laptop-local Terraform state or laptop-local foundation/data outputs; all required deployment inputs must be available to the OCI runner through remote state or OCI-managed release metadata.
 13. The runtime Terraform state used by OCI-resident deployment must live in a remote OCI-managed backend, with an explicit guard against applying from an empty or missing remote state object.
 14. Release trigger inputs must remain small and explicit; stable runtime configuration belongs on OCI-managed pipeline defaults, and large PostgreSQL connection material such as CA certificates must be resolved inside OCI from authoritative service APIs rather than being copied through ad hoc build arguments.
-15. OCI DevOps runner IAM must include read access to OCI PostgreSQL database-system connection details when the build resolves runtime TLS material from the OCI PostgreSQL API.
-16. The private OCI DevOps deploy runner must have least-privilege read access to the specific Vault secrets used for runtime image pulls and PostgreSQL bootstrap, including the runtime DB password and PostgreSQL administrator password secrets, without broad secret-family access.
-17. Repository-owned PostgreSQL bootstrap scripts executed from OCI-managed deploy runners must remain compatible with the PostgreSQL client version provisioned on those runners and must not depend on unsupported `psql` meta-commands.
+15. OCI-resident rollout helpers must resolve OCI Object Storage namespace information from OCI APIs or OCI-provided release inputs, not from laptop-oriented Terraform output fallbacks that may be absent in the managed runner workspace.
+16. OCI DevOps runner IAM must include read access to OCI PostgreSQL database-system connection details when the build resolves runtime TLS material from the OCI PostgreSQL API.
+17. The private OCI DevOps deploy runner must have least-privilege read access to the specific Vault secrets used for runtime image pulls and PostgreSQL bootstrap, including the runtime DB password and PostgreSQL administrator password secrets, without broad secret-family access.
+18. Repository-owned PostgreSQL bootstrap scripts executed from OCI-managed deploy runners must remain compatible with the PostgreSQL client version provisioned on those runners and must not depend on unsupported `psql` meta-commands.
 
 ## Out of Scope
 

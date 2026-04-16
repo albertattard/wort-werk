@@ -189,6 +189,8 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("postgresqlDbSystemId");
         assertThat(devopsMain).doesNotContain("runtimeDbSslRootCertBase64");
         assertThat(runtimeVersions).contains("backend \"oci\"");
+        assertThat(deployScript).contains("resolve_object_storage_namespace()");
+        assertThat(deployScript).contains("oci os ns get --query 'data' --raw-output");
         assertThat(deployScript).doesNotContain("\"release\"");
         assertThat(deployScript).doesNotContain("\"rollout\"");
         assertThat(deployScript).contains("devops/run-release.sh");

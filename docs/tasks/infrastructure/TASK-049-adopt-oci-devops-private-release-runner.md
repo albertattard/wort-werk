@@ -7,7 +7,7 @@ related_features:
   - SPEC-008
 owner: @aattard
 created: 2026-04-12
-updated: 2026-04-15
+updated: 2026-04-16
 ---
 
 ## Summary
@@ -94,3 +94,4 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - The bootstrap script should not leave the runtime DB password on the `psql` process command line. Even after moving away from `\getenv`, the password must be injected through stdin-only `psql` input so it does not appear in runner process arguments.
 - The next live deployment then proved OCI PostgreSQL rejects `ALTER ... OWNER TO wortwerk_app` when the administrator role cannot `SET ROLE wortwerk_app`. The bootstrap path must therefore grant the runtime role to the administrator only for the ownership-handoff window and revoke that membership again during cleanup so the steady-state privilege boundary remains intact.
 - Current managed OCI runners can publish `linux/amd64`, but they fail `linux/arm64` image builds with `exec format error` during target-architecture `RUN` steps because no arm emulation or native `arm64` builder is available. The release contract is therefore temporarily constrained to `linux/amd64`.
+- The latest live deployment then proved the OCI-resident runtime rollout must not derive the Object Storage namespace from laptop-oriented Terraform output fallback. Inside the managed deploy runner, runtime backend initialization must resolve the namespace from OCI itself, or from OCI-provided environment, so Terraform warnings from an empty local `foundation` state cannot corrupt the generated backend config.

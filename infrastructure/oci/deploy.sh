@@ -103,6 +103,23 @@ resolve_output_or_env() {
   terraform -chdir="${dir}" output -raw "${output_name}"
 }
 
+resolve_object_storage_namespace() {
+  local namespace="${OCI_NAMESPACE:-}"
+
+  if [[ -n "${namespace}" ]]; then
+    printf '%s' "${namespace}"
+    return 0
+  fi
+
+  if [[ "${OCI_CLI_AUTH:-}" == "resource_principal" ]]; then
+    require_command oci
+    oci os ns get --query 'data' --raw-output
+    return 0
+  fi
+
+  terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace
+}
+
 resolve_runtime_image_tag() {
   local existing_tag
   local deployed_image_url
@@ -369,7 +386,7 @@ write_runtime_backend_config() {
   local bucket_name
 
   region="$(resolve_output_or_env REGION "${FOUNDATION_DIR}" region)"
-  namespace="$(resolve_output_or_env OCI_NAMESPACE "${FOUNDATION_DIR}" ocir_namespace)"
+  namespace="$(resolve_object_storage_namespace)"
   bucket_name="$(resolve_output_or_env RUNTIME_STATE_BUCKET_NAME "${FOUNDATION_DIR}" terraform_state_bucket_name)"
 
   cat > "${backend_config_file}" <<EOF
@@ -387,7 +404,7 @@ EOF
 init_runtime_backend() {
   local backend_config_file
   backend_config_file="$(mktemp)"
-  trap 'rm -f "${backend_config_file}"' RETURN
+  trap "rm -f '${backend_config_file}'" RETURN
 
   require_command terraform
   write_runtime_backend_config "${backend_config_file}"
