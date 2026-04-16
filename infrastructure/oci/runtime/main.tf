@@ -32,6 +32,19 @@ data "oci_identity_availability_domains" "this" {
   compartment_id = var.tenancy_ocid
 }
 
+data "oci_secrets_secretbundle" "tls_public_certificate" {
+  secret_id = var.tls_public_certificate_secret_ocid
+}
+
+data "oci_secrets_secretbundle" "tls_private_key" {
+  secret_id = var.tls_private_key_secret_ocid
+}
+
+data "oci_secrets_secretbundle" "tls_ca_certificate" {
+  count     = var.tls_ca_certificate_secret_ocid != "" ? 1 : 0
+  secret_id = var.tls_ca_certificate_secret_ocid
+}
+
 resource "oci_container_instances_container_instance" "wort_werk" {
   compartment_id      = var.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.this.availability_domains[var.availability_domain_index].name
@@ -128,9 +141,11 @@ resource "oci_load_balancer_listener" "http" {
 resource "oci_load_balancer_certificate" "wort_werk_tls" {
   certificate_name   = var.tls_certificate_name
   load_balancer_id   = oci_load_balancer_load_balancer.wort_werk.id
-  public_certificate = file(var.tls_public_certificate_path)
-  private_key        = file(var.tls_private_key_path)
-  ca_certificate     = var.tls_ca_certificate_path != "" ? file(var.tls_ca_certificate_path) : null
+  public_certificate = base64decode(data.oci_secrets_secretbundle.tls_public_certificate.secret_bundle_content[0].content)
+  private_key        = base64decode(data.oci_secrets_secretbundle.tls_private_key.secret_bundle_content[0].content)
+  ca_certificate = var.tls_ca_certificate_secret_ocid != "" ?
+    base64decode(data.oci_secrets_secretbundle.tls_ca_certificate[0].secret_bundle_content[0].content) :
+    null
 }
 
 resource "oci_load_balancer_listener" "https" {

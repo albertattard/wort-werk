@@ -4,7 +4,7 @@ title: OCI Deployment via Container Instance
 status: done
 priority: medium
 owner: @aattard
-last_updated: 2026-04-15
+last_updated: 2026-04-16
 ---
 
 ## Problem
@@ -41,7 +41,7 @@ Two-stack Terraform model:
 
 TLS model:
 - Terraform manages LB and network wiring.
-- Let's Encrypt certificate/private key material is sourced from project-local certificate files and managed by Terraform.
+- Let's Encrypt certificate/private key material is issued or renewed outside Terraform, then stored in OCI-managed secrets that runtime Terraform reads at apply time.
 - HTTPS is always enabled in runtime Terraform (no HTTP-only mode).
 
 Expected lifecycle:
@@ -56,6 +56,7 @@ Repeatable operator flow:
 - OCI DevOps deployment shell stages must provision the PostgreSQL client tooling required by repository-owned private DB bootstrap scripts instead of assuming `psql` is already present on the managed shell host
 - Production and verification container builds must use Oracle-distributed technologies for the Java runtime and Linux base image
 - The verification image path should prefer Oracle no-fee container images that remain anonymously pullable so local verification and OCI DevOps verification do not depend on a separate Oracle base-image registry login
+- OCI DevOps-driven runtime apply must not depend on project-local TLS files; HTTPS certificate inputs must come from OCI-managed secret sources the deploy runner can read reproducibly
 - runtime apply in repeatable rollout must not fail on missing `image_tag`; it should reuse the currently deployed runtime image tag unless a new tag is explicitly provided
 - load balancer health checks must target a stable unauthenticated route so auth changes do not strand an otherwise healthy backend behind `502`
 - production health checks should use a dedicated Spring Actuator management endpoint rather than a learner-facing UI route
@@ -70,7 +71,7 @@ Repeatable operator flow:
 - [x] Deployment docs include optional load balancer/TLS step.
 - [x] Deployment docs include a concrete Let’s Encrypt manual issuance and manual 90-day renewal runbook.
 - [x] Runtime Terraform manages OCI LB certificate, HTTPS listener and HTTP to HTTPS redirect.
-- [x] Runtime docs define project-local certificate file paths consumed by Terraform.
+- [x] Runtime docs define the OCI-managed TLS secret inputs consumed by Terraform.
 - [x] Runtime Terraform assumes TLS is mandatory and always configures HTTPS + HTTP to HTTPS redirect.
 - [x] Foundation networking allows public ingress to both HTTP (`80`) and HTTPS (`443`) listener ports on the Load Balancer.
 - [x] Infrastructure is defined as code (IaC) for core OCI deployment resources.
@@ -94,6 +95,7 @@ Repeatable operator flow:
 - [ ] OCI DevOps release automation provisions or selects a Java 25 toolchain before running Maven verification and packaging steps.
 - [ ] OCI DevOps private deployment shell execution provisions the PostgreSQL client needed by the repository bootstrap path before invoking `bootstrap-runtime-db-role.sh`.
 - [ ] `./mvnw clean verify` and OCI DevOps release automation can build the verification image from Oracle no-fee Oracle-based images without requiring a separate Oracle base-image registry login.
+- [x] OCI DevOps private deployment can configure the HTTPS listener without project-local PEM files by reading TLS material from OCI-managed secrets.
 - [x] Runtime stage resolves `image_tag` automatically (existing deployed tag) when not explicitly provided, and only fails when no prior runtime tag exists.
 - [x] Scope explicitly excludes database and Kubernetes/OKE.
 

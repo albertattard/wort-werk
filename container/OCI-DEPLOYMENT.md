@@ -259,27 +259,27 @@ When issuance succeeds, certificate files are under:
 - `${HOME}/.certbot/config/live/wortwerk.xyz/fullchain.pem`
 - `${HOME}/.certbot/config/live/wortwerk.xyz/privkey.pem`
 
-### 7.3 Copy Certificate Files Into Runtime Terraform Directory
+### 7.3 Publish Certificate Material Into OCI Vault
 
 ```bash
-mkdir -p infrastructure/oci/runtime/tls/wortwerk.xyz
-cp "${HOME}/.certbot/config/live/wortwerk.xyz/fullchain.pem" infrastructure/oci/runtime/tls/wortwerk.xyz/fullchain.pem
-cp "${HOME}/.certbot/config/live/wortwerk.xyz/privkey.pem" infrastructure/oci/runtime/tls/wortwerk.xyz/privkey.pem
+OCI_PROFILE="FRANKFURT" \
+TLS_PUBLIC_CERTIFICATE_FILE="${HOME}/.certbot/config/live/wortwerk.xyz/fullchain.pem" \
+TLS_PRIVATE_KEY_FILE="${HOME}/.certbot/config/live/wortwerk.xyz/privkey.pem" \
+./infrastructure/oci/runtime/set-tls-secrets.sh
 ```
 
-### 7.4 Apply Runtime Terraform for HTTPS + Redirect
+This writes the runtime TLS secret OCIDs into `infrastructure/oci/runtime/terraform.tfvars`.
+
+### 7.4 Trigger OCI DevOps Rollout for HTTPS + Redirect
 
 ```bash
-terraform -chdir="infrastructure/oci/runtime" apply \
-  -var "tls_certificate_name=wortwerk_xyz_$(date +%Y%m%d)" \
-  -var "tls_public_certificate_path=tls/wortwerk.xyz/fullchain.pem" \
-  -var "tls_private_key_path=tls/wortwerk.xyz/privkey.pem" \
-  -var "tls_redirect_host=wortwerk.xyz"
+OCI_CLI_REGION=eu-frankfurt-1 ./infrastructure/oci/devops/run-release.sh
 ```
 
-This runtime apply performs all TLS infrastructure changes:
-- uploads/updates OCI LB certificate bundle
-- creates/updates HTTPS listener on `443`
+The OCI DevOps rollout performs the TLS infrastructure changes from inside OCI:
+- reads the public certificate and private key from OCI Vault
+- uploads/updates the OCI Load Balancer certificate bundle
+- creates/updates the HTTPS listener on `443`
 - configures HTTP (`80`) to HTTPS redirect (`301`)
 
 ## 8) Manual Renewal Every 90 Days
@@ -291,8 +291,8 @@ Renewal procedure:
 1. Re-run the same `certbot certonly --manual ...` command in section 7.2.
 2. Create fresh `_acme-challenge` TXT record(s) shown by Certbot.
 3. Wait for DNS propagation and complete challenge.
-4. Copy the renewed `fullchain.pem` + `privkey.pem` into `infrastructure/oci/runtime/tls/wortwerk.xyz/`.
-5. Re-run runtime apply with a new `tls_certificate_name` value.
+4. Re-run `./infrastructure/oci/runtime/set-tls-secrets.sh` with the renewed PEM files.
+5. Trigger a fresh OCI DevOps release so runtime Terraform re-applies the load balancer certificate.
 6. Validate HTTPS and expiry:
 
 ```bash

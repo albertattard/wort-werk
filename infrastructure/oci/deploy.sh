@@ -103,6 +103,20 @@ resolve_output_or_env() {
   terraform -chdir="${dir}" output -raw "${output_name}"
 }
 
+resolve_tfvars_or_env() {
+  local env_name="$1"
+  local tfvars_file="$2"
+  local key="$3"
+  local value="${!env_name:-}"
+
+  if [[ -n "${value}" ]]; then
+    printf '%s' "${value}"
+    return 0
+  fi
+
+  read_tfvars_string "${tfvars_file}" "${key}"
+}
+
 resolve_object_storage_namespace() {
   local namespace="${OCI_NAMESPACE:-}"
 
@@ -180,6 +194,9 @@ write_devops_stack_vars() {
   local runtime_db_url
   local runtime_db_username
   local runtime_db_password_secret_ocid
+  local tls_public_certificate_secret_ocid
+  local tls_private_key_secret_ocid
+  local tls_ca_certificate_secret_ocid
   local postgresql_db_system_id
   local postgresql_admin_username
   local postgresql_admin_password_secret_ocid
@@ -213,6 +230,9 @@ write_devops_stack_vars() {
   runtime_db_url="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_url)"
   runtime_db_username="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_username)"
   runtime_db_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw runtime_db_password_secret_ocid)"
+  tls_public_certificate_secret_ocid="${TLS_PUBLIC_CERTIFICATE_SECRET_OCID:-$(read_tfvars_string "${RUNTIME_DIR}/terraform.tfvars" "tls_public_certificate_secret_ocid")}"
+  tls_private_key_secret_ocid="${TLS_PRIVATE_KEY_SECRET_OCID:-$(read_tfvars_string "${RUNTIME_DIR}/terraform.tfvars" "tls_private_key_secret_ocid")}"
+  tls_ca_certificate_secret_ocid="${TLS_CA_CERTIFICATE_SECRET_OCID:-$(read_tfvars_string "${RUNTIME_DIR}/terraform.tfvars" "tls_ca_certificate_secret_ocid")}"
   postgresql_db_system_id="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_db_system_id)"
   postgresql_admin_username="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_admin_username)"
   postgresql_admin_password_secret_ocid="$(terraform -chdir="${DATA_DIR}" output -raw postgresql_admin_password_secret_ocid)"
@@ -225,6 +245,8 @@ write_devops_stack_vars() {
 
   require_var image_registry_username
   require_var image_registry_password_secret_ocid
+  require_var tls_public_certificate_secret_ocid
+  require_var tls_private_key_secret_ocid
 
   cat > "${DEVOPS_DIR}/foundation.auto.tfvars" <<DEVOPSEOF
 region = "${region}"
@@ -255,6 +277,9 @@ load_balancer_max_bandwidth_mbps = ${load_balancer_max_bandwidth_mbps}
 runtime_db_url = "${runtime_db_url}"
 runtime_db_username = "${runtime_db_username}"
 runtime_db_password_secret_ocid = "${runtime_db_password_secret_ocid}"
+tls_public_certificate_secret_ocid = "${tls_public_certificate_secret_ocid}"
+tls_private_key_secret_ocid = "${tls_private_key_secret_ocid}"
+tls_ca_certificate_secret_ocid = "${tls_ca_certificate_secret_ocid}"
 postgresql_db_system_id = "${postgresql_db_system_id}"
 postgresql_admin_username = "${postgresql_admin_username}"
 postgresql_admin_password_secret_ocid = "${postgresql_admin_password_secret_ocid}"
@@ -322,6 +347,9 @@ write_runtime_stack_vars() {
   local runtime_db_username
   local runtime_db_password_secret_ocid
   local runtime_db_ssl_root_cert_base64
+  local tls_public_certificate_secret_ocid
+  local tls_private_key_secret_ocid
+  local tls_ca_certificate_secret_ocid
   local image_repository
   local image_registry_endpoint
   local app_port
@@ -353,6 +381,12 @@ write_runtime_stack_vars() {
   runtime_db_username="$(resolve_output_or_env RUNTIME_DB_USERNAME "${DATA_DIR}" runtime_db_username)"
   runtime_db_password_secret_ocid="$(resolve_output_or_env RUNTIME_DB_PASSWORD_SECRET_OCID "${DATA_DIR}" runtime_db_password_secret_ocid)"
   runtime_db_ssl_root_cert_base64="$(resolve_output_or_env RUNTIME_DB_SSL_ROOT_CERT_BASE64 "${DATA_DIR}" runtime_db_ssl_root_cert_base64)"
+  tls_public_certificate_secret_ocid="$(resolve_tfvars_or_env TLS_PUBLIC_CERTIFICATE_SECRET_OCID "${RUNTIME_DIR}/terraform.tfvars" tls_public_certificate_secret_ocid)"
+  tls_private_key_secret_ocid="$(resolve_tfvars_or_env TLS_PRIVATE_KEY_SECRET_OCID "${RUNTIME_DIR}/terraform.tfvars" tls_private_key_secret_ocid)"
+  tls_ca_certificate_secret_ocid="$(resolve_tfvars_or_env TLS_CA_CERTIFICATE_SECRET_OCID "${RUNTIME_DIR}/terraform.tfvars" tls_ca_certificate_secret_ocid)"
+
+  require_var tls_public_certificate_secret_ocid
+  require_var tls_private_key_secret_ocid
 
   cat > "${RUNTIME_DIR}/foundation.auto.tfvars" <<RUNTIMEEOF
 region = "${region}"
@@ -368,6 +402,9 @@ runtime_db_url = "${runtime_db_url}"
 runtime_db_username = "${runtime_db_username}"
 runtime_db_password_secret_ocid = "${runtime_db_password_secret_ocid}"
 runtime_db_ssl_root_cert_base64 = "${runtime_db_ssl_root_cert_base64}"
+tls_public_certificate_secret_ocid = "${tls_public_certificate_secret_ocid}"
+tls_private_key_secret_ocid = "${tls_private_key_secret_ocid}"
+tls_ca_certificate_secret_ocid = "${tls_ca_certificate_secret_ocid}"
 image_repository = "${image_repository}"
 image_registry_endpoint = "${image_registry_endpoint}"
 app_port = ${app_port}

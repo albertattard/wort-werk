@@ -14,9 +14,10 @@ Apply order:
 1. foundation
 2. create or rotate DB secrets in OCI Vault
 3. data
-4. optionally create the GitHub DevOps connection secret and OCIR push secret in OCI Vault, then apply `devops/`
-5. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
-6. runtime
+4. create or rotate runtime TLS secrets in OCI Vault
+5. optionally create the GitHub DevOps connection secret and OCIR push secret in OCI Vault, then apply `devops/`
+6. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
+7. runtime
 
 ## Set the DB Credentials
 
@@ -32,6 +33,19 @@ OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/set-db-secrets.sh
 ```
 
 The runtime secret is always independent from the PostgreSQL administrator secret. The default runtime DB username is `wortwerk_app`.
+
+## Set the Runtime TLS Secrets
+
+After `foundation` has been applied, store the runtime TLS certificate material in OCI Vault and write the resulting secret OCIDs into `infrastructure/oci/runtime/terraform.tfvars`.
+
+Recommended command:
+
+```bash
+OCI_PROFILE="FRANKFURT" ./infrastructure/oci/runtime/set-tls-secrets.sh
+```
+
+Public certificate and private key are required. The CA chain remains optional.
+This is now the only supported runtime TLS source for OCI DevOps-managed releases.
 
 After `data` has been applied, bootstrap the dedicated runtime role and grants from a host that can resolve and reach the private PostgreSQL endpoint:
 
@@ -101,6 +115,9 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation and da
 - `runtime_db_username`
 - `runtime_db_password_secret_ocid`
 - `runtime_db_ssl_root_cert_base64`
+- `tls_public_certificate_secret_ocid`
+- `tls_private_key_secret_ocid`
+- `tls_ca_certificate_secret_ocid`
 
 The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs:
 - `region`
@@ -127,6 +144,9 @@ The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs
 - `runtime_db_url`
 - `runtime_db_username`
 - `runtime_db_password_secret_ocid`
+- `tls_public_certificate_secret_ocid`
+- `tls_private_key_secret_ocid`
+- `tls_ca_certificate_secret_ocid`
 - `postgresql_db_system_id`
 - `postgresql_admin_username`
 - `postgresql_admin_password_secret_ocid`
@@ -154,8 +174,8 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 ## TLS Ownership
 
 - Terraform runtime manages load balancer certificate and HTTPS listener resources.
-- Certificate issuance and renewal remain manual (Let's Encrypt DNS challenge), then certificate files are copied to `infrastructure/oci/runtime/tls/wortwerk.xyz/`.
-- Runtime Terraform reads these files during `terraform apply`.
+- Certificate issuance and renewal remain manual (for example Let's Encrypt DNS challenge), then the resulting PEM material is stored in OCI Vault through `runtime/set-tls-secrets.sh`.
+- Runtime Terraform reads TLS content from OCI Vault secret bundles during `terraform apply`.
 
 ## Health Check Design
 
@@ -180,6 +200,7 @@ To change runtime shape, set Terraform variable `container_instance_shape` in:
 - Runtime DB passwords are stored in OCI Vault.
 - Runtime uses the dedicated non-admin role `wortwerk_app` by default.
 - The container instance reads the runtime DB password from OCI Vault by using OCI resource principal.
+- Runtime Terraform reads load balancer TLS certificate material from OCI Vault by using the apply-time OCI identity.
 - Foundation provisions Vault, key, dynamic group, and shared network boundaries; secret values themselves must be created or rotated outside Terraform.
 - Foundation also provisions the DevOps runner dynamic group plus baseline least-privilege runner policies for `devops-family`, private-network attachment, release-handoff storage access, and shell-stage container instances.
 - That DevOps runner policy also needs `read postgres-db-systems` because the build resolves the PostgreSQL CA certificate from OCI connection details rather than from a passed build argument.

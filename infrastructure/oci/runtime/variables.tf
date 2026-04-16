@@ -163,23 +163,23 @@ variable "tls_certificate_name" {
   default     = "wortwerk_xyz_terraform"
 }
 
-variable "tls_public_certificate_path" {
-  description = "Path to PEM public certificate file (fullchain) managed by Terraform."
-  type        = string
-  default     = "tls/wortwerk.xyz/fullchain.pem"
-}
-
-variable "tls_private_key_path" {
-  description = "Path to PEM private key file managed by Terraform."
+variable "tls_public_certificate_secret_ocid" {
+  description = "Vault secret OCID that stores the PEM public certificate bundle used by the OCI Load Balancer."
   type        = string
   sensitive   = true
-  default     = "tls/wortwerk.xyz/privkey.pem"
 }
 
-variable "tls_ca_certificate_path" {
-  description = "Optional path to CA certificate chain PEM file."
+variable "tls_private_key_secret_ocid" {
+  description = "Vault secret OCID that stores the PEM private key used by the OCI Load Balancer."
+  type        = string
+  sensitive   = true
+}
+
+variable "tls_ca_certificate_secret_ocid" {
+  description = "Optional Vault secret OCID that stores the PEM CA certificate chain for the OCI Load Balancer."
   type        = string
   default     = ""
+  sensitive   = true
 }
 
 variable "tls_redirect_host" {

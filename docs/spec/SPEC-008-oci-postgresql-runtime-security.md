@@ -92,6 +92,7 @@ Secure release and deployment execution must satisfy all of the following:
 17. The private OCI DevOps deploy runner must have least-privilege read access to the specific Vault secrets used for runtime image pulls and PostgreSQL bootstrap, including the runtime DB password and PostgreSQL administrator password secrets, without broad secret-family access.
 18. Repository-owned PostgreSQL bootstrap scripts executed from OCI-managed deploy runners must remain compatible with the PostgreSQL client version provisioned on those runners and must not depend on unsupported `psql` meta-commands.
 19. OCI-resident Terraform apply must configure the OCI provider auth mode explicitly for managed-runner execution; Terraform must not assume OCI CLI authentication environment variables automatically configure provider authentication.
+20. OCI-resident runtime apply must obtain TLS certificate inputs from OCI-managed secret sources rather than repository-local files so the deploy runner can reproduce HTTPS configuration without laptop-local workspace material.
 
 ## Out of Scope
 
@@ -121,4 +122,5 @@ Secure release and deployment execution must satisfy all of the following:
 - [ ] Repository docs define the OCI-native release artifact handoff boundary, including why the chosen storage path is preferred over OCI DevOps managed deliver-artifact stages.
 - [ ] Repository docs define how OCI-resident deploy stages obtain runtime inputs without reading laptop-local `foundation` or `data` Terraform state files.
 - [ ] Repository docs define the remote runtime Terraform backend used by OCI deployment and the migration guardrails around it.
+- [x] Repository docs define how OCI DevOps rollout obtains HTTPS certificate material without project-local PEM files.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

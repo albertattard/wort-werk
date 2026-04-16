@@ -15,3 +15,4 @@ Store ADRs here to capture technical decisions and the tradeoffs behind them.
 - [ADR-0009: Use Private Networking for OCI Runtime](./ADR-0009-use-private-networking-for-oci-runtime.md)
 - [ADR-0010: Use a Dedicated Non-Admin Runtime DB Role](./ADR-0010-use-a-dedicated-non-admin-runtime-db-role.md)
 - [ADR-0011: Use OCI DevOps Managed Private Release Pipelines](./ADR-0011-use-oci-devops-managed-private-release-pipelines.md)
+- [ADR-0012: Store Runtime TLS Material in OCI Vault](./ADR-0012-store-runtime-tls-material-in-oci-vault.md)

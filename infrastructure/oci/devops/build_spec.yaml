@@ -90,6 +90,9 @@ steps:
       RUNTIME_DB_URL="$(resolve_build_argument runtimeDbUrl)"
       RUNTIME_DB_USERNAME="$(resolve_build_argument runtimeDbUsername)"
       RUNTIME_DB_PASSWORD_SECRET_OCID="$(resolve_build_argument runtimeDbPasswordSecretOcid)"
+      TLS_PUBLIC_CERTIFICATE_SECRET_OCID="$(resolve_build_argument tlsPublicCertificateSecretOcid)"
+      TLS_PRIVATE_KEY_SECRET_OCID="$(resolve_build_argument tlsPrivateKeySecretOcid)"
+      TLS_CA_CERTIFICATE_SECRET_OCID="$(resolve_build_argument tlsCaCertificateSecretOcid)"
       POSTGRESQL_DB_SYSTEM_ID="$(resolve_build_argument postgresqlDbSystemId)"
       POSTGRESQL_ADMIN_USERNAME="$(resolve_build_argument postgresqlAdminUsername)"
       POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID="$(resolve_build_argument postgresqlAdminPasswordSecretOcid)"
@@ -103,6 +106,8 @@ steps:
       require_argument imageRegistryEndpoint "$IMAGE_REGISTRY_ENDPOINT"
       require_argument imageRegistryUsername "$IMAGE_REGISTRY_USERNAME"
       require_argument imageRegistryPasswordSecretOcid "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID"
+      require_argument tlsPublicCertificateSecretOcid "$TLS_PUBLIC_CERTIFICATE_SECRET_OCID"
+      require_argument tlsPrivateKeySecretOcid "$TLS_PRIVATE_KEY_SECRET_OCID"
       require_argument postgresqlDbSystemId "$POSTGRESQL_DB_SYSTEM_ID"
       require_argument runtimeStateBucketName "$RUNTIME_STATE_BUCKET_NAME"
 
@@ -141,6 +146,9 @@ steps:
       RUNTIME_DB_USERNAME=$RUNTIME_DB_USERNAME
       RUNTIME_DB_PASSWORD_SECRET_OCID=$RUNTIME_DB_PASSWORD_SECRET_OCID
       RUNTIME_DB_SSL_ROOT_CERT_BASE64=$RUNTIME_DB_SSL_ROOT_CERT_BASE64
+      TLS_PUBLIC_CERTIFICATE_SECRET_OCID=$TLS_PUBLIC_CERTIFICATE_SECRET_OCID
+      TLS_PRIVATE_KEY_SECRET_OCID=$TLS_PRIVATE_KEY_SECRET_OCID
+      TLS_CA_CERTIFICATE_SECRET_OCID=$TLS_CA_CERTIFICATE_SECRET_OCID
       POSTGRESQL_DB_SYSTEM_ID=$POSTGRESQL_DB_SYSTEM_ID
       POSTGRESQL_ADMIN_USERNAME=$POSTGRESQL_ADMIN_USERNAME
       POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID=$POSTGRESQL_ADMIN_PASSWORD_SECRET_OCID

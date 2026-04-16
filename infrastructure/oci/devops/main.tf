@@ -29,6 +29,25 @@ locals {
   command_spec_artifact_name                  = "private-rollout-command-spec"
   build_source_name                           = "wortwerk"
   build_spec_path                             = "infrastructure/oci/devops/build_spec.yaml"
+  devops_secret_read_statements = concat([
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_public_certificate_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_public_certificate_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_private_key_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_private_key_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'",
+    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'"
+    ],
+    var.tls_ca_certificate_secret_ocid != "" ? [
+      "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_ca_certificate_secret_ocid}'",
+      "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_ca_certificate_secret_ocid}'"
+    ] : []
+  )
 }
 
 resource "oci_ons_notification_topic" "devops" {
@@ -77,16 +96,7 @@ resource "oci_identity_policy" "github_connection_secret_read" {
   compartment_id = var.compartment_ocid
   name           = local.github_connection_secret_policy_name
   description    = local.github_connection_secret_policy_description
-  statements = [
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'"
-  ]
+  statements = local.devops_secret_read_statements
 }
 
 resource "oci_devops_connection" "github" {
@@ -254,6 +264,24 @@ resource "oci_devops_build_pipeline" "release" {
       name          = "runtimeDbPasswordSecretOcid"
       default_value = var.runtime_db_password_secret_ocid
       description   = "Vault secret OCID used for the runtime database password."
+    }
+
+    items {
+      name          = "tlsPublicCertificateSecretOcid"
+      default_value = var.tls_public_certificate_secret_ocid
+      description   = "Vault secret OCID used for the OCI Load Balancer public certificate bundle."
+    }
+
+    items {
+      name          = "tlsPrivateKeySecretOcid"
+      default_value = var.tls_private_key_secret_ocid
+      description   = "Vault secret OCID used for the OCI Load Balancer private key."
+    }
+
+    items {
+      name          = "tlsCaCertificateSecretOcid"
+      default_value = var.tls_ca_certificate_secret_ocid
+      description   = "Optional Vault secret OCID used for the OCI Load Balancer CA certificate chain."
     }
 
     items {

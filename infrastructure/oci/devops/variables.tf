@@ -155,6 +155,22 @@ variable "runtime_db_password_secret_ocid" {
   type        = string
 }
 
+variable "tls_public_certificate_secret_ocid" {
+  description = "Vault secret OCID that stores the PEM public certificate bundle used by the OCI Load Balancer."
+  type        = string
+}
+
+variable "tls_private_key_secret_ocid" {
+  description = "Vault secret OCID that stores the PEM private key used by the OCI Load Balancer."
+  type        = string
+}
+
+variable "tls_ca_certificate_secret_ocid" {
+  description = "Optional Vault secret OCID that stores the PEM CA certificate chain used by the OCI Load Balancer."
+  type        = string
+  default     = ""
+}
+
 variable "postgresql_db_system_id" {
   description = "OCI PostgreSQL DB system OCID used to resolve connection details during the build."
   type        = string

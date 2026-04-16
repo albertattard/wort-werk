@@ -47,7 +47,8 @@ The Wort-Werk compartment is created under `parent_compartment_ocid`.
 After foundation apply:
 1. create or rotate the required Vault secrets outside Terraform
 2. apply `../data`
-3. apply `../runtime` for targeted runtime administration, or apply `../devops` to provision the normal OCI DevOps release path
+3. create or rotate the runtime TLS Vault secrets through `../runtime/set-tls-secrets.sh`
+4. apply `../runtime` for the one-time backend migration only, or apply `../devops` to provision the normal OCI DevOps release path
 
 Create the DB password secrets with OCI CLI by following:
 - [`../data/README.md`](../data/README.md)
@@ -56,6 +57,15 @@ Recommended command:
 
 ```bash
 OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
+```
+
+Create the runtime TLS Vault secrets by following:
+- [`../runtime/README.md`](../runtime/README.md)
+
+Recommended command:
+
+```bash
+OCI_PROFILE="FRANKFURT" ../runtime/set-tls-secrets.sh
 ```
 
 ## Key Outputs

@@ -90,6 +90,7 @@ Use one of these `category` values for new tasks:
 - [TASK-048: Introduce Least-Privilege OCI Runtime DB Role](./infrastructure/TASK-048-introduce-least-privilege-oci-runtime-db-role.md)
 - [TASK-049: Adopt OCI DevOps Private Release Runner](./infrastructure/TASK-049-adopt-oci-devops-private-release-runner.md)
 - [TASK-050: Provide Java 25 Toolchain for OCI DevOps Builds](./infrastructure/TASK-050-provide-java-25-toolchain-for-oci-devops-builds.md)
+- [TASK-052: Move Runtime TLS Material to OCI Vault](./infrastructure/TASK-052-move-runtime-tls-material-to-oci-vault.md)
 
 ## Pending
 
@@ -150,6 +151,7 @@ Use one of these `category` values for new tasks:
 - [x] [TASK-031: Split Verify Local Build and Release Multi-Arch Publish](./infrastructure/TASK-031-split-verify-local-build-and-release-multiarch-publish.md)
 - [x] [TASK-032: Fix Rollout Order for Multi-Arch Release](./infrastructure/TASK-032-fix-rollout-order-for-multiarch-release.md)
 - [x] [TASK-047: Place OCI Runtime in Private Subnet](./infrastructure/TASK-047-place-oci-runtime-in-private-subnet.md)
+- [x] [TASK-052: Move Runtime TLS Material to OCI Vault](./infrastructure/TASK-052-move-runtime-tls-material-to-oci-vault.md)
 
 ## Blocked
 

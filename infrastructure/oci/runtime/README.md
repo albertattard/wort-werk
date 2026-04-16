@@ -6,7 +6,7 @@ Runtime Terraform stack for Wort-Werk Container Instance rollout.
 
 - OCI Container Instance
 - OCI Load Balancer with stable reserved public IP endpoint
-- OCI Load Balancer certificate (from local PEM files)
+- OCI Load Balancer certificate (from OCI Vault PEM secrets)
 - HTTPS listener and HTTP to HTTPS redirect
 - runtime DB environment wiring for OCI PostgreSQL
 - private runtime placement behind the public Load Balancer
@@ -41,12 +41,20 @@ terraform plan
 terraform apply
 ```
 
-For Terraform-managed TLS, place certificate files in:
+Before runtime apply, store the TLS material in OCI Vault and write the secret OCIDs into `infrastructure/oci/runtime/terraform.tfvars`:
 
-- `infrastructure/oci/runtime/tls/wortwerk.xyz/fullchain.pem`
-- `infrastructure/oci/runtime/tls/wortwerk.xyz/privkey.pem`
+```bash
+OCI_PROFILE="FRANKFURT" ./infrastructure/oci/runtime/set-tls-secrets.sh
+```
 
-Then apply runtime to install/update HTTPS resources from these files.
+Required Vault-backed TLS inputs:
+- `tls_public_certificate_secret_ocid`
+- `tls_private_key_secret_ocid`
+
+Optional Vault-backed TLS input:
+- `tls_ca_certificate_secret_ocid`
+
+The helper script updates these keys in `runtime/terraform.tfvars` without overwriting unrelated runtime settings.
 
 ## Deploy 502 Mitigation
 
@@ -75,6 +83,7 @@ Examples:
 When using `../deploy.sh runtime`, runtime inputs are generated from `foundation` and `data` outputs automatically, unless OCI DevOps provides them explicitly through exported release metadata.
 Laptop-local `../deploy.sh runtime` is reserved for the one-time backend migration only; production runtime mutation is expected to happen from OCI DevOps.
 Normal production image publication is expected to run through `../devops/run-release.sh`, not through a laptop-local release helper.
+That same OCI DevOps rollout now expects TLS certificate material to already exist in OCI Vault rather than in repository-local PEM files.
 
 Runtime injects:
 - `WORTWERK_DB_URL`

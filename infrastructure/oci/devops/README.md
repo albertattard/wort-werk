@@ -7,7 +7,7 @@ This stack provisions the OCI-native release runner foundation described by `TAS
 - OCI DevOps project
 - OCI Logging log group and DevOps project service log
 - GitHub access-token connection
-- secret-read policy scoped to the configured GitHub and OCIR Vault secret OCIDs
+- secret-read policy scoped to the configured GitHub, OCIR, runtime DB, PostgreSQL admin, and runtime TLS Vault secret OCIDs
 - build pipeline that checks out an explicit git revision
 - OCI Object Storage release-handoff bucket for release bundle and metadata transfer
 - deploy pipeline with a private shell stage on the dedicated DevOps subnet
@@ -70,7 +70,7 @@ terraform apply
 ```
 
 The stack now provisions the DevOps project log through OCI Logging, so build runs do not depend on a manual "enable logs" console step.
-The stack also provisions the least-privilege secret-read policy for the external GitHub connection token, the OCIR push secret, and the PostgreSQL bootstrap secrets required by the private deploy stage, while `foundation` provisions the baseline DevOps dynamic group and compartment-scoped runner policy.
+The stack also provisions the least-privilege secret-read policy for the external GitHub connection token, the OCIR push secret, the runtime DB password secret, the runtime TLS certificate secrets, and the PostgreSQL bootstrap secrets required by the private deploy stage, while `foundation` provisions the baseline DevOps dynamic group and compartment-scoped runner policy.
 Release handoff is intentionally modeled as Object Storage upload/download rather than OCI DevOps managed `DELIVER_ARTIFACT` stages because the managed artifact publication path repeatedly failed with opaque OCI internal errors after the build stage had already succeeded.
 
 ## Trigger A Release
@@ -93,4 +93,16 @@ Before the first OCI DevOps rollout, migrate runtime state into the OCI backend 
 
 ```bash
 RUNTIME_BACKEND_MIGRATE=true ./infrastructure/oci/deploy.sh runtime
+```
+
+Before applying `devops/` or triggering a release, make sure `runtime/terraform.tfvars` already contains:
+
+- `tls_public_certificate_secret_ocid`
+- `tls_private_key_secret_ocid`
+- optionally `tls_ca_certificate_secret_ocid`
+
+The recommended path is:
+
+```bash
+OCI_PROFILE="FRANKFURT" ./infrastructure/oci/runtime/set-tls-secrets.sh
 ```

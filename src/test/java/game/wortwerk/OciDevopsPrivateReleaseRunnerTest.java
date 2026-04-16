@@ -70,6 +70,9 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("target.secret.id = '${var.github_connection_token_secret_ocid}'");
         assertThat(devopsMain).contains("target.secret.id = '${var.image_registry_password_secret_ocid}'");
         assertThat(devopsMain).contains("target.secret.id = '${var.runtime_db_password_secret_ocid}'");
+        assertThat(devopsMain).contains("target.secret.id = '${var.tls_public_certificate_secret_ocid}'");
+        assertThat(devopsMain).contains("target.secret.id = '${var.tls_private_key_secret_ocid}'");
+        assertThat(devopsMain).contains("target.secret.id = '${var.tls_ca_certificate_secret_ocid}'");
         assertThat(devopsMain).contains("target.secret.id = '${var.postgresql_admin_password_secret_ocid}'");
         assertThat(devopsMain).doesNotContain("oracle_registry_password_secret_ocid");
     }
@@ -160,6 +163,11 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(buildSpec).doesNotContain("ORACLE_REGISTRY_PASSWORD_SECRET_OCID");
         assertThat(buildSpec).contains("oci secrets secret-bundle get");
         assertThat(buildSpec).contains("oci psql connection-details get");
+        assertThat(buildSpec).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID");
+        assertThat(buildSpec).contains("TLS_PRIVATE_KEY_SECRET_OCID");
+        assertThat(buildSpec).contains("TLS_CA_CERTIFICATE_SECRET_OCID");
+        assertThat(buildSpec).contains("require_argument tlsPublicCertificateSecretOcid");
+        assertThat(buildSpec).contains("require_argument tlsPrivateKeySecretOcid");
         assertThat(buildSpec).contains("POSTGRESQL_DB_SYSTEM_ID");
         assertThat(buildSpec).contains("git archive --format=tar.gz --output=release-bundle.tgz \"${release_ref}\"");
         assertThat(buildSpec).contains("oci os object put");
@@ -192,10 +200,23 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).doesNotContain("runtimeDbSslRootCertBase64");
         assertThat(runtimeVersions).contains("backend \"oci\"");
         assertThat(runtimeMain).contains("auth   = var.oci_auth");
+        assertThat(runtimeMain).contains("data \"oci_secrets_secretbundle\" \"tls_public_certificate\"");
+        assertThat(runtimeMain).contains("data \"oci_secrets_secretbundle\" \"tls_private_key\"");
+        assertThat(runtimeMain).contains("data \"oci_secrets_secretbundle\" \"tls_ca_certificate\"");
+        assertThat(runtimeMain).contains("public_certificate = base64decode");
+        assertThat(runtimeMain).contains("private_key        = base64decode");
+        assertThat(runtimeMain).doesNotContain("file(var.tls_public_certificate_path)");
+        assertThat(runtimeMain).doesNotContain("file(var.tls_private_key_path)");
         assertThat(runtimeVariables).contains("variable \"oci_auth\"");
+        assertThat(runtimeVariables).contains("variable \"tls_public_certificate_secret_ocid\"");
+        assertThat(runtimeVariables).contains("variable \"tls_private_key_secret_ocid\"");
+        assertThat(runtimeVariables).contains("variable \"tls_ca_certificate_secret_ocid\"");
         assertThat(deployScript).contains("resolve_object_storage_namespace()");
         assertThat(deployScript).contains("oci os ns get --query 'data' --raw-output");
         assertThat(deployScript).contains("export TF_VAR_oci_auth=\"ResourcePrincipal\"");
+        assertThat(deployScript).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID");
+        assertThat(deployScript).contains("TLS_PRIVATE_KEY_SECRET_OCID");
+        assertThat(deployScript).contains("TLS_CA_CERTIFICATE_SECRET_OCID");
         assertThat(deployScript).doesNotContain("\"release\"");
         assertThat(deployScript).doesNotContain("\"rollout\"");
         assertThat(deployScript).contains("devops/run-release.sh");
