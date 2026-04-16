@@ -95,6 +95,8 @@ Secure release and deployment execution must satisfy all of the following:
 20. OCI-resident runtime apply must obtain TLS certificate inputs from OCI-managed secret sources rather than repository-local files so the deploy runner can reproduce HTTPS configuration without laptop-local workspace material.
 21. OCI DevOps runner IAM must include the least-privilege OCI permissions required to manage the runtime load balancer and attach its reserved public IP during OCI-resident rollout.
 22. OCI-resident runtime rollout must detect and repair pre-DevOps Terraform state drift when existing load balancer resources are live in OCI but absent from the remote runtime state.
+23. OCI-resident runtime rollout must be resumable after a partial failed state-repair attempt; if some imported load balancer child resources are missing from remote state, the next rollout must repair those gaps before apply rather than proceeding with a half-managed ingress stack.
+24. Runtime Terraform must preserve the reserved public IP on initial load balancer creation without forcing destructive replacement of an imported live load balancer on every subsequent OCI-resident rollout.
 
 ## Out of Scope
 

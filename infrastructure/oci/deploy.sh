@@ -260,10 +260,6 @@ repair_runtime_load_balancer_state_if_needed() {
   local backend_name
   local tls_certificate_name
 
-  if runtime_state_has_address "${RUNTIME_LOAD_BALANCER_ADDRESS}"; then
-    return 0
-  fi
-
   if ! runtime_state_has_address "${RUNTIME_CONTAINER_INSTANCE_ADDRESS}"; then
     return 0
   fi

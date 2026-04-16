@@ -208,6 +208,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(runtimeMain).contains("public_certificate = base64decode");
         assertThat(runtimeMain).contains("private_key        = base64decode");
         assertThat(runtimeMain).contains("ca_certificate     = var.tls_ca_certificate_secret_ocid != \"\" ? base64decode");
+        assertThat(runtimeMain).contains("ignore_changes = [reserved_ips]");
         assertThat(runtimeMain).doesNotContain("ca_certificate = var.tls_ca_certificate_secret_ocid != \"\" ?\n");
         assertThat(runtimeMain).doesNotContain("file(var.tls_public_certificate_path)");
         assertThat(runtimeMain).doesNotContain("file(var.tls_private_key_path)");

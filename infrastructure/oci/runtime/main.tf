@@ -102,6 +102,13 @@ resource "oci_load_balancer_load_balancer" "wort_werk" {
   reserved_ips {
     id = var.load_balancer_public_ip_id
   }
+
+  lifecycle {
+    # OCI readback exposes the attached reserved IP through computed IP-address details
+    # after import, so keeping this create-time input under drift detection forces
+    # an unnecessary replacement of a healthy live load balancer.
+    ignore_changes = [reserved_ips]
+  }
 }
 
 resource "oci_load_balancer_backend_set" "wort_werk" {

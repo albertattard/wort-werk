@@ -64,6 +64,8 @@ Repeatable operator flow:
 - runtime networking must preserve private access to required OCI regional services so startup dependencies such as Vault-backed secret reads still work without a container public IP
 - the default production runtime container shape should remain the currently proven AMD64 OCI Container Instance shape until the target OCI region has a repeatable Arm-capacity-safe rollout path; Arm shape selection stays an explicit override
 - OCI DevOps runtime apply must be able to reconcile pre-DevOps runtime environments whose live load balancer resources exist in OCI but are missing from the remote Terraform state
+- OCI DevOps runtime apply must be able to resume from a partially failed ingress-state migration, re-importing or recreating any missing listener, rule-set, or certificate resources rather than assuming the presence of the load balancer shell in state means ingress management is complete
+- Runtime Terraform must not force destructive load balancer replacement solely because an imported OCI Load Balancer reports the attached reserved public IP through read-only IP address details instead of the original create-time input shape
 
 ## Acceptance Criteria
 

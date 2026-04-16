@@ -261,7 +261,8 @@ class DeployScriptRuntimeGuardTest {
                         'data.oci_identity_availability_domains.this' \
                         'data.oci_secrets_secretbundle.tls_private_key' \
                         'data.oci_secrets_secretbundle.tls_public_certificate' \
-                        'oci_container_instances_container_instance.wort_werk'
+                        'oci_container_instances_container_instance.wort_werk' \
+                        'oci_load_balancer_load_balancer.wort_werk'
                       exit 0
                     fi
                     ;;
@@ -342,7 +343,7 @@ class DeployScriptRuntimeGuardTest {
         List<String> commands = Files.readAllLines(commandLog, StandardCharsets.UTF_8);
         assertThat(commands).anyMatch(command -> command.contains("output -raw load_balancer_id"));
         assertThat(commands).anyMatch(command -> command.contains("oci lb load-balancer get --load-balancer-id ocid1.loadbalancer.oc1..existing"));
-        assertThat(commands).anyMatch(command -> command.contains("import -input=false oci_load_balancer_load_balancer.wort_werk ocid1.loadbalancer.oc1..existing"));
+        assertThat(commands).noneMatch(command -> command.contains("import -input=false oci_load_balancer_load_balancer.wort_werk ocid1.loadbalancer.oc1..existing"));
         assertThat(commands).anyMatch(command -> command.contains("import -input=false oci_load_balancer_backend_set.wort_werk loadBalancers/ocid1.loadbalancer.oc1..existing/backendSets/wort-werk-backend-set"));
         assertThat(commands).anyMatch(command -> command.contains("import -input=false oci_load_balancer_backend.wort_werk loadBalancers/ocid1.loadbalancer.oc1..existing/backendSets/wort-werk-backend-set/backends/10.10.3.112:8080"));
         assertThat(commands).anyMatch(command -> command.contains("import -input=false oci_load_balancer_listener.http loadBalancers/ocid1.loadbalancer.oc1..existing/listeners/http"));
