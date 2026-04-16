@@ -96,7 +96,7 @@ resource "oci_identity_policy" "github_connection_secret_read" {
   compartment_id = var.compartment_ocid
   name           = local.github_connection_secret_policy_name
   description    = local.github_connection_secret_policy_description
-  statements = local.devops_secret_read_statements
+  statements     = local.devops_secret_read_statements
 }
 
 resource "oci_devops_connection" "github" {
@@ -278,10 +278,14 @@ resource "oci_devops_build_pipeline" "release" {
       description   = "Vault secret OCID used for the OCI Load Balancer private key."
     }
 
-    items {
-      name          = "tlsCaCertificateSecretOcid"
-      default_value = var.tls_ca_certificate_secret_ocid
-      description   = "Optional Vault secret OCID used for the OCI Load Balancer CA certificate chain."
+    dynamic "items" {
+      for_each = var.tls_ca_certificate_secret_ocid != "" ? [var.tls_ca_certificate_secret_ocid] : []
+
+      content {
+        name          = "tlsCaCertificateSecretOcid"
+        default_value = items.value
+        description   = "Optional Vault secret OCID used for the OCI Load Balancer CA certificate chain."
+      }
     }
 
     items {
