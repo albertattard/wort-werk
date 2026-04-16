@@ -139,6 +139,91 @@ class DeployScriptRuntimeGuardTest {
         assertThat(commands).noneMatch(command -> command.contains("output -raw ocir_namespace"));
     }
 
+    @Test
+    void shouldRejectMalformedOciNamespaceOutputBeforeWritingBackendConfig() throws Exception {
+        Path script = prepareTempRepo();
+        Path repoRoot = script.getParent().getParent().getParent();
+        Path binDir = Files.createDirectories(tempDir.resolve("bin"));
+        Path backendConfigCapture = tempDir.resolve("backend-config.tfvars");
+        Path commandLog = tempDir.resolve("commands.log");
+        Path releaseVars = repoRoot.resolve("infrastructure/oci/runtime/release.auto.tfvars");
+
+        Files.writeString(
+                releaseVars,
+                """
+                image_tag = "test-image"
+                image_registry_username = "ignored"
+                image_registry_password = "ignored"
+                """,
+                StandardCharsets.UTF_8);
+
+        writeExecutable(
+                binDir.resolve("terraform"),
+                """
+                #!/usr/bin/env bash
+                set -euo pipefail
+                printf 'terraform %s\\n' "$*" >> "$COMMAND_LOG"
+                exit 0
+                """);
+        writeExecutable(
+                binDir.resolve("oci"),
+                """
+                #!/usr/bin/env bash
+                set -euo pipefail
+                printf 'oci %s\\n' "$*" >> "$COMMAND_LOG"
+                if [[ "$1" == "os" && "$2" == "ns" && "$3" == "get" ]]; then
+                  printf 'Warning: No outputs found\\n'
+                  exit 0
+                fi
+
+                echo "unexpected oci invocation: $*" >&2
+                exit 1
+                """);
+
+        ProcessResult result = runScript(
+                script,
+                "runtime",
+                Map.ofEntries(
+                        Map.entry("OCI_CLI_AUTH", "resource_principal"),
+                        Map.entry("COMMAND_LOG", commandLog.toString()),
+                        Map.entry("BACKEND_CONFIG_CAPTURE", backendConfigCapture.toString()),
+                        Map.entry("PATH", binDir + ":" + System.getenv("PATH")),
+                        Map.entry("REGION", "eu-frankfurt-1"),
+                        Map.entry("TENANCY_OCID", "ocid1.tenancy.oc1..example"),
+                        Map.entry("COMPARTMENT_OCID", "ocid1.compartment.oc1..example"),
+                        Map.entry("RUNTIME_SUBNET_ID", "ocid1.subnet.oc1..runtime"),
+                        Map.entry("LOAD_BALANCER_SUBNET_ID", "ocid1.subnet.oc1..lb"),
+                        Map.entry("NSG_ID", "ocid1.nsg.oc1..runtime"),
+                        Map.entry("LOAD_BALANCER_NSG_ID", "ocid1.nsg.oc1..lb"),
+                        Map.entry("LOAD_BALANCER_PUBLIC_IP_ID", "ocid1.publicip.oc1..example"),
+                        Map.entry("LOAD_BALANCER_PUBLIC_IP", "203.0.113.10"),
+                        Map.entry("RUNTIME_DB_URL", "jdbc:postgresql://db.example/postgres"),
+                        Map.entry("RUNTIME_DB_USERNAME", "wortwerk_app"),
+                        Map.entry("RUNTIME_DB_PASSWORD_SECRET_OCID", "ocid1.vaultsecret.oc1..runtime"),
+                        Map.entry("RUNTIME_DB_SSL_ROOT_CERT_BASE64", "dGVzdA=="),
+                        Map.entry("TLS_PUBLIC_CERTIFICATE_SECRET_OCID", "ocid1.vaultsecret.oc1..tls-public"),
+                        Map.entry("TLS_PRIVATE_KEY_SECRET_OCID", "ocid1.vaultsecret.oc1..tls-private"),
+                        Map.entry("TLS_CA_CERTIFICATE_SECRET_OCID", "ocid1.vaultsecret.oc1..tls-ca"),
+                        Map.entry("IMAGE_REPOSITORY", "fra.ocir.io/test/wortwerk"),
+                        Map.entry("IMAGE_REGISTRY_ENDPOINT", "fra.ocir.io"),
+                        Map.entry("APP_PORT", "8080"),
+                        Map.entry("MANAGEMENT_PORT", "8081"),
+                        Map.entry("LB_LISTENER_PORT", "80"),
+                        Map.entry("HTTPS_LISTENER_PORT", "443"),
+                        Map.entry("LOAD_BALANCER_MIN_BANDWIDTH_MBPS", "10"),
+                        Map.entry("LOAD_BALANCER_MAX_BANDWIDTH_MBPS", "10"),
+                        Map.entry("RUNTIME_STATE_BUCKET_NAME", "wortwerk-runtime-state"),
+                        Map.entry("IMAGE_TAG", "test-image")));
+
+        assertThat(result.exitCode()).isNotZero();
+        assertThat(result.stderr()).contains("Unable to resolve a valid Object Storage namespace from OCI while running under resource principal.");
+        assertThat(backendConfigCapture).doesNotExist();
+
+        List<String> commands = Files.readAllLines(commandLog, StandardCharsets.UTF_8);
+        assertThat(commands).anyMatch(command -> command.equals("oci os ns get --query data --raw-output"));
+        assertThat(commands).noneMatch(command -> command.contains("output -raw ocir_namespace"));
+    }
+
     private Path prepareTempRepo() throws IOException {
         Path repoRoot = tempDir.resolve("repo");
         Path ociDir = Files.createDirectories(repoRoot.resolve("infrastructure/oci"));

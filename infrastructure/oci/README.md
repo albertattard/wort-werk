@@ -74,6 +74,7 @@ RUNTIME_BACKEND_MIGRATE=true ./infrastructure/oci/deploy.sh runtime
 
 This migration is intentionally explicit. `deploy.sh runtime` refuses to auto-migrate a detected local `runtime/terraform.tfstate` unless `RUNTIME_BACKEND_MIGRATE=true` is set.
 After that migration, `deploy.sh runtime` is expected to run only inside OCI DevOps (`OCI_CLI_AUTH=resource_principal`).
+When the runtime backend config is generated inside OCI, the deploy helper validates the resolved Object Storage namespace and refuses malformed fallback output so Terraform warnings cannot be written into the backend config as if they were namespace values.
 
 Runtime `image_tag` behavior:
 - `runtime` resolves tag in this order: `IMAGE_TAG` env var, existing `runtime/release.auto.tfvars:image_tag`, current runtime Terraform output `deployed_image_url` tag.

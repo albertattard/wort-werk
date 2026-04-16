@@ -33,6 +33,14 @@ require_var() {
   fi
 }
 
+is_valid_object_storage_namespace() {
+  local namespace="$1"
+  [[ -n "${namespace}" ]] || return 1
+  [[ "${namespace}" != *$'\n'* ]] || return 1
+  [[ "${namespace}" != *$'\r'* ]] || return 1
+  [[ "${namespace}" =~ ^[[:alnum:]_.-]+$ ]]
+}
+
 read_tfvars_string() {
   local file="$1"
   local key="$2"
@@ -119,19 +127,39 @@ resolve_tfvars_or_env() {
 
 resolve_object_storage_namespace() {
   local namespace="${OCI_NAMESPACE:-}"
+  local resolved_namespace
 
   if [[ -n "${namespace}" ]]; then
+    if ! is_valid_object_storage_namespace "${namespace}"; then
+      echo "Unable to resolve a valid Object Storage namespace from OCI_NAMESPACE." >&2
+      exit 1
+    fi
+
     printf '%s' "${namespace}"
     return 0
   fi
 
-  if [[ "${OCI_CLI_AUTH:-}" == "resource_principal" ]]; then
-    require_command oci
-    oci os ns get --query 'data' --raw-output
+  if command -v oci >/dev/null 2>&1; then
+    resolved_namespace="$(oci os ns get --query 'data' --raw-output 2>/dev/null || true)"
+    if is_valid_object_storage_namespace "${resolved_namespace}"; then
+      printf '%s' "${resolved_namespace}"
+      return 0
+    fi
+
+    if [[ "${OCI_CLI_AUTH:-}" == "resource_principal" ]]; then
+      echo "Unable to resolve a valid Object Storage namespace from OCI while running under resource principal." >&2
+      exit 1
+    fi
+  fi
+
+  resolved_namespace="$(terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace 2>/dev/null || true)"
+  if is_valid_object_storage_namespace "${resolved_namespace}"; then
+    printf '%s' "${resolved_namespace}"
     return 0
   fi
 
-  terraform -chdir="${FOUNDATION_DIR}" output -raw ocir_namespace
+  echo "Unable to resolve a valid Object Storage namespace from OCI or foundation Terraform output." >&2
+  exit 1
 }
 
 resolve_runtime_image_tag() {
