@@ -143,9 +143,7 @@ resource "oci_load_balancer_certificate" "wort_werk_tls" {
   load_balancer_id   = oci_load_balancer_load_balancer.wort_werk.id
   public_certificate = base64decode(data.oci_secrets_secretbundle.tls_public_certificate.secret_bundle_content[0].content)
   private_key        = base64decode(data.oci_secrets_secretbundle.tls_private_key.secret_bundle_content[0].content)
-  ca_certificate = var.tls_ca_certificate_secret_ocid != "" ?
-    base64decode(data.oci_secrets_secretbundle.tls_ca_certificate[0].secret_bundle_content[0].content) :
-    null
+  ca_certificate     = var.tls_ca_certificate_secret_ocid != "" ? base64decode(data.oci_secrets_secretbundle.tls_ca_certificate[0].secret_bundle_content[0].content) : null
 }
 
 resource "oci_load_balancer_listener" "https" {

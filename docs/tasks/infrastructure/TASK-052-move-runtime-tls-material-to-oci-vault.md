@@ -39,3 +39,7 @@ Replace runtime Terraform's dependency on project-local PEM files with OCI Vault
 - [x] OCI DevOps runner least-privilege policy includes only the configured TLS secret OCIDs in addition to the existing release secrets.
 - [x] Repository docs describe how to create or rotate the TLS secrets in OCI Vault before runtime or OCI DevOps rollout.
 - [x] `./mvnw clean verify` passes after the change.
+
+## Implementation Notes
+
+- A live OCI DevOps runtime rollout later proved the `ca_certificate` conditional inside `oci_load_balancer_certificate.wort_werk_tls` must remain valid during `terraform init`, not just `terraform apply`. The optional TLS CA expression therefore needs to stay in a Terraform parser-safe form rather than relying on a multiline conditional layout that OCI runner Terraform rejects during initialization.
