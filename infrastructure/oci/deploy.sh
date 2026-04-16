@@ -617,7 +617,6 @@ apply_runtime() {
     export TF_VAR_oci_auth="ResourcePrincipal"
   fi
   init_runtime_backend
-  repair_runtime_load_balancer_state_if_needed
   write_runtime_stack_vars
   image_tag="$(resolve_runtime_image_tag)"
 
@@ -644,6 +643,7 @@ EOFVARS
     upsert_tfvars_string "${release_vars_file}" "image_tag" "${image_tag}"
   fi
 
+  repair_runtime_load_balancer_state_if_needed
   terraform -chdir="${RUNTIME_DIR}" fmt
   terraform -chdir="${RUNTIME_DIR}" apply -auto-approve -input=false
 }

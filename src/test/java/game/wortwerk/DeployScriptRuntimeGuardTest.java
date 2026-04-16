@@ -272,6 +272,8 @@ class DeployScriptRuntimeGuardTest {
                     fi
                     ;;
                   import)
+                    [[ -f runtime/foundation.auto.tfvars ]] || { echo "missing runtime tfvars before import" >&2; exit 1; }
+                    [[ -f runtime/release.auto.tfvars ]] || { echo "missing release vars before import" >&2; exit 1; }
                     exit 0
                     ;;
                 esac
