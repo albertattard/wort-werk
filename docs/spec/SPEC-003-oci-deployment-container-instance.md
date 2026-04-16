@@ -62,6 +62,7 @@ Repeatable operator flow:
 - production health checks should use a dedicated Spring Actuator management endpoint rather than a learner-facing UI route
 - runtime container instances must not be directly internet-addressable; public ingress must terminate at the OCI Load Balancer
 - runtime networking must preserve private access to required OCI regional services so startup dependencies such as Vault-backed secret reads still work without a container public IP
+- runtime application HTTP handling must trust the OCI load balancer forwarded host/proto headers so externally visible redirects and auth flows remain HTTPS-correct behind TLS termination
 - the default production runtime container shape should remain the currently proven AMD64 OCI Container Instance shape until the target OCI region has a repeatable Arm-capacity-safe rollout path; Arm shape selection stays an explicit override
 - OCI DevOps runtime apply must be able to reconcile pre-DevOps runtime environments whose live load balancer resources exist in OCI but are missing from the remote Terraform state
 - OCI DevOps runtime apply must be able to resume from a partially failed ingress-state migration, re-importing or recreating any missing listener, rule-set, or certificate resources rather than assuming the presence of the load balancer shell in state means ingress management is complete
@@ -95,6 +96,7 @@ Repeatable operator flow:
 - [x] Runtime container instances use private IPs only and do not receive public IP assignment.
 - [x] Public ingress terminates at the OCI Load Balancer while the runtime backend stays on private VCN addressing.
 - [x] Runtime retains private access to required OCI regional services after container public IP removal.
+- [x] Application redirects and HTTPS-sensitive auth flows honor OCI load balancer forwarded headers so public HTTPS requests do not degrade to `http://` redirects after TLS termination.
 - [ ] OCI DevOps release automation executes `./mvnw clean verify`, then publishes a commit-traceable runtime image tag before runtime apply; on the current managed OCI runner this publication path is temporarily limited to `linux/amd64` until a native `arm64` or cross-build-capable release builder is available.
 - [ ] The recommended repeatable release entrypoint is `infrastructure/oci/devops/run-release.sh` rather than a laptop-local wrapper.
 - [ ] OCI DevOps release automation provisions or selects a Java 25 toolchain before running Maven verification and packaging steps.

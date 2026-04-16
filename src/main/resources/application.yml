@@ -6,6 +6,8 @@ spring:
     username: ${WORTWERK_DB_USERNAME:wortwerk}
     password: ${WORTWERK_DB_PASSWORD:wortwerk}
     driver-class-name: org.postgresql.Driver
+server:
+  forward-headers-strategy: framework
 
 management:
   endpoints:

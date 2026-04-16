@@ -33,6 +33,7 @@ The infrastructure must satisfy all of the following:
 9. Runtime container instances must not receive public IP addresses; internet-facing traffic must terminate at the OCI Load Balancer instead of the application container.
 10. Runtime access to OCI-managed dependencies required at startup, such as Vault secret retrieval, must remain available through private OCI networking rather than public internet exposure.
 11. The runtime database user must be distinct from the PostgreSQL administrator account and limited to application-owned database/schema responsibilities rather than broader instance administration.
+12. When TLS terminates at the OCI Load Balancer, the application must trust forwarded host/protocol headers so login redirects and WebAuthn-adjacent browser flows remain on the public HTTPS origin instead of bouncing through `http://`.
 
 ## Deployment Model
 
@@ -128,6 +129,7 @@ Secure release and deployment execution must satisfy all of the following:
 - [ ] Repository docs define how OCI-resident deploy stages obtain runtime inputs without reading laptop-local `foundation` or `data` Terraform state files.
 - [ ] Repository docs define the remote runtime Terraform backend used by OCI deployment and the migration guardrails around it.
 - [x] Repository docs define how OCI DevOps rollout obtains HTTPS certificate material without project-local PEM files.
+- [x] Application runtime configuration preserves public HTTPS origin semantics behind OCI load balancer TLS termination.
 - [ ] Repository docs define the least-privilege load balancer/public-IP permissions required by the OCI DevOps runner for runtime apply.
 - [ ] Repository docs define how OCI DevOps repairs pre-DevOps runtime load balancer state drift before the normal rollout path is used.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.
