@@ -92,6 +92,8 @@ class OciDevopsPrivateReleaseRunnerTest {
         String runReleaseScript = read("infrastructure/oci/devops/run-release.sh");
         String deployScript = read("infrastructure/oci/deploy.sh");
         String runtimeVersions = read("infrastructure/oci/runtime/versions.tf");
+        String runtimeMain = read("infrastructure/oci/runtime/main.tf");
+        String runtimeVariables = read("infrastructure/oci/runtime/variables.tf");
 
         assertThat(devopsMain).contains("resource \"oci_devops_project\"");
         assertThat(devopsMain).contains("resource \"oci_devops_build_pipeline\"");
@@ -189,8 +191,11 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsMain).contains("postgresqlDbSystemId");
         assertThat(devopsMain).doesNotContain("runtimeDbSslRootCertBase64");
         assertThat(runtimeVersions).contains("backend \"oci\"");
+        assertThat(runtimeMain).contains("auth   = var.oci_auth");
+        assertThat(runtimeVariables).contains("variable \"oci_auth\"");
         assertThat(deployScript).contains("resolve_object_storage_namespace()");
         assertThat(deployScript).contains("oci os ns get --query 'data' --raw-output");
+        assertThat(deployScript).contains("export TF_VAR_oci_auth=\"ResourcePrincipal\"");
         assertThat(deployScript).doesNotContain("\"release\"");
         assertThat(deployScript).doesNotContain("\"rollout\"");
         assertThat(deployScript).contains("devops/run-release.sh");

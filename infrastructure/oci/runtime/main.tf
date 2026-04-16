@@ -1,5 +1,6 @@
 provider "oci" {
   region = var.region
+  auth   = var.oci_auth
 }
 
 locals {

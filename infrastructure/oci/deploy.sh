@@ -443,6 +443,9 @@ apply_runtime() {
   local image_registry_password
 
   assert_runtime_execution_context
+  if [[ "${OCI_CLI_AUTH:-}" == "resource_principal" ]]; then
+    export TF_VAR_oci_auth="ResourcePrincipal"
+  fi
   init_runtime_backend
   write_runtime_stack_vars
   image_tag="$(resolve_runtime_image_tag)"

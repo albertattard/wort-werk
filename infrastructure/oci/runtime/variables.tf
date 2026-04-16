@@ -3,6 +3,13 @@ variable "region" {
   type        = string
 }
 
+variable "oci_auth" {
+  description = "Optional OCI provider auth mode override, for example ResourcePrincipal on OCI DevOps runners."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 variable "tenancy_ocid" {
   description = "Tenancy OCID used to resolve availability domains."
   type        = string
