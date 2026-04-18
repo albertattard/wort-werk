@@ -25,6 +25,15 @@
             padding: 24px;
         }
 
+        .app-footer {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid #e7eceb;
+            color: #5b6765;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
         h1 {
             margin: 0 0 16px;
         }
@@ -73,6 +82,7 @@
     <p class="msg err" data-testid="login-error-runtime" id="login-error-runtime" style="display: none;"></p>
     <p class="msg ok" th:if="${param.logout}" data-testid="login-logout">Abgemeldet.</p>
     <p class="small">Noch kein Konto? <a href="/register">Registrieren</a></p>
+    <footer th:replace="~{fragments :: appFooter(buildLabel=${buildLabel})}"></footer>
 </section>
 <script>
     (() => {

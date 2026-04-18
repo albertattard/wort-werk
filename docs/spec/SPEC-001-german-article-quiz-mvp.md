@@ -4,7 +4,7 @@ title: German Article Quiz MVP
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-10
+last_updated: 2026-04-18
 ---
 
 ## Problem
@@ -40,6 +40,8 @@ At the end of 10 rounds, the app displays the final score.
 
 Quiz interactions (`answer`, `next`, `restart`) use HTMX partial updates and replace only the quiz interaction fragment instead of reloading the full page.
 
+All application pages show a footer with a build label so operators can confirm which deployed build is currently serving the UI.
+
 ## Inputs/Outputs
 
 Input:
@@ -54,6 +56,7 @@ Output:
 - noun-only audio replay when speaker icon is pressed
 - article+noun audio when the correct article is selected
 - final score after 10 rounds
+- a footer on application pages showing the current build label
 
 ## Acceptance Criteria
 
@@ -76,6 +79,7 @@ Output:
 - [x] Nouns with umlauts use ASCII-safe image/audio asset paths to avoid Unicode path normalization issues.
 - [x] Every source image in `assets/images/original` has a corresponding entry in `assets/articles.csv`.
 - [ ] Quiz answer/next/restart interactions use HTMX (`HX-Request`) and return only the interaction fragment.
+- [x] Login, registration, and quiz pages show a footer with a `Build: <hash>` label derived from the current application build.
 
 ## Non-goals
 

@@ -27,6 +27,7 @@ management:
 wortwerk:
   articles-csv: assets/articles.csv
   assets-dir: assets
+  build-hash: ${WORTWERK_BUILD_HASH:dev}
   security:
     webauthn:
       rp-id: ${WORTWERK_WEBAUTHN_RP_ID:localhost}

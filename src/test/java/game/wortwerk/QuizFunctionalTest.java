@@ -60,6 +60,28 @@ class QuizFunctionalTest {
     }
 
     @Test
+    void shouldShowBuildFooterOnLoginRegistrationAndQuizPages() {
+        try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
+            enableVirtualAuthenticator(context, page);
+            String expectedBuildLabel = "Build: " + resolveExpectedBuildHash();
+            page.navigate(baseUrl);
+            page.waitForURL(url -> url.contains("/login"));
+
+            assertThat(page.getByTestId("app-footer").isVisible()).isTrue();
+            assertThat(page.getByTestId("build-label").textContent()).isEqualTo(expectedBuildLabel);
+
+            page.navigate(baseUrl + "register");
+            assertThat(page.getByTestId("app-footer").isVisible()).isTrue();
+            assertThat(page.getByTestId("build-label").textContent()).isEqualTo(expectedBuildLabel);
+
+            login(page);
+
+            assertThat(page.getByTestId("app-footer").isVisible()).isTrue();
+            assertThat(page.getByTestId("build-label").textContent()).isEqualTo(expectedBuildLabel);
+        }
+    }
+
+    @Test
     void shouldAllowRegisterAndThenLogin() {
         try (BrowserContext context = browser.newContext(); Page page = context.newPage()) {
             enableVirtualAuthenticator(context, page);
@@ -340,6 +362,22 @@ class QuizFunctionalTest {
             throw new IllegalStateException("Missing required system property: test.base-url");
         }
         return externalBaseUrl.endsWith("/") ? externalBaseUrl : externalBaseUrl + "/";
+    }
+
+    private static String resolveExpectedBuildHash() {
+        try {
+            Process process = new ProcessBuilder("git", "rev-parse", "--short=7", "HEAD")
+                    .redirectErrorStream(true)
+                    .start();
+            int exitCode = process.waitFor();
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+            if (exitCode != 0 || output.isBlank()) {
+                throw new IllegalStateException("Failed to resolve git build hash: " + output);
+            }
+            return output;
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalStateException("Failed to resolve git build hash", e);
+        }
     }
 
     private static Map<String, String> loadArticleByImagePath(final Path csvPath) {

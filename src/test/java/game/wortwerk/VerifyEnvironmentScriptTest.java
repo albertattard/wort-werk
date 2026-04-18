@@ -48,6 +48,44 @@ class VerifyEnvironmentScriptTest {
     }
 
     @Test
+    void shouldExportDerivedBuildHashToDockerComposeBackend() throws Exception {
+        TestHarness harness = prepareHarness();
+        Path captureFile = harness.repoRoot().resolve("compose-build-hash.txt");
+
+        Path dockerStub = harness.binDir().resolve("docker");
+        Files.writeString(
+                dockerStub,
+                """
+                #!/usr/bin/env bash
+                set -euo pipefail
+                printf '%s\n' "${VERIFY_BUILD_HASH:-}" > "${VERIFY_CAPTURE_FILE:?}"
+                exit 0
+                """,
+                StandardCharsets.UTF_8);
+        setExecutable(dockerStub);
+
+        Path gitStub = harness.binDir().resolve("git");
+        Files.writeString(
+                gitStub,
+                """
+                #!/usr/bin/env bash
+                set -euo pipefail
+                printf 'abc1234\n'
+                """,
+                StandardCharsets.UTF_8);
+        setExecutable(gitStub);
+
+        ProcessResult result = runScript(harness, "up", Map.of(
+                "VERIFY_BUILD_HASH", "",
+                "VERIFY_CAPTURE_FILE", captureFile.toString()));
+
+        assertThat(result.exitCode())
+                .withFailMessage("stdout=%s%nstderr=%s", result.stdout(), result.stderr())
+                .isZero();
+        assertThat(Files.readString(captureFile, StandardCharsets.UTF_8)).isEqualTo("abc1234\n");
+    }
+
+    @Test
     void shouldUsePodmanBackendWhenRequested() throws Exception {
         TestHarness harness = prepareHarness();
         Path captureFile = harness.repoRoot().resolve("podman-args.txt");
@@ -85,6 +123,7 @@ class VerifyEnvironmentScriptTest {
                 .contains("postgres:17")
                 .contains("run --replace --detach --name wort-werk-verify-app")
                 .contains("--pull=never")
+                .contains("WORTWERK_BUILD_HASH=build1234")
                 .contains("wort-werk:verify-test");
     }
 
@@ -141,6 +180,7 @@ class VerifyEnvironmentScriptTest {
         assertThat(Files.readString(captureFile, StandardCharsets.UTF_8))
                 .contains("inspect --format")
                 .contains("exec wort-werk-verify-db pg_isready --username=wortwerk_verify --dbname=wortwerk_verify")
+                .contains("WORTWERK_BUILD_HASH=build1234")
                 .contains("run --replace --detach --name wort-werk-verify-app");
         assertThat(Files.readString(probeCounterFile, StandardCharsets.UTF_8)).isEqualTo("3");
     }
@@ -148,10 +188,12 @@ class VerifyEnvironmentScriptTest {
     @Test
     void shouldWireMavenVerifyLifecycleThroughRepositoryHelper() throws IOException {
         String pom = Files.readString(Path.of("pom.xml"), StandardCharsets.UTF_8);
+        String composeFile = Files.readString(Path.of("container/compose.verify.yml"), StandardCharsets.UTF_8);
 
         assertThat(pom).contains("<verify.environment.script>${project.basedir}/tools/verify-environment.sh</verify.environment.script>");
         assertThat(pom).contains("<argument>${verify.environment.script}</argument>");
         assertThat(pom).doesNotContain("docker compose --file '${verify.compose.file}'");
+        assertThat(composeFile).contains("WORTWERK_BUILD_HASH: ${VERIFY_BUILD_HASH}");
     }
 
     private TestHarness prepareHarness() throws IOException {
@@ -188,6 +230,7 @@ class VerifyEnvironmentScriptTest {
         environment.put("VERIFY_DB_NAME", "wortwerk_verify");
         environment.put("VERIFY_DB_USERNAME", "wortwerk_verify");
         environment.put("VERIFY_DB_PASSWORD", "wortwerk_verify");
+        environment.put("VERIFY_BUILD_HASH", "build1234");
         environment.putAll(extraEnvironment);
 
         Process process = processBuilder.start();

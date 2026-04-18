@@ -54,7 +54,8 @@ class QuizControllerTest {
                 .contains("question-noun")
                 .contains("der")
                 .contains("die")
-                .contains("das");
+                .contains("das")
+                .contains("Build:");
     }
 
     @Test

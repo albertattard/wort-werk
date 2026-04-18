@@ -24,6 +24,15 @@
             padding: 24px;
         }
 
+        .app-footer {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid #e7eceb;
+            color: #5b6765;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
         h1 {
             margin: 0 0 8px;
             font-size: 1.7rem;
@@ -44,6 +53,7 @@
         <button type="submit" style="margin-bottom: 12px;">Abmelden</button>
     </form>
     <div id="quiz-interaction" th:replace="~{fragments :: interaction(state=${state})}"></div>
+    <footer th:replace="~{fragments :: appFooter(buildLabel=${buildLabel})}"></footer>
 </section>
 </body>
 </html>

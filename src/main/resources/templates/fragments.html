@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="de" xmlns:th="http://www.thymeleaf.org">
 <body>
+<footer th:fragment="appFooter(buildLabel)" class="app-footer" data-testid="app-footer">
+    <span data-testid="build-label" th:text="${buildLabel}">Build: dev</span>
+</footer>
 <div id="quiz-interaction" th:fragment="interaction(state)">
     <style>
         .status {

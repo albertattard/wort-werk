@@ -17,6 +17,7 @@ locals {
     {
       WORTWERK_WEBAUTHN_RP_ID           = var.tls_redirect_host
       WORTWERK_WEBAUTHN_ALLOWED_ORIGINS = local.public_origin
+      WORTWERK_BUILD_HASH               = substr(var.image_tag, 0, 7)
       MANAGEMENT_SERVER_PORT            = tostring(var.management_port)
     },
     var.runtime_db_url != "" ? {

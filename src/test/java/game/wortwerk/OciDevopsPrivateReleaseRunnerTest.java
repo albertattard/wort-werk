@@ -205,6 +205,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(runtimeMain).contains("data \"oci_secrets_secretbundle\" \"tls_public_certificate\"");
         assertThat(runtimeMain).contains("data \"oci_secrets_secretbundle\" \"tls_private_key\"");
         assertThat(runtimeMain).contains("data \"oci_secrets_secretbundle\" \"tls_ca_certificate\"");
+        assertThat(runtimeMain).contains("WORTWERK_BUILD_HASH               = substr(var.image_tag, 0, 7)");
         assertThat(runtimeMain).contains("public_certificate = base64decode");
         assertThat(runtimeMain).contains("private_key        = base64decode");
         assertThat(runtimeMain).contains("ca_certificate     = var.tls_ca_certificate_secret_ocid != \"\" ? base64decode");

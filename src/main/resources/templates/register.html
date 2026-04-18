@@ -25,6 +25,15 @@
             padding: 24px;
         }
 
+        .app-footer {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid #e7eceb;
+            color: #5b6765;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
         h1 {
             margin: 0 0 16px;
         }
@@ -84,6 +93,7 @@
     <button type="button" data-testid="register-submit" id="register-passkey">Passkey registrieren</button>
     <p class="msg" data-testid="register-error" id="register-error" style="display: none;"></p>
     <p class="small">Bereits registriert? <a href="/login">Zur Anmeldung</a></p>
+    <footer th:replace="~{fragments :: appFooter(buildLabel=${buildLabel})}"></footer>
 </section>
 <script>
     (() => {
