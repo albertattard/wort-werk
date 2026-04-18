@@ -76,6 +76,10 @@ class DeployScriptRuntimeGuardTest {
                   exit 0
                 fi
 
+                if [[ "$1" == "state" && "$2" == "show" ]]; then
+                  exit 1
+                fi
+
                 exit 0
                 """);
         writeExecutable(
@@ -163,6 +167,12 @@ class DeployScriptRuntimeGuardTest {
                 #!/usr/bin/env bash
                 set -euo pipefail
                 printf 'terraform %s\\n' "$*" >> "$COMMAND_LOG"
+                if [[ "$1" == "-chdir="* ]]; then
+                  shift
+                fi
+                if [[ "$1" == "state" && "$2" == "show" ]]; then
+                  exit 1
+                fi
                 exit 0
                 """);
         writeExecutable(
@@ -256,6 +266,19 @@ class DeployScriptRuntimeGuardTest {
                     exit 0
                     ;;
                   state)
+                    if [[ "$2" == "show" ]]; then
+                      case "$4" in
+                        oci_container_instances_container_instance.wort_werk)
+                          printf 'resource "oci_container_instances_container_instance" "wort_werk" {}'
+                          exit 0
+                          ;;
+                        oci_load_balancer_load_balancer.wort_werk)
+                          printf 'resource "oci_load_balancer_load_balancer" "wort_werk" {}'
+                          exit 0
+                          ;;
+                      esac
+                      exit 1
+                    fi
                     if [[ "$2" == "list" ]]; then
                       printf '%s\\n' \
                         'data.oci_identity_availability_domains.this' \
@@ -391,6 +414,19 @@ class DeployScriptRuntimeGuardTest {
                     exit 0
                     ;;
                   state)
+                    if [[ "$2" == "show" ]]; then
+                      case "$4" in
+                        oci_container_instances_container_instance.wort_werk)
+                          printf 'resource "oci_container_instances_container_instance" "wort_werk" {}'
+                          exit 0
+                          ;;
+                        oci_load_balancer_load_balancer.wort_werk)
+                          printf 'resource "oci_load_balancer_load_balancer" "wort_werk" {}'
+                          exit 0
+                          ;;
+                      esac
+                      exit 1
+                    fi
                     if [[ "$2" == "list" ]]; then
                       printf '%s\\n' \
                         'data.oci_identity_availability_domains.this' \
@@ -493,6 +529,158 @@ class DeployScriptRuntimeGuardTest {
         assertThat(commands).noneMatch(command -> command.contains("import -input=false oci_load_balancer_certificate.wort_werk_tls"));
         assertThat(commands).noneMatch(command -> command.contains("import -input=false oci_load_balancer_rule_set.http_to_https"));
         assertThat(commands).anyMatch(command -> command.contains("import -input=false oci_load_balancer_backend_set.wort_werk"));
+        assertThat(commands).anyMatch(command -> command.contains("import -input=false oci_load_balancer_backend.wort_werk"));
+        assertThat(commands).anyMatch(command -> command.endsWith("apply -auto-approve -input=false"));
+    }
+
+    @Test
+    void shouldTreatAlreadyManagedTerraformImportAsIdempotentDuringRuntimeStateRepair() throws Exception {
+        Path script = prepareTempRepo();
+        Path repoRoot = script.getParent().getParent().getParent();
+        Path binDir = Files.createDirectories(tempDir.resolve("bin"));
+        Path commandLog = tempDir.resolve("commands.log");
+        Path releaseVars = repoRoot.resolve("infrastructure/oci/runtime/release.auto.tfvars");
+
+        Files.writeString(
+                releaseVars,
+                """
+                image_tag = "test-image"
+                image_registry_username = "ignored"
+                image_registry_password = "ignored"
+                """,
+                StandardCharsets.UTF_8);
+
+        writeExecutable(
+                binDir.resolve("terraform"),
+                """
+                #!/usr/bin/env bash
+                set -euo pipefail
+                printf 'terraform %s\\n' "$*" >> "$COMMAND_LOG"
+                if [[ "$1" == "-chdir="* ]]; then
+                  shift
+                fi
+
+                case "$1" in
+                  init|fmt|apply)
+                    exit 0
+                    ;;
+                  state)
+                    if [[ "$2" == "show" ]]; then
+                      case "$4" in
+                        oci_container_instances_container_instance.wort_werk)
+                          printf 'resource "oci_container_instances_container_instance" "wort_werk" {}'
+                          exit 0
+                          ;;
+                        oci_load_balancer_load_balancer.wort_werk)
+                          printf 'resource "oci_load_balancer_load_balancer" "wort_werk" {}'
+                          exit 0
+                          ;;
+                        oci_load_balancer_backend_set.wort_werk)
+                          printf 'resource "oci_load_balancer_backend_set" "wort_werk" {}'
+                          exit 0
+                          ;;
+                      esac
+                      exit 1
+                    fi
+                    if [[ "$2" == "list" ]]; then
+                      printf '%s\\n' \
+                        'data.oci_identity_availability_domains.this' \
+                        'data.oci_secrets_secretbundle.tls_private_key' \
+                        'data.oci_secrets_secretbundle.tls_public_certificate' \
+                        'oci_container_instances_container_instance.wort_werk' \
+                        'oci_load_balancer_load_balancer.wort_werk' \
+                        'oci_load_balancer_backend_set.wort_werk'
+                      exit 0
+                    fi
+                    ;;
+                  output)
+                    if [[ "$2" == "-raw" && "$3" == "load_balancer_id" ]]; then
+                      printf 'ocid1.loadbalancer.oc1..existing'
+                      exit 0
+                    fi
+                    ;;
+                  import)
+                    if [[ "$3" == oci_load_balancer_backend.wort_werk ]]; then
+                      cat >&2 <<'EOF'
+Error: Resource already managed by Terraform
+
+Terraform is already managing a remote object for
+oci_load_balancer_backend.wort_werk. To import to this address you must
+first remove the existing object from the state.
+EOF
+                      exit 1
+                    fi
+                    exit 0
+                    ;;
+                esac
+
+                echo "unexpected terraform invocation: $*" >&2
+                exit 1
+                """);
+        writeExecutable(
+                binDir.resolve("oci"),
+                """
+                #!/usr/bin/env bash
+                set -euo pipefail
+                printf 'oci %s\\n' "$*" >> "$COMMAND_LOG"
+                if [[ "$1" == "os" && "$2" == "ns" && "$3" == "get" ]]; then
+                  printf 'test-namespace'
+                  exit 0
+                fi
+
+                if [[ "$1" == "lb" && "$2" == "load-balancer" && "$3" == "get" ]]; then
+                  printf '10.10.3.112:8080'
+                  exit 0
+                fi
+
+                if [[ "$1" == "lb" && "$2" == "certificate" && "$3" == "list" ]]; then
+                  printf 'true'
+                  exit 0
+                fi
+
+                echo "unexpected oci invocation: $*" >&2
+                exit 1
+                """);
+
+        ProcessResult result = runScript(
+                script,
+                "runtime",
+                Map.ofEntries(
+                        Map.entry("OCI_CLI_AUTH", "resource_principal"),
+                        Map.entry("COMMAND_LOG", commandLog.toString()),
+                        Map.entry("PATH", binDir + ":" + System.getenv("PATH")),
+                        Map.entry("REGION", "eu-frankfurt-1"),
+                        Map.entry("TENANCY_OCID", "ocid1.tenancy.oc1..example"),
+                        Map.entry("COMPARTMENT_OCID", "ocid1.compartment.oc1..example"),
+                        Map.entry("RUNTIME_SUBNET_ID", "ocid1.subnet.oc1..runtime"),
+                        Map.entry("LOAD_BALANCER_SUBNET_ID", "ocid1.subnet.oc1..lb"),
+                        Map.entry("NSG_ID", "ocid1.nsg.oc1..runtime"),
+                        Map.entry("LOAD_BALANCER_NSG_ID", "ocid1.nsg.oc1..lb"),
+                        Map.entry("LOAD_BALANCER_PUBLIC_IP_ID", "ocid1.publicip.oc1..example"),
+                        Map.entry("LOAD_BALANCER_PUBLIC_IP", "203.0.113.10"),
+                        Map.entry("RUNTIME_DB_URL", "jdbc:postgresql://db.example/postgres"),
+                        Map.entry("RUNTIME_DB_USERNAME", "wortwerk_app"),
+                        Map.entry("RUNTIME_DB_PASSWORD_SECRET_OCID", "ocid1.vaultsecret.oc1..runtime"),
+                        Map.entry("RUNTIME_DB_SSL_ROOT_CERT_BASE64", "dGVzdA=="),
+                        Map.entry("TLS_PUBLIC_CERTIFICATE_SECRET_OCID", "ocid1.vaultsecret.oc1..tls-public"),
+                        Map.entry("TLS_PRIVATE_KEY_SECRET_OCID", "ocid1.vaultsecret.oc1..tls-private"),
+                        Map.entry("TLS_CA_CERTIFICATE_SECRET_OCID", "ocid1.vaultsecret.oc1..tls-ca"),
+                        Map.entry("IMAGE_REPOSITORY", "fra.ocir.io/test/wortwerk"),
+                        Map.entry("IMAGE_REGISTRY_ENDPOINT", "fra.ocir.io"),
+                        Map.entry("APP_PORT", "8080"),
+                        Map.entry("MANAGEMENT_PORT", "8081"),
+                        Map.entry("LB_LISTENER_PORT", "80"),
+                        Map.entry("HTTPS_LISTENER_PORT", "443"),
+                        Map.entry("LOAD_BALANCER_MIN_BANDWIDTH_MBPS", "10"),
+                        Map.entry("LOAD_BALANCER_MAX_BANDWIDTH_MBPS", "10"),
+                        Map.entry("RUNTIME_STATE_BUCKET_NAME", "wortwerk-runtime-state"),
+                        Map.entry("IMAGE_TAG", "test-image")));
+
+        assertThat(result.exitCode())
+                .withFailMessage("stdout=%s%nstderr=%s", result.stdout(), result.stderr())
+                .isZero();
+
+        List<String> commands = Files.readAllLines(commandLog, StandardCharsets.UTF_8);
         assertThat(commands).anyMatch(command -> command.contains("import -input=false oci_load_balancer_backend.wort_werk"));
         assertThat(commands).anyMatch(command -> command.endsWith("apply -auto-approve -input=false"));
     }

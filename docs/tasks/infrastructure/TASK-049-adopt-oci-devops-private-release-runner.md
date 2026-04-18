@@ -7,7 +7,7 @@ related_features:
   - SPEC-008
 owner: @aattard
 created: 2026-04-12
-updated: 2026-04-16
+updated: 2026-04-18
 ---
 
 ## Summary
@@ -104,6 +104,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - The same deployment also proved the remote runtime backend still does not fully track the live load balancer resources that were created before OCI DevOps became the normal release path. OCI-resident rollout must therefore repair that drift reproducibly by importing the existing load balancer resources into remote state before normal apply continues.
 - The next live deployment then proved state repair must be resumable after a partial failed apply. If OCI DevOps successfully imports the load balancer shell but fails before re-importing or recreating listeners, rule sets, or certificates, the next rollout must repair those missing child resources instead of assuming the mere presence of the load balancer resource in state means ingress state is complete.
 - The next live deployment then proved resumable state repair must also distinguish between missing child resources that still exist in OCI and missing child resources already deleted by the failed rollout. Import must be attempted only for still-live objects; otherwise the repair step itself fails before Terraform gets the chance to recreate the missing ingress resource.
+- The latest live deployment then proved the ingress state-repair path is still not idempotent enough: when a targeted child resource such as `oci_load_balancer_backend.wort_werk` is already managed in remote state, the repair preflight must skip or tolerate that import instead of failing the entire rollout with `Resource already managed by Terraform`.
 - The same runtime rollout attempted to replace the current AMD64 runtime container instance with `CI.Standard.A1.Flex` and failed with `OutOfCapacity` in `eu-frankfurt-1`. Until a region-capacity-safe Arm rollout path exists, the default production runtime shape should remain the current AMD64 shape and Arm should stay an explicit opt-in override rather than the default.
 - The same migration path also exposed a reserved-public-IP reconciliation edge case: after importing a pre-existing live load balancer, Terraform still tried to replace that load balancer because OCI readback exposes the attached reserved public IP via exported IP-address details rather than the original create-time `reserved_ips` input. Runtime Terraform must therefore preserve the reserved public IP on first create without forcing destructive ingress replacement on subsequent imported rollouts.
 - The now-successful ingress restoration exposed one remaining production correctness gap in the application tier: after TLS termination at the OCI load balancer, anonymous redirects still generated `http://wortwerk.xyz/login` because the Spring application did not yet trust forwarded host/protocol headers. OCI-resident rollout is only complete once public HTTPS origin handling is correct end to end.

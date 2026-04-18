@@ -203,7 +203,7 @@ resolve_runtime_image_tag() {
 
 runtime_state_has_address() {
   local address="$1"
-  terraform -chdir="${RUNTIME_DIR}" state list 2>/dev/null | grep -Fxq "${address}"
+  terraform -chdir="${RUNTIME_DIR}" state show -no-color "${address}" >/dev/null 2>&1
 }
 
 runtime_output_raw() {
@@ -310,12 +310,24 @@ runtime_certificate_exists() {
 runtime_import_if_missing() {
   local address="$1"
   local import_id="$2"
+  local output
 
   if runtime_state_has_address "${address}"; then
     return 0
   fi
 
-  terraform -chdir="${RUNTIME_DIR}" import -input=false "${address}" "${import_id}"
+  if output="$(terraform -chdir="${RUNTIME_DIR}" import -input=false "${address}" "${import_id}" 2>&1)"; then
+    return 0
+  fi
+
+  # State-repair must remain resumable when a repeated rollout races with
+  # Terraform's view of remote state and the resource is already managed.
+  if grep -Fq "Resource already managed by Terraform" <<< "${output}"; then
+    return 0
+  fi
+
+  printf '%s\n' "${output}" >&2
+  return 1
 }
 
 repair_runtime_load_balancer_state_if_needed() {
