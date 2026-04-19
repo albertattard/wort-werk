@@ -44,8 +44,10 @@ terraform apply
 Before runtime apply, store the TLS material in OCI Vault and write the secret OCIDs into `infrastructure/oci/runtime/terraform.tfvars`:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/runtime/set-tls-secrets.sh
+./infrastructure/oci/runtime/set-tls-secrets.sh
 ```
+
+This example relies on the script default OCI CLI profile name `FRANKFURT`; set `OCI_PROFILE=...` only when you need a different profile.
 
 Required Vault-backed TLS inputs:
 - `tls_public_certificate_secret_ocid`

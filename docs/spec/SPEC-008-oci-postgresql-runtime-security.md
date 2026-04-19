@@ -4,7 +4,7 @@ title: OCI PostgreSQL and Secure Runtime Connectivity
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-16
+last_updated: 2026-04-19
 ---
 
 ## Problem
@@ -65,9 +65,11 @@ The apply order must be:
 - Introduce a dedicated non-admin runtime DB role and document its privilege boundary.
 - Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
 - Keep Terraform naming consistent by using locals for fixed Wort-Werk resource identity and variables only for deployment-specific inputs.
+- Name stable network resources after the tier they serve when possible, rather than using generic labels such as `private` that apply to multiple tiers.
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
 - Remove direct public-IP exposure from runtime container instances while preserving access to OCI regional services needed at startup.
 - Document the operational steps needed for first deployment and future rotation of DB credentials.
+- Keep operator-facing helper examples aligned with the actual script defaults so documentation does not imply redundant environment variables are mandatory.
 
 ## Release Execution Model
 
@@ -132,4 +134,5 @@ Secure release and deployment execution must satisfy all of the following:
 - [x] Application runtime configuration preserves public HTTPS origin semantics behind OCI load balancer TLS termination.
 - [ ] Repository docs define the least-privilege load balancer/public-IP permissions required by the OCI DevOps runner for runtime apply.
 - [ ] Repository docs define how OCI DevOps repairs pre-DevOps runtime load balancer state drift before the normal rollout path is used.
+- [x] Top-level OCI operator documentation reflects the OCI DevOps-first release path, the guarded runtime migration/apply behavior, and the current helper-script input/output contracts without stale laptop-era guidance.
 - [ ] Implementation task(s) are linked from this spec before infrastructure changes begin.

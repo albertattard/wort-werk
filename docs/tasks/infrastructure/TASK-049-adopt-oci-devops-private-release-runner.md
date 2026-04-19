@@ -27,6 +27,8 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - Provide OCI-resident deployment with the runtime inputs it needs without reading laptop-local `foundation` or `data` Terraform state files.
 - Move runtime Terraform state to a remote OCI-managed backend so the deploy stage can apply an existing tracked runtime state instead of reconstructing from an empty workspace.
 - Document the operator workflow for manually triggered releases.
+- Keep top-level OCI operator documentation aligned with the actual OCI DevOps-first release path, helper-script guardrails, and generated tfvars contracts.
+- Keep helper-script examples honest about the built-in `OCI_PROFILE` default so operators only set it when overriding the default profile.
 
 ## Security Constraints
 
@@ -71,6 +73,7 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - [ ] The private OCI DevOps shell stage provisions the PostgreSQL client tooling required by the repository bootstrap script instead of assuming `psql` is preinstalled on the managed shell image.
 - [ ] The private OCI DevOps runner has the OCI IAM permissions required to manage the runtime load balancer and attach the reserved public IP during runtime apply.
 - [ ] OCI-resident rollout can repair pre-DevOps runtime state drift by importing the existing load balancer resources into the remote runtime backend before apply.
+- [x] `infrastructure/oci/README.md` reflects the current helper behavior, including the guarded runtime apply path, DevOps-inclusive destroy order, DB/DevOps network boundary, and the generated `foundation.auto.tfvars` contracts.
 - [x] Public HTTPS traffic through the OCI load balancer remains HTTPS-correct inside the application by honoring forwarded host/protocol headers during redirects and auth entry points.
 - [ ] Legacy laptop release helpers are removed or blocked for standard production releases.
 - [ ] Follow-on implementation steps are broken down before infrastructure changes begin.
@@ -108,3 +111,5 @@ Replace laptop-driven OCI release and private database bootstrap steps with an O
 - The same runtime rollout attempted to replace the current AMD64 runtime container instance with `CI.Standard.A1.Flex` and failed with `OutOfCapacity` in `eu-frankfurt-1`. Until a region-capacity-safe Arm rollout path exists, the default production runtime shape should remain the current AMD64 shape and Arm should stay an explicit opt-in override rather than the default.
 - The same migration path also exposed a reserved-public-IP reconciliation edge case: after importing a pre-existing live load balancer, Terraform still tried to replace that load balancer because OCI readback exposes the attached reserved public IP via exported IP-address details rather than the original create-time `reserved_ips` input. Runtime Terraform must therefore preserve the reserved public IP on first create without forcing destructive ingress replacement on subsequent imported rollouts.
 - The now-successful ingress restoration exposed one remaining production correctness gap in the application tier: after TLS termination at the OCI load balancer, anonymous redirects still generated `http://wortwerk.xyz/login` because the Spring application did not yet trust forwarded host/protocol headers. OCI-resident rollout is only complete once public HTTPS origin handling is correct end to end.
+- The top-level `infrastructure/oci/README.md` later drifted from the implemented release helpers and Terraform contracts. Operator-facing docs must now be corrected to describe the OCI DevOps-first release path, the guarded `deploy.sh runtime` behavior, the DevOps-inclusive destroy order, and the current generated tfvars surface rather than preserving transitional wording from the laptop-era rollout model.
+- The helper docs also drifted into repeating `OCI_PROFILE="FRANKFURT"` even where the repository-owned scripts already default that profile internally. The docs should show the simpler commands by default and reserve explicit `OCI_PROFILE` examples for profile overrides.

@@ -29,8 +29,10 @@ Create the database password secrets in OCI Vault after foundation apply, then p
 Run this after `foundation` has been applied:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/set-db-secrets.sh
+./infrastructure/oci/data/set-db-secrets.sh
 ```
+
+These examples rely on the script default OCI CLI profile name `FRANKFURT`; set `OCI_PROFILE=...` only when you need a different profile.
 
 The script:
 - reads `compartment_ocid`, `vault_id`, and `vault_key_id` from `foundation`
@@ -51,7 +53,6 @@ terraform -chdir=./infrastructure/oci/data apply
 If you prefer to avoid interactive prompts, provide the passwords as environment variables for one run:
 
 ```bash
-OCI_PROFILE="FRANKFURT" \
 POSTGRESQL_ADMIN_PASSWORD="<admin-password>" \
 RUNTIME_DB_PASSWORD="<runtime-password>" \
 ./infrastructure/oci/data/set-db-secrets.sh
@@ -60,7 +61,6 @@ RUNTIME_DB_PASSWORD="<runtime-password>" \
 If you want the script to use different secret names:
 
 ```bash
-OCI_PROFILE="FRANKFURT" \
 POSTGRESQL_ADMIN_SECRET_NAME="custom-admin-secret-name" \
 RUNTIME_DB_SECRET_NAME="custom-runtime-secret-name" \
 ./infrastructure/oci/data/set-db-secrets.sh
@@ -88,13 +88,13 @@ The helper script `../deploy.sh data` writes `foundation.auto.tfvars` for shared
 After the `data` stack has been applied, run the role bootstrap from a machine that can resolve and reach the private PostgreSQL endpoint. This step requires `psql`.
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/deploy.sh db-role
+./infrastructure/oci/deploy.sh db-role
 ```
 
 Or invoke the helper directly:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/bootstrap-runtime-db-role.sh
+./infrastructure/oci/data/bootstrap-runtime-db-role.sh
 ```
 
 The helper:

@@ -9,7 +9,7 @@ Foundation Terraform stack for Wort-Werk OCI environment setup.
 - internet gateway
 - NAT gateway for private DevOps runner egress
 - service gateway for OCI regional services
-- route tables for public load balancer, private runtime, private DevOps, and private database paths
+- route tables for public load balancer, private runtime, private DevOps, and isolated database paths
 - dedicated private subnet for OCI DevOps build and shell stages
 - public subnet for Load Balancer
 - private subnet for Container Instance runtime
@@ -56,7 +56,7 @@ Create the DB password secrets with OCI CLI by following:
 Recommended command:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ../data/set-db-secrets.sh
+../data/set-db-secrets.sh
 ```
 
 Create the runtime TLS Vault secrets by following:
@@ -65,7 +65,7 @@ Create the runtime TLS Vault secrets by following:
 Recommended command:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ../runtime/set-tls-secrets.sh
+../runtime/set-tls-secrets.sh
 ```
 
 ## Key Outputs

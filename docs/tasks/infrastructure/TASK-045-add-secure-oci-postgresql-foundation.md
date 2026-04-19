@@ -7,7 +7,7 @@ related_features:
   - SPEC-008
 owner: @aattard
 created: 2026-04-10
-updated: 2026-04-12
+updated: 2026-04-19
 ---
 
 ## Summary
@@ -21,6 +21,7 @@ Restructure Wort-Werk OCI infrastructure so shared bootstrap resources, PostgreS
 - Keep `runtime` consuming DB connection and secret outputs without storing DB secrets in git.
 - Make the secret bootstrap workflow safe while `runtime_db_username` still defaults to the PostgreSQL admin user.
 - Standardize OCI Terraform naming so fixed Wort-Werk resource names live in locals while deployment-specific values remain variables.
+- Keep database-tier network resource names aligned with the tier they serve so `foundation` naming stays parallel with `runtime` and `devops`.
 - Update deploy and destroy orchestration to use `foundation -> data -> runtime` ordering.
 - Update OCI runbooks and infrastructure docs to reflect the new stack split and bootstrap sequence.
 

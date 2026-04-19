@@ -104,5 +104,5 @@ Before applying `devops/` or triggering a release, make sure `runtime/terraform.
 The recommended path is:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/runtime/set-tls-secrets.sh
+./infrastructure/oci/runtime/set-tls-secrets.sh
 ```

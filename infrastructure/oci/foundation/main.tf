@@ -15,7 +15,7 @@ locals {
   public_route_table_name           = "${local.stack_name}-public"
   runtime_route_table_name          = "${local.stack_name}-runtime"
   devops_route_table_name           = "${local.stack_name}-devops"
-  private_route_table_name          = "${local.stack_name}-private"
+  database_route_table_name         = "${local.stack_name}-database"
   container_nsg_name                = "${local.stack_name}-container"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
   database_nsg_name                 = "${local.stack_name}-database"
@@ -75,6 +75,7 @@ resource "oci_core_route_table" "public" {
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.public_route_table_name
 
+  # Sends all outbound internet traffic (0.0.0.0/0) through the Internet Gateway so the subnet can host internet-reachable resources.
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
@@ -82,10 +83,12 @@ resource "oci_core_route_table" "public" {
   }
 }
 
-resource "oci_core_route_table" "private" {
+resource "oci_core_route_table" "database" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
-  display_name   = local.private_route_table_name
+  display_name   = local.database_route_table_name
+
+  # It intentionally defines no custom routes, so the subnet has no direct path to the internet or OCI services outside the VCN.
 }
 
 resource "oci_core_nat_gateway" "devops" {
@@ -373,7 +376,7 @@ resource "oci_core_subnet" "database" {
   cidr_block                 = var.database_subnet_cidr
   display_name               = local.database_subnet_name
   dns_label                  = "wortdb"
-  route_table_id             = oci_core_route_table.private.id
+  route_table_id             = oci_core_route_table.database.id
   prohibit_public_ip_on_vnic = true
 }
 

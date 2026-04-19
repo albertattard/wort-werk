@@ -1,13 +1,10 @@
 # OCI IaC Layout
 
-Wort-Werk OCI Terraform is split into three stacks.
+Wort-Werk OCI Terraform is split into four stacks.
 
 - `foundation/`: durable shared environment provisioning
 - `data/`: managed PostgreSQL and DB-secret-dependent policy wiring
 - `runtime/`: application rollout by image tag
-
-An in-progress fourth stack now exists for the OCI-native release control plane:
-
 - `devops/`: OCI DevOps managed build/deploy scaffolding for private release execution
 
 Apply order:
@@ -17,7 +14,7 @@ Apply order:
 4. create or rotate runtime TLS secrets in OCI Vault
 5. optionally create the GitHub DevOps connection secret and OCIR push secret in OCI Vault, then apply `devops/`
 6. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
-7. runtime
+7. trigger runtime rollout through OCI DevOps, or run `runtime` only for the one-time backend migration / OCI-resident apply path
 
 ## Set the DB Credentials
 
@@ -29,10 +26,11 @@ Copy-pasteable commands are documented in:
 Recommended command:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/data/set-db-secrets.sh
+./infrastructure/oci/data/set-db-secrets.sh
 ```
 
 The runtime secret is always independent from the PostgreSQL administrator secret. The default runtime DB username is `wortwerk_app`.
+These helper examples rely on the script default OCI CLI profile name `FRANKFURT`; set `OCI_PROFILE=...` only when you need a different profile.
 
 ## Set the Runtime TLS Secrets
 
@@ -41,7 +39,7 @@ After `foundation` has been applied, store the runtime TLS certificate material 
 Recommended command:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/runtime/set-tls-secrets.sh
+./infrastructure/oci/runtime/set-tls-secrets.sh
 ```
 
 Public certificate and private key are required. The CA chain remains optional.
@@ -50,12 +48,12 @@ This is now the only supported runtime TLS source for OCI DevOps-managed release
 After `data` has been applied, bootstrap the dedicated runtime role and grants from a host that can resolve and reach the private PostgreSQL endpoint:
 
 ```bash
-OCI_PROFILE="FRANKFURT" ./infrastructure/oci/deploy.sh db-role
+./infrastructure/oci/deploy.sh db-role
 ```
 
 ## Helper Scripts
 
-- `./infrastructure/oci/deploy.sh all`: apply foundation, data, then runtime.
+- `./infrastructure/oci/deploy.sh all`: apply foundation, data, then runtime. This is not the normal production release command; the runtime step is guarded and succeeds only for the one-time backend migration or from OCI DevOps.
 - `./infrastructure/oci/deploy.sh foundation`: apply foundation only.
 - `./infrastructure/oci/deploy.sh devops`: apply the OCI DevOps release-runner stack after `foundation` and `data` outputs exist.
 - `./infrastructure/oci/deploy.sh data`: apply data only.
@@ -80,7 +78,7 @@ Runtime `image_tag` behavior:
 - `runtime` resolves tag in this order: `IMAGE_TAG` env var, existing `runtime/release.auto.tfvars:image_tag`, current runtime Terraform output `deployed_image_url` tag.
 - If no previous runtime deployment exists and `IMAGE_TAG` is not provided, runtime apply fails with an actionable message.
 
-- `./infrastructure/oci/destroy.sh all`: destroy runtime, data, then foundation.
+- `./infrastructure/oci/destroy.sh all`: destroy runtime, devops, data, then foundation.
 - `./infrastructure/oci/destroy.sh runtime`: destroy runtime only.
 - `./infrastructure/oci/destroy.sh data`: destroy data only.
 - `./infrastructure/oci/destroy.sh devops`: destroy the OCI DevOps release-runner stack only.
@@ -120,15 +118,19 @@ The deploy script writes `runtime/foundation.auto.tfvars` from foundation and da
 - `tls_private_key_secret_ocid`
 - `tls_ca_certificate_secret_ocid`
 
-The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs:
+The deploy script writes `devops/foundation.auto.tfvars` from foundation outputs, data outputs, runtime TLS secret references, and DevOps registry settings:
 - `region`
+- `region_runtime`
 - `home_region`
+- `tenancy_ocid`
 - `compartment_ocid`
 - `devops_subnet_id`
 - `devops_nsg_id`
 - `devops_dynamic_group_name`
 - `image_repository`
 - `image_registry_endpoint`
+- `image_registry_username`
+- `image_registry_password_secret_ocid`
 - `runtime_state_bucket_name`
 - `runtime_subnet_id`
 - `load_balancer_subnet_id`
@@ -162,6 +164,8 @@ DevOps stack requires:
 - `github_connection_token_secret_ocid` in `infrastructure/oci/devops/terraform.tfvars`
 - `image_registry_username` in `infrastructure/oci/devops/terraform.tfvars`
 - `image_registry_password_secret_ocid` in `infrastructure/oci/devops/terraform.tfvars`
+
+Normal production rollout is expected to go through `./infrastructure/oci/devops/run-release.sh`, not through a laptop-local `deploy.sh runtime`.
 
 `release.auto.tfvars` is generated with:
 - `image_tag`
@@ -200,7 +204,7 @@ The default production runtime shape remains `CI.Standard.E4.Flex`.
 ## Database Security Model
 
 - OCI Database with PostgreSQL is provisioned in the `data` stack on a private subnet exposed by `foundation`.
-- The database NSG accepts PostgreSQL traffic only from the application NSG.
+- The database NSG accepts PostgreSQL traffic from the application NSG and the dedicated DevOps NSG; it is not exposed to the public internet.
 - Runtime DB passwords are stored in OCI Vault.
 - Runtime uses the dedicated non-admin role `wortwerk_app` by default.
 - The container instance reads the runtime DB password from OCI Vault by using OCI resource principal.
@@ -210,7 +214,7 @@ The default production runtime shape remains `CI.Standard.E4.Flex`.
 - That baseline DevOps runner policy must also cover runtime load balancer management and reserved public IP use; otherwise OCI-resident runtime apply can bootstrap the database and container instance but still fail at the ingress layer.
 - That DevOps runner policy also needs `read postgres-db-systems` because the build resolves the PostgreSQL CA certificate from OCI connection details rather than from a passed build argument.
 - Data provisions the managed PostgreSQL system and the runtime secret-read policy scoped to the configured runtime secret.
-- DevOps provisions least-privilege secret-read policy statements scoped to the configured GitHub PAT, OCIR push secret, runtime DB password secret, and PostgreSQL administrator password secret.
+- DevOps provisions least-privilege secret-read policy statements scoped to the configured GitHub PAT, OCIR push secret, runtime DB password secret, runtime TLS secret set, and PostgreSQL administrator password secret.
 - The privileged role bootstrap path lives in `data/bootstrap-runtime-db-role.sh` and must run from a machine with private connectivity to the managed PostgreSQL endpoint.
 - The DevOps shell stage is provisioned on private OCI networking for this bootstrap path and must consume OCI-managed release metadata instead of laptop-local `foundation` / `data` state files.
 - The DevOps shell stage must also provision the PostgreSQL client tooling required by `data/bootstrap-runtime-db-role.sh` because the managed shell image does not guarantee `psql` out of the box.
