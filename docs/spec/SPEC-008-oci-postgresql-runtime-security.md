@@ -66,6 +66,7 @@ The apply order must be:
 - Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
 - Keep Terraform naming consistent by using locals for fixed Wort-Werk resource identity and variables only for deployment-specific inputs.
 - Name stable network resources after the tier they serve when possible, rather than using generic labels such as `private` that apply to multiple tiers.
+- Name security-group resources after the network tier they protect, rather than after the application name, so tier boundaries stay readable across runtime, load balancer, database, and DevOps.
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
 - Remove direct public-IP exposure from runtime container instances while preserving access to OCI regional services needed at startup.
 - Document the operational steps needed for first deployment and future rotation of DB credentials.

@@ -16,7 +16,7 @@ locals {
   runtime_route_table_name          = "${local.stack_name}-runtime"
   devops_route_table_name           = "${local.stack_name}-devops"
   database_route_table_name         = "${local.stack_name}-database"
-  container_nsg_name                = "${local.stack_name}-container"
+  runtime_nsg_name                  = "${local.stack_name}-runtime"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
   database_nsg_name                 = "${local.stack_name}-database"
   devops_nsg_name                   = "${local.stack_name}-devops"
@@ -75,7 +75,9 @@ resource "oci_core_route_table" "public" {
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.public_route_table_name
 
-  # Sends all outbound internet traffic (0.0.0.0/0) through the Internet Gateway so the subnet can host internet-reachable resources.
+  # Sends all outbound internet traffic (0.0.0.0/0) through the
+  # Internet Gateway so the subnet can host internet-reachable
+  # resources.
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
@@ -83,20 +85,33 @@ resource "oci_core_route_table" "public" {
   }
 }
 
+# Route table for the database subnet.
+# It intentionally defines no custom routes, so the database tier
+# relies only on implicit local VCN routing and has no direct
+# internet, NAT, or service-gateway path.
+# Access is still restricted separately by NSGs; being on the same
+# VCN is necessary but does not by itself grant database
+# connectivity.
 resource "oci_core_route_table" "database" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.database_route_table_name
-
-  # It intentionally defines no custom routes, so the subnet has no direct path to the internet or OCI services outside the VCN.
 }
 
+# Gives the private DevOps subnet outbound internet access without
+# assigning public IPs to build or deploy runners.
+# Used for external egress such as source fetches and dependency
+# downloads; inbound internet access is still not allowed.
 resource "oci_core_nat_gateway" "devops" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_nat_gateway_name
 }
 
+# Private gateway to OCI regional services for subnets that should
+# stay off the public internet.
+# This lets the runtime and DevOps tiers reach OCI-managed
+# dependencies, such as Vault, through the Oracle Services Network.
 resource "oci_core_service_gateway" "oracle_services" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
@@ -107,11 +122,15 @@ resource "oci_core_service_gateway" "oracle_services" {
   }
 }
 
+# Route table for the private runtime subnet.
 resource "oci_core_route_table" "runtime" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.runtime_route_table_name
 
+  # Sends OCI regional service traffic through the Service Gateway so
+  # the application can reach OCI-managed dependencies, such as Vault,
+  # without requiring public internet access.
   route_rules {
     destination       = data.oci_core_services.oracle_services.services[0].cidr_block
     destination_type  = "SERVICE_CIDR_BLOCK"
@@ -119,17 +138,24 @@ resource "oci_core_route_table" "runtime" {
   }
 }
 
+# Route table for the private DevOps subnet.
 resource "oci_core_route_table" "devops" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_route_table_name
 
+  # Sends OCI regional service traffic through the Service Gateway so
+  # private runners can reach OCI-managed dependencies without using
+  # the public internet.
   route_rules {
     destination       = data.oci_core_services.oracle_services.services[0].cidr_block
     destination_type  = "SERVICE_CIDR_BLOCK"
     network_entity_id = oci_core_service_gateway.oracle_services.id
   }
 
+  # Sends all other outbound traffic through the DevOps NAT gateway so
+  # private runners can reach external systems, such as GitHub, without
+  # requiring public IPs.
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
@@ -137,10 +163,13 @@ resource "oci_core_route_table" "devops" {
   }
 }
 
-resource "oci_core_network_security_group" "wort_werk" {
+# Network Security Group for the runtime application tier.
+# This NSG acts as the VNIC-level firewall boundary for the container
+# instance; ingress and egress rules are defined separately below.
+resource "oci_core_network_security_group" "runtime" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
-  display_name   = local.container_nsg_name
+  display_name   = local.runtime_nsg_name
 }
 
 resource "oci_core_network_security_group" "load_balancer" {
@@ -162,7 +191,7 @@ resource "oci_core_network_security_group" "devops" {
 }
 
 resource "oci_core_network_security_group_security_rule" "ingress_http" {
-  network_security_group_id = oci_core_network_security_group.wort_werk.id
+  network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "INGRESS"
   protocol                  = "6"
   source                    = oci_core_network_security_group.load_balancer.id
@@ -177,7 +206,7 @@ resource "oci_core_network_security_group_security_rule" "ingress_http" {
 }
 
 resource "oci_core_network_security_group_security_rule" "ingress_management" {
-  network_security_group_id = oci_core_network_security_group.wort_werk.id
+  network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "INGRESS"
   protocol                  = "6"
   source                    = oci_core_network_security_group.load_balancer.id
@@ -192,7 +221,7 @@ resource "oci_core_network_security_group_security_rule" "ingress_management" {
 }
 
 resource "oci_core_network_security_group_security_rule" "egress_oci_services" {
-  network_security_group_id = oci_core_network_security_group.wort_werk.id
+  network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "EGRESS"
   protocol                  = "6"
   destination               = data.oci_core_services.oracle_services.services[0].cidr_block
@@ -200,7 +229,7 @@ resource "oci_core_network_security_group_security_rule" "egress_oci_services" {
 }
 
 resource "oci_core_network_security_group_security_rule" "egress_postgresql" {
-  network_security_group_id = oci_core_network_security_group.wort_werk.id
+  network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "EGRESS"
   protocol                  = "6"
   destination               = oci_core_network_security_group.database.id
@@ -248,7 +277,7 @@ resource "oci_core_network_security_group_security_rule" "lb_egress_to_container
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "EGRESS"
   protocol                  = "6"
-  destination               = oci_core_network_security_group.wort_werk.id
+  destination               = oci_core_network_security_group.runtime.id
   destination_type          = "NETWORK_SECURITY_GROUP"
 
   tcp_options {
@@ -263,7 +292,7 @@ resource "oci_core_network_security_group_security_rule" "lb_egress_to_container
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "EGRESS"
   protocol                  = "6"
-  destination               = oci_core_network_security_group.wort_werk.id
+  destination               = oci_core_network_security_group.runtime.id
   destination_type          = "NETWORK_SECURITY_GROUP"
 
   tcp_options {
@@ -278,7 +307,7 @@ resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql"
   network_security_group_id = oci_core_network_security_group.database.id
   direction                 = "INGRESS"
   protocol                  = "6"
-  source                    = oci_core_network_security_group.wort_werk.id
+  source                    = oci_core_network_security_group.runtime.id
   source_type               = "NETWORK_SECURITY_GROUP"
 
   tcp_options {

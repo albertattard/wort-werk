@@ -50,7 +50,7 @@ output "devops_subnet_id" {
 
 output "nsg_id" {
   description = "Network Security Group OCID."
-  value       = oci_core_network_security_group.wort_werk.id
+  value       = oci_core_network_security_group.runtime.id
 }
 
 output "database_nsg_id" {
