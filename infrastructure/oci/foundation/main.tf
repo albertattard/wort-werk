@@ -172,25 +172,35 @@ resource "oci_core_network_security_group" "runtime" {
   display_name   = local.runtime_nsg_name
 }
 
+# Network Security Group for the load balancer tier.
+# This NSG acts as the VNIC-level firewall boundary for the public
+# load balancer; ingress and egress rules are defined separately below.
 resource "oci_core_network_security_group" "load_balancer" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.load_balancer_nsg_name
 }
 
+# Network Security Group for the database tier.
+# This NSG acts as the VNIC-level firewall boundary for PostgreSQL
+# resources; ingress and egress rules are defined separately below.
 resource "oci_core_network_security_group" "database" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.database_nsg_name
 }
 
+# Network Security Group for the DevOps tier.
+# This NSG acts as the VNIC-level firewall boundary for private build
+# and deploy runners; ingress and egress rules are defined separately below.
 resource "oci_core_network_security_group" "devops" {
   compartment_id = oci_identity_compartment.wort_werk.id
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_nsg_name
 }
 
-resource "oci_core_network_security_group_security_rule" "ingress_http" {
+# Allows the load balancer tier to reach the runtime application port.
+resource "oci_core_network_security_group_security_rule" "runtime_ingress_app" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -205,7 +215,8 @@ resource "oci_core_network_security_group_security_rule" "ingress_http" {
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "ingress_management" {
+# Allows the load balancer tier to reach the runtime management port.
+resource "oci_core_network_security_group_security_rule" "runtime_ingress_management" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "INGRESS"
   protocol                  = "6"
