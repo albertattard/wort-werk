@@ -80,7 +80,7 @@ output "load_balancer_public_ip" {
 
 output "app_port" {
   description = "Application port exposed by the container backend."
-  value       = var.app_port
+  value       = var.application_port
 }
 
 output "management_port" {
@@ -89,13 +89,13 @@ output "management_port" {
 }
 
 output "lb_listener_port" {
-  description = "Public listener port exposed by the OCI Load Balancer."
-  value       = var.lb_listener_port
+  description = "Public HTTP listener port exposed by the OCI Load Balancer."
+  value       = 80
 }
 
 output "https_listener_port" {
   description = "Public HTTPS listener port exposed by the OCI Load Balancer."
-  value       = var.https_listener_port
+  value       = 443
 }
 
 output "load_balancer_min_bandwidth_mbps" {

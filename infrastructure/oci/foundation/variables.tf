@@ -54,13 +54,7 @@ variable "devops_subnet_cidr" {
   default     = "10.10.4.0/24"
 }
 
-variable "allowed_ingress_cidr" {
-  description = "CIDR allowed to access HTTP application port (set to 0.0.0.0/0 for public testing)."
-  type        = string
-  default     = "0.0.0.0/0"
-}
-
-variable "app_port" {
+variable "application_port" {
   description = "Application ingress port exposed by Wort-Werk."
   type        = number
   default     = 8080
@@ -70,18 +64,6 @@ variable "management_port" {
   description = "Internal Spring Actuator management port exposed only to the OCI Load Balancer for health checks."
   type        = number
   default     = 8081
-}
-
-variable "lb_listener_port" {
-  description = "Public HTTP listener port on the OCI Load Balancer."
-  type        = number
-  default     = 80
-}
-
-variable "https_listener_port" {
-  description = "Public HTTPS listener port on the OCI Load Balancer."
-  type        = number
-  default     = 443
 }
 
 variable "load_balancer_min_bandwidth_mbps" {

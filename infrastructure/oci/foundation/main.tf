@@ -16,6 +16,7 @@ locals {
   runtime_route_table_name          = "${local.stack_name}-runtime"
   devops_route_table_name           = "${local.stack_name}-devops"
   database_route_table_name         = "${local.stack_name}-database"
+  database_port                     = 5432
   runtime_nsg_name                  = "${local.stack_name}-runtime"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
   database_nsg_name                 = "${local.stack_name}-database"
@@ -200,7 +201,7 @@ resource "oci_core_network_security_group" "devops" {
 }
 
 # Allows the load balancer tier to reach the runtime application port.
-resource "oci_core_network_security_group_security_rule" "runtime_ingress_app" {
+resource "oci_core_network_security_group_security_rule" "runtime_ingress_application" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -209,8 +210,8 @@ resource "oci_core_network_security_group_security_rule" "runtime_ingress_app" {
 
   tcp_options {
     destination_port_range {
-      min = var.app_port
-      max = var.app_port
+      min = var.application_port
+      max = var.application_port
     }
   }
 }
@@ -231,6 +232,7 @@ resource "oci_core_network_security_group_security_rule" "runtime_ingress_manage
   }
 }
 
+# Allows the runtime tier to send outbound traffic to OCI regional services, such as Vault.
 resource "oci_core_network_security_group_security_rule" "egress_oci_services" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "EGRESS"
@@ -239,6 +241,7 @@ resource "oci_core_network_security_group_security_rule" "egress_oci_services" {
   destination_type          = "SERVICE_CIDR_BLOCK"
 }
 
+# Allows the runtime tier to reach the database tier over PostgreSQL.
 resource "oci_core_network_security_group_security_rule" "egress_postgresql" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "EGRESS"
@@ -248,43 +251,46 @@ resource "oci_core_network_security_group_security_rule" "egress_postgresql" {
 
   tcp_options {
     destination_port_range {
-      min = 5432
-      max = 5432
+      min = local.database_port
+      max = local.database_port
     }
   }
 }
 
+# Allows HTTP inbound traffic from the internet to reach the load balancer on port 80.
 resource "oci_core_network_security_group_security_rule" "lb_ingress_http" {
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "INGRESS"
   protocol                  = "6"
-  source                    = var.allowed_ingress_cidr
+  source                    = "0.0.0.0/0"
   source_type               = "CIDR_BLOCK"
 
   tcp_options {
     destination_port_range {
-      min = var.lb_listener_port
-      max = var.lb_listener_port
+      min = 80
+      max = 80
     }
   }
 }
 
+# Allows HTTPS inbound traffic from the internet to reach the load balancer on port 443.
 resource "oci_core_network_security_group_security_rule" "lb_ingress_https" {
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "INGRESS"
   protocol                  = "6"
-  source                    = var.allowed_ingress_cidr
+  source                    = "0.0.0.0/0"
   source_type               = "CIDR_BLOCK"
 
   tcp_options {
     destination_port_range {
-      min = var.https_listener_port
-      max = var.https_listener_port
+      min = 443
+      max = 443
     }
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "lb_egress_to_container" {
+# Allows the load balancer tier to forward application traffic to the runtime tier on the application port.
+resource "oci_core_network_security_group_security_rule" "lb_egress_to_runtime" {
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "EGRESS"
   protocol                  = "6"
@@ -293,13 +299,13 @@ resource "oci_core_network_security_group_security_rule" "lb_egress_to_container
 
   tcp_options {
     destination_port_range {
-      min = var.app_port
-      max = var.app_port
+      min = var.application_port
+      max = var.application_port
     }
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "lb_egress_to_container_management" {
+resource "oci_core_network_security_group_security_rule" "lb_egress_to_runtime_management" {
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "EGRESS"
   protocol                  = "6"
@@ -323,8 +329,8 @@ resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql"
 
   tcp_options {
     destination_port_range {
-      min = 5432
-      max = 5432
+      min = local.database_port
+      max = local.database_port
     }
   }
 }
@@ -338,8 +344,8 @@ resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql_
 
   tcp_options {
     destination_port_range {
-      min = 5432
-      max = 5432
+      min = local.database_port
+      max = local.database_port
     }
   }
 }
@@ -353,8 +359,8 @@ resource "oci_core_network_security_group_security_rule" "devops_egress_postgres
 
   tcp_options {
     destination_port_range {
-      min = 5432
-      max = 5432
+      min = local.database_port
+      max = local.database_port
     }
   }
 }

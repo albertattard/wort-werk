@@ -23,6 +23,8 @@ Restructure Wort-Werk OCI infrastructure so shared bootstrap resources, PostgreS
 - Standardize OCI Terraform naming so fixed Wort-Werk resource names live in locals while deployment-specific values remain variables.
 - Keep database-tier network resource names aligned with the tier they serve so `foundation` naming stays parallel with `runtime` and `devops`.
 - Keep runtime-tier network security group names aligned with the runtime tier itself so NSG naming stays parallel with load balancer, database, and DevOps tiers.
+- Keep network security group rule names aligned with the tiers they connect so the traffic flow stays readable across load balancer, runtime, database, and DevOps.
+- Keep fixed infrastructure port values, such as the PostgreSQL service port, centralized in locals when they are part of the stable network contract rather than deployment inputs.
 - Update deploy and destroy orchestration to use `foundation -> data -> runtime` ordering.
 - Update OCI runbooks and infrastructure docs to reflect the new stack split and bootstrap sequence.
 
