@@ -13,15 +13,9 @@ variable "home_region" {
   type        = string
 }
 
-variable "parent_compartment_ocid" {
-  description = "Parent compartment OCID under which the Wort-Werk compartment will be created."
+variable "compartment_ocid" {
+  description = "The Wort-Werk compartment OCID."
   type        = string
-}
-
-variable "compartment_name" {
-  description = "Name of the dedicated compartment created for Wort-Werk."
-  type        = string
-  default     = "wort-werk"
 }
 
 variable "vcn_cidr" {

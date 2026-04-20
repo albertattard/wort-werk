@@ -7,14 +7,62 @@ Wort-Werk OCI Terraform is split into four stacks.
 - `runtime/`: application rollout by image tag
 - `devops/`: OCI DevOps managed build/deploy scaffolding for private release execution
 
+## Bootstrap OCI Control Plane
+
+The Wort-Werk compartment and the shared OCI Object Storage bucket used for Terraform remote state are bootstrap prerequisites and are no longer provisioned by `foundation`.
+
+Current bootstrap names:
+
+```text
+wort-werk
+wort-werk-terraform-state
+```
+
+Create them with the OCI CLI before using any Terraform stack/backend configuration:
+
+```bash
+WORT_WERK_COMPARTMENT_OCID="$(oci iam compartment create \
+  --compartment-id "<parent-compartment-ocid>" \
+  --name "wort-werk" \
+  --description "Compartment for Wort-Werk resources" \
+  --wait-for-state ACTIVE \
+  --query 'data.id' \
+  --raw-output)"
+
+OCI_NAMESPACE="$(oci os ns get --query 'data' --raw-output)"
+
+oci os bucket create \
+  --namespace-name "${OCI_NAMESPACE}" \
+  --compartment-id "${WORT_WERK_COMPARTMENT_OCID}" \
+  --name "wort-werk-terraform-state" \
+  --public-access-type NoPublicAccess \
+  --storage-tier Standard \
+  --versioning Enabled
+```
+
+If the compartment already exists, resolve its OCID first instead of creating it again:
+
+```bash
+WORT_WERK_COMPARTMENT_OCID="$(oci iam compartment list \
+  --compartment-id-in-subtree true \
+  --all \
+  --access-level ACCESSIBLE \
+  --query "data[?name=='wort-werk'] | [0].id" \
+  --raw-output)"
+```
+
+The compartment and state bucket are durable control-plane infrastructure. `destroy.sh all` is not expected to delete them.
+
 Apply order:
-1. foundation
-2. create or rotate DB secrets in OCI Vault
-3. data
-4. create or rotate runtime TLS secrets in OCI Vault
-5. optionally create the GitHub DevOps connection secret and OCIR push secret in OCI Vault, then apply `devops/`
-6. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
-7. trigger runtime rollout through OCI DevOps, or run `runtime` only for the one-time backend migration / OCI-resident apply path
+1. bootstrap the Wort-Werk compartment
+2. bootstrap the shared Terraform state bucket inside that compartment
+3. foundation
+4. create or rotate DB secrets in OCI Vault
+5. data
+6. create or rotate runtime TLS secrets in OCI Vault
+7. optionally create the GitHub DevOps connection secret and OCIR push secret in OCI Vault, then apply `devops/`
+8. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
+9. trigger runtime rollout through OCI DevOps, or run `runtime` only for the one-time backend migration / OCI-resident apply path
 
 ## Set the DB Credentials
 
@@ -64,7 +112,7 @@ After `data` has been applied, bootstrap the dedicated runtime role and grants f
 
 ## One-Time Runtime State Migration
 
-Before the first OCI DevOps-managed rollout, migrate the existing local runtime Terraform state into the OCI backend bucket created by `foundation`:
+Before the first OCI DevOps-managed rollout, migrate the existing local runtime Terraform state into the OCI backend bucket created during the bootstrap step:
 
 ```bash
 RUNTIME_BACKEND_MIGRATE=true ./infrastructure/oci/deploy.sh runtime

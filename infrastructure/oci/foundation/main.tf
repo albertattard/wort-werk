@@ -9,7 +9,6 @@ provider "oci" {
 
 locals {
   stack_name                        = "wort-werk"
-  compartment_description           = "Compartment for Wort-Werk resources"
   vault_name                        = local.stack_name
   vault_key_name                    = "${local.stack_name}-secrets"
   public_route_table_name           = "${local.stack_name}-public"
@@ -49,30 +48,22 @@ data "oci_core_services" "oracle_services" {
   }
 }
 
-resource "oci_identity_compartment" "wort_werk" {
-  provider       = oci.home
-  compartment_id = var.parent_compartment_ocid
-  name           = var.compartment_name
-  description    = local.compartment_description
-  enable_delete  = true
-}
-
 resource "oci_core_vcn" "wort_werk" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   cidr_blocks    = [var.vcn_cidr]
   display_name   = local.stack_name
   dns_label      = "wortwerk"
 }
 
 resource "oci_core_internet_gateway" "wort_werk" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.stack_name
   enabled        = true
 }
 
 resource "oci_core_route_table" "public" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.public_route_table_name
 
@@ -94,7 +85,7 @@ resource "oci_core_route_table" "public" {
 # VCN is necessary but does not by itself grant database
 # connectivity.
 resource "oci_core_route_table" "database" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.database_route_table_name
 }
@@ -104,7 +95,7 @@ resource "oci_core_route_table" "database" {
 # Used for external egress such as source fetches and dependency
 # downloads; inbound internet access is still not allowed.
 resource "oci_core_nat_gateway" "devops" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_nat_gateway_name
 }
@@ -114,7 +105,7 @@ resource "oci_core_nat_gateway" "devops" {
 # This lets the runtime and DevOps tiers reach OCI-managed
 # dependencies, such as Vault, through the Oracle Services Network.
 resource "oci_core_service_gateway" "oracle_services" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.service_gateway_name
 
@@ -125,7 +116,7 @@ resource "oci_core_service_gateway" "oracle_services" {
 
 # Route table for the private runtime subnet.
 resource "oci_core_route_table" "runtime" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.runtime_route_table_name
 
@@ -141,7 +132,7 @@ resource "oci_core_route_table" "runtime" {
 
 # Route table for the private DevOps subnet.
 resource "oci_core_route_table" "devops" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_route_table_name
 
@@ -168,7 +159,7 @@ resource "oci_core_route_table" "devops" {
 # This NSG acts as the VNIC-level firewall boundary for the container
 # instance; ingress and egress rules are defined separately below.
 resource "oci_core_network_security_group" "runtime" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.runtime_nsg_name
 }
@@ -177,7 +168,7 @@ resource "oci_core_network_security_group" "runtime" {
 # This NSG acts as the VNIC-level firewall boundary for the public
 # load balancer; ingress and egress rules are defined separately below.
 resource "oci_core_network_security_group" "load_balancer" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.load_balancer_nsg_name
 }
@@ -186,7 +177,7 @@ resource "oci_core_network_security_group" "load_balancer" {
 # This NSG acts as the VNIC-level firewall boundary for PostgreSQL
 # resources; ingress and egress rules are defined separately below.
 resource "oci_core_network_security_group" "database" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.database_nsg_name
 }
@@ -195,7 +186,7 @@ resource "oci_core_network_security_group" "database" {
 # This NSG acts as the VNIC-level firewall boundary for private build
 # and deploy runners; ingress and egress rules are defined separately below.
 resource "oci_core_network_security_group" "devops" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_nsg_name
 }
@@ -446,7 +437,7 @@ resource "oci_core_network_security_group_security_rule" "devops_egress_to_inter
 # Public subnet for the load balancer tier.
 # It uses the public route table and permits public IP assignment so the load balancer can accept traffic from the internet.
 resource "oci_core_subnet" "load_balancer" {
-  compartment_id             = oci_identity_compartment.wort_werk.id
+  compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_vcn.wort_werk.id
   cidr_block                 = var.load_balancer_subnet_cidr
   display_name               = local.stack_name
@@ -458,7 +449,7 @@ resource "oci_core_subnet" "load_balancer" {
 # Private subnet for the runtime tier.
 # It uses the runtime route table and forbids public IP assignment so the application runs without direct internet exposure.
 resource "oci_core_subnet" "runtime" {
-  compartment_id             = oci_identity_compartment.wort_werk.id
+  compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_vcn.wort_werk.id
   cidr_block                 = var.runtime_subnet_cidr
   display_name               = local.runtime_subnet_name
@@ -470,7 +461,7 @@ resource "oci_core_subnet" "runtime" {
 # Private subnet for the database tier.
 # It uses the database route table and forbids public IP assignment so the database has no direct public network path.
 resource "oci_core_subnet" "database" {
-  compartment_id             = oci_identity_compartment.wort_werk.id
+  compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_vcn.wort_werk.id
   cidr_block                 = var.database_subnet_cidr
   display_name               = local.database_subnet_name
@@ -482,7 +473,7 @@ resource "oci_core_subnet" "database" {
 # Private subnet for the DevOps tier.
 # It uses the DevOps route table and forbids public IP assignment so build and deploy runners stay private while using controlled outbound access.
 resource "oci_core_subnet" "devops" {
-  compartment_id             = oci_identity_compartment.wort_werk.id
+  compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_vcn.wort_werk.id
   cidr_block                 = var.devops_subnet_cidr
   display_name               = local.devops_subnet_name
@@ -492,13 +483,13 @@ resource "oci_core_subnet" "devops" {
 }
 
 resource "oci_kms_vault" "wort_werk" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   display_name   = local.vault_name
   vault_type     = "DEFAULT"
 }
 
 resource "oci_kms_key" "wort_werk" {
-  compartment_id           = oci_identity_compartment.wort_werk.id
+  compartment_id           = var.compartment_ocid
   display_name             = local.vault_key_name
   management_endpoint      = oci_kms_vault.wort_werk.management_endpoint
   protection_mode          = "SOFTWARE"
@@ -517,7 +508,7 @@ resource "oci_identity_dynamic_group" "runtime" {
   compartment_id = var.tenancy_ocid
   name           = local.runtime_dynamic_group_name
   description    = local.runtime_dynamic_group_description
-  matching_rule  = "ALL {resource.type = 'computecontainerinstance', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}"
+  matching_rule  = "ALL {resource.type = 'computecontainerinstance', resource.compartment.id = '${var.compartment_ocid}'}"
 }
 
 # Dynamic group for the Wort-Werk OCI DevOps resources.
@@ -527,51 +518,40 @@ resource "oci_identity_dynamic_group" "devops" {
   compartment_id = var.tenancy_ocid
   name           = local.devops_dynamic_group_name
   description    = local.devops_dynamic_group_description
-  matching_rule  = "ANY {ALL {resource.type = 'devopsbuildpipeline', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}, ALL {resource.type = 'devopsdeploypipeline', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}, ALL {resource.type = 'devopsconnection', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}, ALL {resource.type = 'devopsrepository', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}}"
+  matching_rule  = "ANY {ALL {resource.type = 'devopsbuildpipeline', resource.compartment.id = '${var.compartment_ocid}'}, ALL {resource.type = 'devopsdeploypipeline', resource.compartment.id = '${var.compartment_ocid}'}, ALL {resource.type = 'devopsconnection', resource.compartment.id = '${var.compartment_ocid}'}, ALL {resource.type = 'devopsrepository', resource.compartment.id = '${var.compartment_ocid}'}}"
 }
 
 resource "oci_identity_policy" "devops_runner" {
   provider       = oci.home
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   name           = local.devops_runner_policy_name
   description    = local.devops_runner_policy_description
   statements = [
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE devops-family               IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    subnets                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    vnics                       IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    network-security-groups     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE load-balancers              IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    public-ips                  IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    dhcp-options                IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    ons-topics                  IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO READ   postgres-db-systems         IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO READ   buckets                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE objects                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id} WHERE target.bucket.name = '${local.release_handoff_bucket_name}'",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE objects                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id} WHERE target.bucket.name = '${local.terraform_state_bucket_name}'",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE compute-container-instances IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
-    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE compute-containers          IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}"
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE devops-family               IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    subnets                     IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    vnics                       IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    network-security-groups     IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE load-balancers              IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    public-ips                  IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    dhcp-options                IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    ons-topics                  IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO READ   postgres-db-systems         IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO READ   buckets                     IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE objects                     IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.bucket.name = '${local.release_handoff_bucket_name}'",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE objects                     IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.bucket.name = '${local.terraform_state_bucket_name}'",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE compute-container-instances IN COMPARTMENT ID ${var.compartment_ocid}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE compute-containers          IN COMPARTMENT ID ${var.compartment_ocid}"
   ]
 }
 
-# Bucket for remote Terraform state.
-# This creates the Object Storage bucket used by OCI Terraform backends; which state files are stored here depends on each stack's backend configuration.
-resource "oci_objectstorage_bucket" "terraform_state" {
-  compartment_id = oci_identity_compartment.wort_werk.id
-  namespace      = data.oci_objectstorage_namespace.this.namespace
-  name           = local.terraform_state_bucket_name
-  access_type    = "NoPublicAccess"
-  storage_tier   = "Standard"
-  versioning     = "Enabled"
-}
-
 resource "oci_artifacts_container_repository" "wort_werk" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   display_name   = var.ocir_repository_name
   is_public      = false
 }
 
 resource "oci_core_public_ip" "load_balancer" {
-  compartment_id = oci_identity_compartment.wort_werk.id
+  compartment_id = var.compartment_ocid
   display_name   = local.load_balancer_public_ip_name
   lifetime       = "RESERVED"
 

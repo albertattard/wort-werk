@@ -1,6 +1,6 @@
 output "compartment_ocid" {
   description = "Compartment OCID used by Wort-Werk resources."
-  value       = oci_identity_compartment.wort_werk.id
+  value       = var.compartment_ocid
 }
 
 output "region" {
@@ -160,5 +160,5 @@ output "image_repository" {
 
 output "terraform_state_bucket_name" {
   description = "Object Storage bucket name used for Terraform remote state."
-  value       = oci_objectstorage_bucket.terraform_state.name
+  value       = local.terraform_state_bucket_name
 }

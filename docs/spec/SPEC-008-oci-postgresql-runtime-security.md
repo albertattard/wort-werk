@@ -40,8 +40,8 @@ The infrastructure must satisfy all of the following:
 Use a three-stack OCI split:
 
 - `foundation`
-  - provisions shared environment resources required before secrets or database creation
-  - owns compartment, shared network, Vault, KMS key, OCIR repository, reserved public IP, and baseline IAM/dynamic-group scaffolding
+  - provisions shared environment resources required after bootstrap control-plane prerequisites exist
+  - owns shared network, Vault, KMS key, OCIR repository, reserved public IP, and baseline IAM/dynamic-group scaffolding
 - `data`
   - provisions PostgreSQL-specific resources and secret-dependent IAM/policy wiring
   - consumes shared foundation outputs and Vault secret OCIDs
@@ -49,11 +49,12 @@ Use a three-stack OCI split:
   - provisions the application runtime and consumes database connection outputs and secret references from `data`
 
 The apply order must be:
-1. `foundation`
-2. create or rotate required Vault secrets outside Terraform
-3. `data`
-4. bootstrap or rotate the dedicated runtime DB role from a host with private DB connectivity
-5. `runtime` or `release`
+1. bootstrap the Wort-Werk compartment and shared Terraform state bucket outside Terraform
+2. `foundation`
+3. create or rotate required Vault secrets outside Terraform
+4. `data`
+5. bootstrap or rotate the dedicated runtime DB role from a host with private DB connectivity
+6. `runtime` or `release`
 
 ## Scope
 

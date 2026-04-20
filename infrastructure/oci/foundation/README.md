@@ -2,9 +2,45 @@
 
 Foundation Terraform stack for Wort-Werk OCI environment setup.
 
+## Bootstrap Prerequisite
+
+`foundation` no longer creates the Wort-Werk compartment or the shared Terraform remote-state bucket. Create both first with the OCI CLI:
+
+```bash
+WORT_WERK_COMPARTMENT_OCID="$(oci iam compartment create \
+  --compartment-id "<parent-compartment-ocid>" \
+  --name "wort-werk" \
+  --description "Compartment for Wort-Werk resources" \
+  --wait-for-state ACTIVE \
+  --query 'data.id' \
+  --raw-output)"
+
+OCI_NAMESPACE="$(oci os ns get --query 'data' --raw-output)"
+
+oci os bucket create \
+  --namespace-name "${OCI_NAMESPACE}" \
+  --compartment-id "${WORT_WERK_COMPARTMENT_OCID}" \
+  --name "wort-werk-terraform-state" \
+  --public-access-type NoPublicAccess \
+  --storage-tier Standard \
+  --versioning Enabled
+```
+
+If the compartment already exists, resolve its OCID first instead of creating it again:
+
+```bash
+WORT_WERK_COMPARTMENT_OCID="$(oci iam compartment list \
+  --compartment-id-in-subtree true \
+  --all \
+  --access-level ACCESSIBLE \
+  --query "data[?name=='wort-werk'] | [0].id" \
+  --raw-output)"
+```
+
+The compartment and state bucket are durable bootstrap infrastructure and are expected to outlive `foundation` destroy/recreate cycles.
+
 ## Provisions
 
-- dedicated compartment
 - VCN
 - internet gateway
 - NAT gateway for private DevOps runner egress
@@ -28,6 +64,8 @@ Key rotation note:
 
 ## Does Not Provision
 
+- Wort-Werk compartment
+- Terraform remote-state bucket
 - OCI Database with PostgreSQL
 - Container Instance runtime
 - load balancer, TLS, DNS
@@ -41,8 +79,8 @@ terraform plan
 terraform apply
 ```
 
-Compartment operations run against `home_region` (OCI tenancy home region).
-The Wort-Werk compartment is created under `parent_compartment_ocid`.
+Compartment bootstrap operations run against `home_region` (OCI tenancy home region).
+`foundation` expects the existing Wort-Werk compartment OCID to be provided through `compartment_ocid`.
 
 After foundation apply:
 1. create or rotate the required Vault secrets outside Terraform
