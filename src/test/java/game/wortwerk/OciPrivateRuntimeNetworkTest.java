@@ -42,6 +42,19 @@ class OciPrivateRuntimeNetworkTest {
         assertThat(foundationVariables).contains("variable \"load_balancer_subnet_cidr\"");
     }
 
+    @Test
+    void shouldCentralizeFoundationFreeformTagsForTaggedResources() throws IOException {
+        String foundationMain = read("infrastructure/oci/foundation/main.tf");
+
+        assertThat(foundationMain).contains("freeform_tags = {");
+        assertThat(foundationMain).contains("group_id = local.stack_name");
+        assertThat(foundationMain).contains("resource \"oci_core_vcn\" \"wort_werk\"");
+        assertThat(foundationMain).contains("resource \"oci_core_subnet\" \"runtime\"");
+        assertThat(foundationMain).contains("resource \"oci_kms_vault\" \"wort_werk\"");
+        assertThat(foundationMain).contains("freeform_tags  = local.freeform_tags");
+        assertThat(foundationMain).contains("freeform_tags              = local.freeform_tags");
+    }
+
     private String read(String relativePath) throws IOException {
         return Files.readString(Path.of(relativePath), StandardCharsets.UTF_8);
     }

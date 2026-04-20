@@ -34,6 +34,10 @@ locals {
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
   devops_nat_gateway_name           = "${local.stack_name}-devops"
   service_gateway_name              = "${local.stack_name}-services"
+  freeform_tags = {
+    group_id = local.stack_name
+    tier     = "foundation"
+  }
 }
 
 data "oci_objectstorage_namespace" "this" {
@@ -53,6 +57,7 @@ resource "oci_core_vcn" "wort_werk" {
   cidr_blocks    = [var.vcn_cidr]
   display_name   = local.stack_name
   dns_label      = "wortwerk"
+  freeform_tags  = local.freeform_tags
 }
 
 resource "oci_core_internet_gateway" "wort_werk" {
@@ -60,12 +65,14 @@ resource "oci_core_internet_gateway" "wort_werk" {
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.stack_name
   enabled        = true
+  freeform_tags  = local.freeform_tags
 }
 
 resource "oci_core_route_table" "public" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.public_route_table_name
+  freeform_tags  = local.freeform_tags
 
   # Sends all outbound internet traffic (0.0.0.0/0) through the
   # Internet Gateway so the subnet can host internet-reachable
@@ -88,6 +95,7 @@ resource "oci_core_route_table" "database" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.database_route_table_name
+  freeform_tags  = local.freeform_tags
 }
 
 # Gives the private DevOps subnet outbound internet access without
@@ -98,6 +106,7 @@ resource "oci_core_nat_gateway" "devops" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_nat_gateway_name
+  freeform_tags  = local.freeform_tags
 }
 
 # Private gateway to OCI regional services for subnets that should
@@ -108,6 +117,7 @@ resource "oci_core_service_gateway" "oracle_services" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.service_gateway_name
+  freeform_tags  = local.freeform_tags
 
   services {
     service_id = data.oci_core_services.oracle_services.services[0].id
@@ -119,6 +129,7 @@ resource "oci_core_route_table" "runtime" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.runtime_route_table_name
+  freeform_tags  = local.freeform_tags
 
   # Sends OCI regional service traffic through the Service Gateway so
   # the application can reach OCI-managed dependencies, such as Vault,
@@ -135,6 +146,7 @@ resource "oci_core_route_table" "devops" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_route_table_name
+  freeform_tags  = local.freeform_tags
 
   # Sends OCI regional service traffic through the Service Gateway so
   # private runners can reach OCI-managed dependencies without using
@@ -162,6 +174,7 @@ resource "oci_core_network_security_group" "runtime" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.runtime_nsg_name
+  freeform_tags  = local.freeform_tags
 }
 
 # Network Security Group for the load balancer tier.
@@ -171,6 +184,7 @@ resource "oci_core_network_security_group" "load_balancer" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.load_balancer_nsg_name
+  freeform_tags  = local.freeform_tags
 }
 
 # Network Security Group for the database tier.
@@ -180,6 +194,7 @@ resource "oci_core_network_security_group" "database" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.database_nsg_name
+  freeform_tags  = local.freeform_tags
 }
 
 # Network Security Group for the DevOps tier.
@@ -189,6 +204,7 @@ resource "oci_core_network_security_group" "devops" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
   display_name   = local.devops_nsg_name
+  freeform_tags  = local.freeform_tags
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -444,6 +460,7 @@ resource "oci_core_subnet" "load_balancer" {
   dns_label                  = "wortwerk"
   route_table_id             = oci_core_route_table.public.id
   prohibit_public_ip_on_vnic = false
+  freeform_tags              = local.freeform_tags
 }
 
 # Private subnet for the runtime tier.
@@ -456,6 +473,7 @@ resource "oci_core_subnet" "runtime" {
   dns_label                  = "wortrun"
   route_table_id             = oci_core_route_table.runtime.id
   prohibit_public_ip_on_vnic = true
+  freeform_tags              = local.freeform_tags
 }
 
 # Private subnet for the database tier.
@@ -468,6 +486,7 @@ resource "oci_core_subnet" "database" {
   dns_label                  = "wortdb"
   route_table_id             = oci_core_route_table.database.id
   prohibit_public_ip_on_vnic = true
+  freeform_tags              = local.freeform_tags
 }
 
 # Private subnet for the DevOps tier.
@@ -480,12 +499,14 @@ resource "oci_core_subnet" "devops" {
   dns_label                  = "wortdev"
   route_table_id             = oci_core_route_table.devops.id
   prohibit_public_ip_on_vnic = true
+  freeform_tags              = local.freeform_tags
 }
 
 resource "oci_kms_vault" "wort_werk" {
   compartment_id = var.compartment_ocid
   display_name   = local.vault_name
   vault_type     = "DEFAULT"
+  freeform_tags  = local.freeform_tags
 }
 
 resource "oci_kms_key" "wort_werk" {
@@ -494,6 +515,7 @@ resource "oci_kms_key" "wort_werk" {
   management_endpoint      = oci_kms_vault.wort_werk.management_endpoint
   protection_mode          = "SOFTWARE"
   is_auto_rotation_enabled = false
+  freeform_tags            = local.freeform_tags
 
   key_shape {
     algorithm = "AES"
@@ -548,12 +570,14 @@ resource "oci_artifacts_container_repository" "wort_werk" {
   compartment_id = var.compartment_ocid
   display_name   = var.ocir_repository_name
   is_public      = false
+  freeform_tags  = local.freeform_tags
 }
 
 resource "oci_core_public_ip" "load_balancer" {
   compartment_id = var.compartment_ocid
   display_name   = local.load_balancer_public_ip_name
   lifetime       = "RESERVED"
+  freeform_tags  = local.freeform_tags
 
   lifecycle {
     ignore_changes = [private_ip_id]

@@ -4,7 +4,7 @@ title: OCI PostgreSQL and Secure Runtime Connectivity
 status: in_progress
 priority: high
 owner: @aattard
-last_updated: 2026-04-19
+last_updated: 2026-04-20
 ---
 
 ## Problem
@@ -66,6 +66,7 @@ The apply order must be:
 - Introduce a dedicated non-admin runtime DB role and document its privilege boundary.
 - Split OCI Terraform into `foundation`, `data`, and `runtime` responsibilities.
 - Keep Terraform naming consistent by using locals for fixed Wort-Werk resource identity and variables only for deployment-specific inputs.
+- Apply shared freeform resource tags from centralized locals where the foundation-managed OCI resource type supports tagging so operational grouping stays consistent without duplicating tag maps across resources.
 - Name stable network resources after the tier they serve when possible, rather than using generic labels such as `private` that apply to multiple tiers.
 - Name security-group resources after the network tier they protect, rather than after the application name, so tier boundaries stay readable across runtime, load balancer, database, and DevOps.
 - Name security-group rules after the network tiers they connect, rather than implementation details such as containers, so traffic boundaries stay readable.

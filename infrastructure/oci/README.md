@@ -25,6 +25,7 @@ WORT_WERK_COMPARTMENT_OCID="$(oci iam compartment create \
   --compartment-id "<parent-compartment-ocid>" \
   --name "wort-werk" \
   --description "Compartment for Wort-Werk resources" \
+  --freeform-tags '{"group_id":"wort-werk","tier":"non-managed"}' \
   --wait-for-state ACTIVE \
   --query 'data.id' \
   --raw-output)"
@@ -35,10 +36,13 @@ oci os bucket create \
   --namespace-name "${OCI_NAMESPACE}" \
   --compartment-id "${WORT_WERK_COMPARTMENT_OCID}" \
   --name "wort-werk-terraform-state" \
+  --freeform-tags '{"group_id":"wort-werk","tier":"non-managed"}' \
   --public-access-type NoPublicAccess \
   --storage-tier Standard \
   --versioning Enabled
 ```
+
+These bootstrap resources are created outside Terraform, so they use `tier=non-managed` to distinguish them from the Terraform-managed OCI stacks.
 
 If the compartment already exists, resolve its OCID first instead of creating it again:
 
