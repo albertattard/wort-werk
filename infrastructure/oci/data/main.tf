@@ -84,6 +84,7 @@ resource "oci_psql_db_system" "wort_werk" {
       error_message = "runtime_db_username must be a dedicated non-admin application role and must not equal postgresql_admin_username."
     }
   }
+
   freeform_tags = local.freeform_tags
 }
 

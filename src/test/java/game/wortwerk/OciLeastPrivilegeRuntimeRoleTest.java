@@ -15,6 +15,7 @@ class OciLeastPrivilegeRuntimeRoleTest {
     void shouldDefaultRuntimeUsernameToDedicatedNonAdminRole() throws IOException {
         String dataVariables = read("infrastructure/oci/data/variables.tf");
         String dataMain = read("infrastructure/oci/data/main.tf");
+        String dataVersions = read("infrastructure/oci/data/versions.tf");
 
         assertThat(dataVariables).contains("default     = \"wortwerk_app\"");
         assertThat(dataVariables).contains("variable \"postgresql_instance_ocpu_count\"");
@@ -26,6 +27,7 @@ class OciLeastPrivilegeRuntimeRoleTest {
         assertThat(dataMain).contains("instance_ocpu_count         = var.postgresql_instance_ocpu_count");
         assertThat(dataMain).contains("instance_memory_size_in_gbs = var.postgresql_instance_memory_size_in_gbs");
         assertThat(dataMain).doesNotContain("count          = var.runtime_db_password_secret_ocid != \"\" ? 1 : 0");
+        assertThat(dataVersions).contains("backend \"oci\" {}");
     }
 
     @Test
