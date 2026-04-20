@@ -24,6 +24,11 @@ Create the database password secrets in OCI Vault after foundation apply, then p
 - `postgresql_admin_password_secret_ocid`
 - `runtime_db_password_secret_ocid`
 
+Optional sizing inputs:
+- `postgresql_shape`
+- `postgresql_instance_ocpu_count`
+- `postgresql_instance_memory_size_in_gbs`
+
 ## Set the DB Credentials with OCI CLI
 
 Run this after `foundation` has been applied:
@@ -82,6 +87,7 @@ terraform apply
 ```
 
 The helper script `../deploy.sh data` writes `foundation.auto.tfvars` for shared inputs automatically.
+The default PostgreSQL shape is the flex shape `PostgreSQL.VM.Standard.E5.Flex`, so the stack also sets explicit sizing defaults of `2` OCPUs and `32` GB memory.
 
 ## Bootstrap the Dedicated Runtime DB Role
 

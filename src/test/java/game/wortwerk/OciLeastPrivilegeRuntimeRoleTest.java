@@ -17,8 +17,14 @@ class OciLeastPrivilegeRuntimeRoleTest {
         String dataMain = read("infrastructure/oci/data/main.tf");
 
         assertThat(dataVariables).contains("default     = \"wortwerk_app\"");
+        assertThat(dataVariables).contains("variable \"postgresql_instance_ocpu_count\"");
+        assertThat(dataVariables).contains("default     = 2");
+        assertThat(dataVariables).contains("variable \"postgresql_instance_memory_size_in_gbs\"");
+        assertThat(dataVariables).contains("default     = 32");
         assertThat(dataMain).contains("runtime_db_username must be a dedicated non-admin application role");
         assertThat(dataMain).contains("resource \"oci_identity_policy\" \"runtime_secret_read\"");
+        assertThat(dataMain).contains("instance_ocpu_count         = var.postgresql_instance_ocpu_count");
+        assertThat(dataMain).contains("instance_memory_size_in_gbs = var.postgresql_instance_memory_size_in_gbs");
         assertThat(dataMain).doesNotContain("count          = var.runtime_db_password_secret_ocid != \"\" ? 1 : 0");
     }
 

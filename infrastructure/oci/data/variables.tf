@@ -31,13 +31,25 @@ variable "runtime_dynamic_group_name" {
 variable "postgresql_version" {
   description = "PostgreSQL major version for the managed OCI PostgreSQL service."
   type        = string
-  default     = "16"
+  default     = "17"
 }
 
 variable "postgresql_shape" {
   description = "OCI PostgreSQL shape."
   type        = string
   default     = "PostgreSQL.VM.Standard.E5.Flex"
+}
+
+variable "postgresql_instance_ocpu_count" {
+  description = "OCPU count for the OCI PostgreSQL flex shape."
+  type        = number
+  default     = 2
+}
+
+variable "postgresql_instance_memory_size_in_gbs" {
+  description = "Memory size in GB for the OCI PostgreSQL flex shape."
+  type        = number
+  default     = 32
 }
 
 variable "postgresql_instance_count" {

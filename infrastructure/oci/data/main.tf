@@ -14,6 +14,10 @@ locals {
   runtime_db_username           = trimspace(var.runtime_db_username)
   runtime_secret_read_policy    = "${local.stack_name}-runtime-secret-read"
   runtime_secret_read_statement = "Allow Wort-Werk container instances to read the runtime DB password secret bundle"
+  freeform_tags = {
+    group_id = local.stack_name
+    tier     = "data"
+  }
 }
 
 resource "oci_identity_policy" "runtime_secret_read" {
@@ -22,18 +26,21 @@ resource "oci_identity_policy" "runtime_secret_read" {
   name           = local.runtime_secret_read_policy
   description    = local.runtime_secret_read_statement
   statements = [
-    "Allow dynamic-group ${var.runtime_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
-    "Allow dynamic-group ${var.runtime_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'"
+    "ALLOW DYNAMIC-GROUP ${var.runtime_dynamic_group_name} TO READ secret-family  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.runtime_db_password_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.runtime_dynamic_group_name} TO READ secret-bundles IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.runtime_db_password_secret_ocid}'"
   ]
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_psql_db_system" "wort_werk" {
-  compartment_id = var.compartment_ocid
-  display_name   = local.postgresql_display_name
-  description    = local.postgresql_description
-  db_version     = var.postgresql_version
-  shape          = var.postgresql_shape
-  instance_count = var.postgresql_instance_count
+  compartment_id              = var.compartment_ocid
+  display_name                = local.postgresql_display_name
+  description                 = local.postgresql_description
+  db_version                  = var.postgresql_version
+  shape                       = var.postgresql_shape
+  instance_count              = var.postgresql_instance_count
+  instance_ocpu_count         = var.postgresql_instance_ocpu_count
+  instance_memory_size_in_gbs = var.postgresql_instance_memory_size_in_gbs
 
   credentials {
     username = var.postgresql_admin_username
@@ -77,6 +84,7 @@ resource "oci_psql_db_system" "wort_werk" {
       error_message = "runtime_db_username must be a dedicated non-admin application role and must not equal postgresql_admin_username."
     }
   }
+  freeform_tags = local.freeform_tags
 }
 
 data "oci_psql_db_system_connection_detail" "wort_werk" {

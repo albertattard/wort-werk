@@ -20,6 +20,7 @@ Restructure Wort-Werk OCI infrastructure so shared bootstrap resources, PostgreS
 - Introduce a dedicated `data` Terraform stack for managed PostgreSQL and secret-dependent policy wiring.
 - Keep `runtime` consuming DB connection and secret outputs without storing DB secrets in git.
 - Treat the external runtime DB password secret as a required `data` stack prerequisite and create the matching runtime secret-read IAM policy unconditionally from that required input.
+- Provide explicit OCPU and memory sizing inputs for the OCI PostgreSQL flex shape used by the `data` stack.
 - Make the secret bootstrap workflow safe while `runtime_db_username` still defaults to the PostgreSQL admin user.
 - Keep bootstrap control-plane prerequisites, such as the OCI compartment and Terraform state bucket, documented outside `foundation` when they must exist before Terraform backend or stack initialization.
 - Standardize OCI Terraform naming so fixed Wort-Werk resource names live in locals while deployment-specific values remain variables.
