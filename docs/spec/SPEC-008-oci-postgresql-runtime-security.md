@@ -68,6 +68,7 @@ The apply order must be:
 - Name stable network resources after the tier they serve when possible, rather than using generic labels such as `private` that apply to multiple tiers.
 - Name security-group resources after the network tier they protect, rather than after the application name, so tier boundaries stay readable across runtime, load balancer, database, and DevOps.
 - Name security-group rules after the network tiers they connect, rather than implementation details such as containers, so traffic boundaries stay readable.
+- Use full tier names in security-group rule identifiers and reserve `for_<qualifier>` for the trailing traffic qualifier only when it distinguishes sibling rules.
 - Keep fixed infrastructure protocol ports in locals when they are part of the stable OCI network contract, rather than surfacing them as operator-tunable variables.
 - Wire runtime Terraform/container configuration to the managed PostgreSQL endpoint.
 - Remove direct public-IP exposure from runtime container instances while preserving access to OCI regional services needed at startup.

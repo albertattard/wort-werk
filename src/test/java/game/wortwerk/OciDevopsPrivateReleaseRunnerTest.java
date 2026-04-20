@@ -26,7 +26,7 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(foundationMain).contains("resource \"oci_core_subnet\" \"devops\"");
         assertThat(foundationMain).contains("source                    = oci_core_network_security_group.devops.id");
         assertThat(foundationMain).contains("destination               = oci_core_network_security_group.database.id");
-        assertThat(foundationMain).contains("resource \"oci_core_network_security_group_security_rule\" \"devops_egress_https\"");
+        assertThat(foundationMain).contains("resource \"oci_core_network_security_group_security_rule\" \"devops_egress_to_internet_for_https\"");
         assertThat(foundationMain).contains("destination               = \"0.0.0.0/0\"");
         assertThat(foundationMain).contains("route_table_id             = oci_core_route_table.devops.id");
         assertThat(foundationOutputs).contains("output \"devops_subnet_id\"");

@@ -200,8 +200,11 @@ resource "oci_core_network_security_group" "devops" {
   display_name   = local.devops_nsg_name
 }
 
-# Allows the load balancer tier to reach the runtime application port.
-resource "oci_core_network_security_group_security_rule" "runtime_ingress_application" {
+# ----------------------------------------------------------------------------------------------------------------------
+# Load Balancer --> Runtime (Application Port)
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the runtime tier to receive traffic from the load balancer tier on the application port.
+resource "oci_core_network_security_group_security_rule" "runtime_ingress_from_load_balancer_for_application" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -216,8 +219,28 @@ resource "oci_core_network_security_group_security_rule" "runtime_ingress_applic
   }
 }
 
-# Allows the load balancer tier to reach the runtime management port.
-resource "oci_core_network_security_group_security_rule" "runtime_ingress_management" {
+# Allows the load balancer tier to send traffic to the runtime tier on the application port.
+resource "oci_core_network_security_group_security_rule" "load_balancer_egress_to_runtime_for_application" {
+  network_security_group_id = oci_core_network_security_group.load_balancer.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = oci_core_network_security_group.runtime.id
+  destination_type          = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = var.application_port
+      max = var.application_port
+    }
+  }
+}
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Load Balancer --> Runtime (Management Port/Health Checks)
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the runtime tier to receive traffic from the load balancer tier on the management port.
+resource "oci_core_network_security_group_security_rule" "runtime_ingress_from_load_balancer_for_management" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -232,17 +255,56 @@ resource "oci_core_network_security_group_security_rule" "runtime_ingress_manage
   }
 }
 
+# Allows the load balancer tier to send traffic to the runtime tier on the management port.
+resource "oci_core_network_security_group_security_rule" "load_balancer_egress_to_runtime_for_management" {
+  network_security_group_id = oci_core_network_security_group.load_balancer.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = oci_core_network_security_group.runtime.id
+  destination_type          = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = var.management_port
+      max = var.management_port
+    }
+  }
+}
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Runtime --> Vault
+# ----------------------------------------------------------------------------------------------------------------------
 # Allows the runtime tier to send outbound traffic to OCI regional services, such as Vault.
-resource "oci_core_network_security_group_security_rule" "egress_oci_services" {
+# Only an egress rule is required because the destination is an Oracle-managed service CIDR, not another NSG in this VCN.
+resource "oci_core_network_security_group_security_rule" "runtime_egress_to_oci_services" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "EGRESS"
   protocol                  = "6"
   destination               = data.oci_core_services.oracle_services.services[0].cidr_block
   destination_type          = "SERVICE_CIDR_BLOCK"
 }
+# ----------------------------------------------------------------------------------------------------------------------
 
-# Allows the runtime tier to reach the database tier over PostgreSQL.
-resource "oci_core_network_security_group_security_rule" "egress_postgresql" {
+# ----------------------------------------------------------------------------------------------------------------------
+# Devops --> Vault
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the devops tier to send outbound traffic to OCI regional services, such as Vault.
+# Only an egress rule is required because the destination is an Oracle-managed service CIDR, not another NSG in this VCN.
+resource "oci_core_network_security_group_security_rule" "devops_egress_to_oci_services" {
+  network_security_group_id = oci_core_network_security_group.devops.id
+  direction                 = "EGRESS"
+  protocol                  = "6"
+  destination               = data.oci_core_services.oracle_services.services[0].cidr_block
+  destination_type          = "SERVICE_CIDR_BLOCK"
+}
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Runtime --> Database (Database Port)
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the runtime tier to send traffic to the database tier on the database port.
+resource "oci_core_network_security_group_security_rule" "runtime_egress_to_database" {
   network_security_group_id = oci_core_network_security_group.runtime.id
   direction                 = "EGRESS"
   protocol                  = "6"
@@ -257,8 +319,28 @@ resource "oci_core_network_security_group_security_rule" "egress_postgresql" {
   }
 }
 
-# Allows HTTP inbound traffic from the internet to reach the load balancer on port 80.
-resource "oci_core_network_security_group_security_rule" "lb_ingress_http" {
+# Allows the database tier to receive traffic from the runtime tier on the database port.
+resource "oci_core_network_security_group_security_rule" "database_ingress_from_runtime" {
+  network_security_group_id = oci_core_network_security_group.database.id
+  direction                 = "INGRESS"
+  protocol                  = "6"
+  source                    = oci_core_network_security_group.runtime.id
+  source_type               = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      min = local.database_port
+      max = local.database_port
+    }
+  }
+}
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Internet --> Load Balancer (HTTP / HTTPS)
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the load balancer to receive traffic from the internet on port 80 (HTTP).
+resource "oci_core_network_security_group_security_rule" "load_balancer_ingress_from_internet_for_http" {
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -273,8 +355,8 @@ resource "oci_core_network_security_group_security_rule" "lb_ingress_http" {
   }
 }
 
-# Allows HTTPS inbound traffic from the internet to reach the load balancer on port 443.
-resource "oci_core_network_security_group_security_rule" "lb_ingress_https" {
+# Allows the load balancer to receive traffic from the internet on port 443 (HTTPS).
+resource "oci_core_network_security_group_security_rule" "load_balancer_ingress_from_internet_for_https" {
   network_security_group_id = oci_core_network_security_group.load_balancer.id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -288,54 +370,13 @@ resource "oci_core_network_security_group_security_rule" "lb_ingress_https" {
     }
   }
 }
+# ----------------------------------------------------------------------------------------------------------------------
 
-# Allows the load balancer tier to forward application traffic to the runtime tier on the application port.
-resource "oci_core_network_security_group_security_rule" "lb_egress_to_runtime" {
-  network_security_group_id = oci_core_network_security_group.load_balancer.id
-  direction                 = "EGRESS"
-  protocol                  = "6"
-  destination               = oci_core_network_security_group.runtime.id
-  destination_type          = "NETWORK_SECURITY_GROUP"
-
-  tcp_options {
-    destination_port_range {
-      min = var.application_port
-      max = var.application_port
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "lb_egress_to_runtime_management" {
-  network_security_group_id = oci_core_network_security_group.load_balancer.id
-  direction                 = "EGRESS"
-  protocol                  = "6"
-  destination               = oci_core_network_security_group.runtime.id
-  destination_type          = "NETWORK_SECURITY_GROUP"
-
-  tcp_options {
-    destination_port_range {
-      min = var.management_port
-      max = var.management_port
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql" {
-  network_security_group_id = oci_core_network_security_group.database.id
-  direction                 = "INGRESS"
-  protocol                  = "6"
-  source                    = oci_core_network_security_group.runtime.id
-  source_type               = "NETWORK_SECURITY_GROUP"
-
-  tcp_options {
-    destination_port_range {
-      min = local.database_port
-      max = local.database_port
-    }
-  }
-}
-
-resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql_from_devops" {
+# ----------------------------------------------------------------------------------------------------------------------
+# Devops --> Database (Database Port)
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the devops tier to send traffic to the database tier on the database port.
+resource "oci_core_network_security_group_security_rule" "database_ingress_from_devops" {
   network_security_group_id = oci_core_network_security_group.database.id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -350,7 +391,8 @@ resource "oci_core_network_security_group_security_rule" "db_ingress_postgresql_
   }
 }
 
-resource "oci_core_network_security_group_security_rule" "devops_egress_postgresql" {
+# Allows the database tier to receive traffic from the devops tier on the database port.
+resource "oci_core_network_security_group_security_rule" "devops_egress_to_database" {
   network_security_group_id = oci_core_network_security_group.devops.id
   direction                 = "EGRESS"
   protocol                  = "6"
@@ -364,16 +406,14 @@ resource "oci_core_network_security_group_security_rule" "devops_egress_postgres
     }
   }
 }
+# ----------------------------------------------------------------------------------------------------------------------
 
-resource "oci_core_network_security_group_security_rule" "devops_egress_oci_services" {
-  network_security_group_id = oci_core_network_security_group.devops.id
-  direction                 = "EGRESS"
-  protocol                  = "6"
-  destination               = data.oci_core_services.oracle_services.services[0].cidr_block
-  destination_type          = "SERVICE_CIDR_BLOCK"
-}
-
-resource "oci_core_network_security_group_security_rule" "devops_egress_https" {
+# ----------------------------------------------------------------------------------------------------------------------
+# Devops --> Internet (HTTPS only)
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the devops tier to send outbound HTTPS traffic to the internet.
+# HTTP is intentionally not allowed; external web access from the devops tier is restricted to HTTPS.
+resource "oci_core_network_security_group_security_rule" "devops_egress_to_internet_for_https" {
   network_security_group_id = oci_core_network_security_group.devops.id
   direction                 = "EGRESS"
   protocol                  = "6"
@@ -387,19 +427,26 @@ resource "oci_core_network_security_group_security_rule" "devops_egress_https" {
     }
   }
 }
+# ----------------------------------------------------------------------------------------------------------------------
 
-resource "oci_core_network_security_group_security_rule" "db_egress_all" {
+# ----------------------------------------------------------------------------------------------------------------------
+# Database --> Anywhere
+# ----------------------------------------------------------------------------------------------------------------------
+# Allows the database tier to send outbound traffic to any destination over any protocol.
+# TODO: Verify whether we need to have such an open policy?
+resource "oci_core_network_security_group_security_rule" "database_egress_to_any" {
   network_security_group_id = oci_core_network_security_group.database.id
   direction                 = "EGRESS"
   protocol                  = "all"
   destination               = "0.0.0.0/0"
   destination_type          = "CIDR_BLOCK"
 }
+# ----------------------------------------------------------------------------------------------------------------------
 
-resource "oci_core_subnet" "container" {
+resource "oci_core_subnet" "load_balancer" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
-  cidr_block                 = var.container_subnet_cidr
+  cidr_block                 = var.load_balancer_subnet_cidr
   display_name               = local.stack_name
   dns_label                  = "wortwerk"
   route_table_id             = oci_core_route_table.public.id

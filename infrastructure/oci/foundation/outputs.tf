@@ -35,7 +35,7 @@ output "runtime_subnet_id" {
 
 output "load_balancer_subnet_id" {
   description = "Public load balancer subnet OCID."
-  value       = oci_core_subnet.container.id
+  value       = oci_core_subnet.load_balancer.id
 }
 
 output "database_subnet_id" {

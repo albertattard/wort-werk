@@ -30,7 +30,7 @@ variable "vcn_cidr" {
   default     = "10.10.0.0/16"
 }
 
-variable "container_subnet_cidr" {
+variable "load_balancer_subnet_cidr" {
   description = "CIDR for the public subnet hosting the OCI Load Balancer."
   type        = string
   default     = "10.10.1.0/24"
