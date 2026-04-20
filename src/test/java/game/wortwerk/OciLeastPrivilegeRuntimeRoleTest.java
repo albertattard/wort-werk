@@ -18,6 +18,8 @@ class OciLeastPrivilegeRuntimeRoleTest {
 
         assertThat(dataVariables).contains("default     = \"wortwerk_app\"");
         assertThat(dataMain).contains("runtime_db_username must be a dedicated non-admin application role");
+        assertThat(dataMain).contains("resource \"oci_identity_policy\" \"runtime_secret_read\"");
+        assertThat(dataMain).doesNotContain("count          = var.runtime_db_password_secret_ocid != \"\" ? 1 : 0");
     }
 
     @Test

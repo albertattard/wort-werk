@@ -18,7 +18,6 @@ locals {
 
 resource "oci_identity_policy" "runtime_secret_read" {
   provider       = oci.home
-  count          = var.runtime_db_password_secret_ocid != "" ? 1 : 0
   compartment_id = var.compartment_ocid
   name           = local.runtime_secret_read_policy
   description    = local.runtime_secret_read_statement
