@@ -29,7 +29,7 @@ locals {
   devops_dynamic_group_name         = "${local.stack_name}-devops-runner"
   devops_dynamic_group_description  = "OCI DevOps build and deploy pipelines for Wort-Werk"
   devops_runner_policy_name         = "${local.stack_name}-devops-runner"
-  devops_runner_policy_description  = "Least-privilege policy for Wort-Werk OCI DevOps runners"
+  devops_runner_policy_description  = "Allows Wort-Werk OCI DevOps resources to manage the infrastructure and release resources required for deployments."
   release_handoff_bucket_name       = "${local.stack_name}-release-handoff"
   terraform_state_bucket_name       = "${local.stack_name}-terraform-state"
   load_balancer_public_ip_name      = "${local.stack_name}-load-balancer"
@@ -273,7 +273,7 @@ resource "oci_core_network_security_group_security_rule" "load_balancer_egress_t
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Runtime --> Vault
+# Runtime --> OCI Services
 # ----------------------------------------------------------------------------------------------------------------------
 # Allows the runtime tier to send outbound traffic to OCI regional services, such as Vault.
 # Only an egress rule is required because the destination is an Oracle-managed service CIDR, not another NSG in this VCN.
@@ -287,7 +287,7 @@ resource "oci_core_network_security_group_security_rule" "runtime_egress_to_oci_
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Devops --> Vault
+# Devops --> OCI Services
 # ----------------------------------------------------------------------------------------------------------------------
 # Allows the devops tier to send outbound traffic to OCI regional services, such as Vault.
 # Only an egress rule is required because the destination is an Oracle-managed service CIDR, not another NSG in this VCN.
@@ -375,7 +375,7 @@ resource "oci_core_network_security_group_security_rule" "load_balancer_ingress_
 # ----------------------------------------------------------------------------------------------------------------------
 # Devops --> Database (Database Port)
 # ----------------------------------------------------------------------------------------------------------------------
-# Allows the devops tier to send traffic to the database tier on the database port.
+# Allows the database tier to receive traffic from the devops tier on the database port.
 resource "oci_core_network_security_group_security_rule" "database_ingress_from_devops" {
   network_security_group_id = oci_core_network_security_group.database.id
   direction                 = "INGRESS"
@@ -391,7 +391,7 @@ resource "oci_core_network_security_group_security_rule" "database_ingress_from_
   }
 }
 
-# Allows the database tier to receive traffic from the devops tier on the database port.
+# Allows the devops tier to send traffic to the database tier on the database port.
 resource "oci_core_network_security_group_security_rule" "devops_egress_to_database" {
   network_security_group_id = oci_core_network_security_group.devops.id
   direction                 = "EGRESS"
@@ -434,15 +434,17 @@ resource "oci_core_network_security_group_security_rule" "devops_egress_to_inter
 # ----------------------------------------------------------------------------------------------------------------------
 # Allows the database tier to send outbound traffic to any destination over any protocol.
 # TODO: Verify whether we need to have such an open policy?
-resource "oci_core_network_security_group_security_rule" "database_egress_to_any" {
-  network_security_group_id = oci_core_network_security_group.database.id
-  direction                 = "EGRESS"
-  protocol                  = "all"
-  destination               = "0.0.0.0/0"
-  destination_type          = "CIDR_BLOCK"
-}
+# resource "oci_core_network_security_group_security_rule" "database_egress_to_any" {
+#   network_security_group_id = oci_core_network_security_group.database.id
+#   direction                 = "EGRESS"
+#   protocol                  = "all"
+#   destination               = "0.0.0.0/0"
+#   destination_type          = "CIDR_BLOCK"
+# }
 # ----------------------------------------------------------------------------------------------------------------------
 
+# Public subnet for the load balancer tier.
+# It uses the public route table and permits public IP assignment so the load balancer can accept traffic from the internet.
 resource "oci_core_subnet" "load_balancer" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
@@ -453,6 +455,8 @@ resource "oci_core_subnet" "load_balancer" {
   prohibit_public_ip_on_vnic = false
 }
 
+# Private subnet for the runtime tier.
+# It uses the runtime route table and forbids public IP assignment so the application runs without direct internet exposure.
 resource "oci_core_subnet" "runtime" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
@@ -463,6 +467,8 @@ resource "oci_core_subnet" "runtime" {
   prohibit_public_ip_on_vnic = true
 }
 
+# Private subnet for the database tier.
+# It uses the database route table and forbids public IP assignment so the database has no direct public network path.
 resource "oci_core_subnet" "database" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
@@ -473,6 +479,8 @@ resource "oci_core_subnet" "database" {
   prohibit_public_ip_on_vnic = true
 }
 
+# Private subnet for the DevOps tier.
+# It uses the DevOps route table and forbids public IP assignment so build and deploy runners stay private while using controlled outbound access.
 resource "oci_core_subnet" "devops" {
   compartment_id             = oci_identity_compartment.wort_werk.id
   vcn_id                     = oci_core_vcn.wort_werk.id
@@ -502,6 +510,8 @@ resource "oci_kms_key" "wort_werk" {
   }
 }
 
+# Dynamic group for the runtime container instances.
+# This is needed so the runtime tier has an OCI IAM identity that can be granted permissions to access services such as Vault.
 resource "oci_identity_dynamic_group" "runtime" {
   provider       = oci.home
   compartment_id = var.tenancy_ocid
@@ -510,6 +520,8 @@ resource "oci_identity_dynamic_group" "runtime" {
   matching_rule  = "ALL {resource.type = 'computecontainerinstance', resource.compartment.id = '${oci_identity_compartment.wort_werk.id}'}"
 }
 
+# Dynamic group for the Wort-Werk OCI DevOps resources.
+# This is needed so build, deploy, and related DevOps components have an OCI IAM identity that can be granted the permissions required for releases.
 resource "oci_identity_dynamic_group" "devops" {
   provider       = oci.home
   compartment_id = var.tenancy_ocid
@@ -524,23 +536,25 @@ resource "oci_identity_policy" "devops_runner" {
   name           = local.devops_runner_policy_name
   description    = local.devops_runner_policy_description
   statements = [
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage devops-family in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to use subnets in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to use vnics in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to use network-security-groups in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage load-balancers in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to use public-ips in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to use dhcp-options in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to use ons-topics in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to read postgres-db-systems in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to read buckets in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects in compartment id ${oci_identity_compartment.wort_werk.id} where target.bucket.name = '${local.release_handoff_bucket_name}'",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage objects in compartment id ${oci_identity_compartment.wort_werk.id} where target.bucket.name = '${local.terraform_state_bucket_name}'",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-container-instances in compartment id ${oci_identity_compartment.wort_werk.id}",
-    "Allow dynamic-group ${local.devops_dynamic_group_name} to manage compute-containers in compartment id ${oci_identity_compartment.wort_werk.id}"
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE devops-family               IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    subnets                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    vnics                       IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    network-security-groups     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE load-balancers              IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    public-ips                  IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    dhcp-options                IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO USE    ons-topics                  IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO READ   postgres-db-systems         IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO READ   buckets                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE objects                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id} WHERE target.bucket.name = '${local.release_handoff_bucket_name}'",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE objects                     IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id} WHERE target.bucket.name = '${local.terraform_state_bucket_name}'",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE compute-container-instances IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}",
+    "ALLOW DYNAMIC-GROUP ${local.devops_dynamic_group_name} TO MANAGE compute-containers          IN COMPARTMENT ID ${oci_identity_compartment.wort_werk.id}"
   ]
 }
 
+# Bucket for remote Terraform state.
+# This creates the Object Storage bucket used by OCI Terraform backends; which state files are stored here depends on each stack's backend configuration.
 resource "oci_objectstorage_bucket" "terraform_state" {
   compartment_id = oci_identity_compartment.wort_werk.id
   namespace      = data.oci_objectstorage_namespace.this.namespace

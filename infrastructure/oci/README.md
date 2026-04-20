@@ -204,7 +204,7 @@ The default production runtime shape remains `CI.Standard.E4.Flex`.
 ## Database Security Model
 
 - OCI Database with PostgreSQL is provisioned in the `data` stack on a private subnet exposed by `foundation`.
-- The database NSG accepts PostgreSQL traffic from the application NSG and the dedicated DevOps NSG; it is not exposed to the public internet.
+- The database NSG accepts database traffic only from the runtime NSG and the dedicated DevOps NSG; it is not exposed to the public internet.
 - Runtime DB passwords are stored in OCI Vault.
 - Runtime uses the dedicated non-admin role `wortwerk_app` by default.
 - The container instance reads the runtime DB password from OCI Vault by using OCI resource principal.

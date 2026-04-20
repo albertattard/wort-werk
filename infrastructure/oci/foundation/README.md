@@ -12,12 +12,12 @@ Foundation Terraform stack for Wort-Werk OCI environment setup.
 - route tables for public load balancer, private runtime, private DevOps, and isolated database paths
 - dedicated private subnet for OCI DevOps build and shell stages
 - public subnet for Load Balancer
-- private subnet for Container Instance runtime
+- private subnet for runtime Container Instance
 - private subnet reserved for OCI PostgreSQL
-- NSGs and ingress/egress rules for container, load balancer, database, and DevOps tiers
+- NSGs and ingress/egress rules for runtime, load balancer, database, and DevOps tiers
 - OCIR repository
 - OCI Vault + key for runtime secrets
-- dynamic group for container-instance secret reads
+- dynamic group for runtime container-instance IAM access
 - dynamic group and baseline IAM policy for OCI DevOps build/deploy runners
 - reserved public IP for Load Balancer
 
@@ -100,7 +100,7 @@ Recommended command:
 ## Network Boundaries
 
 - The Load Balancer NSG accepts public ingress only on `80` and `443`.
-- The container NSG accepts the application port and the internal management port only from the Load Balancer NSG.
+- The runtime NSG accepts the application port and the internal management port only from the Load Balancer NSG.
 - The runtime subnet is private and prohibits public IP assignment on runtime VNICs.
 - The DevOps subnet is private and exists only for OCI-managed build and shell stages that need private service or database reachability.
 - The runtime route table provides private access to OCI regional services through the service gateway.
