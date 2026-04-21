@@ -27,10 +27,10 @@ class OciPrivateRuntimeNetworkTest {
         assertThat(runtimeVariables).contains("variable \"runtime_db_password_secret_ocid\"");
         assertThat(runtimeVariables).contains("variable \"runtime_db_ssl_root_cert_base64\"");
         assertThat(runtimeVariables).doesNotContain("variable \"runtime_db_url\" {\n  description = \"JDBC URL used by the application runtime.\"\n  type        = string\n  default     = \"\"\n}");
-        assertThat(runtimeMain).contains("WORTWERK_DB_URL                  = var.runtime_db_url");
-        assertThat(runtimeMain).contains("WORTWERK_DB_USERNAME             = var.runtime_db_username");
-        assertThat(runtimeMain).contains("WORTWERK_DB_PASSWORD_SECRET_OCID = var.runtime_db_password_secret_ocid");
-        assertThat(runtimeMain).contains("WORTWERK_DB_SSL_ROOT_CERT_BASE64 = var.runtime_db_ssl_root_cert_base64");
+        assertThat(runtimeMain).containsPattern("WORTWERK_DB_URL\\s*=\\s*var\\.runtime_db_url");
+        assertThat(runtimeMain).containsPattern("WORTWERK_DB_USERNAME\\s*=\\s*var\\.runtime_db_username");
+        assertThat(runtimeMain).containsPattern("WORTWERK_DB_PASSWORD_SECRET_OCID\\s*=\\s*var\\.runtime_db_password_secret_ocid");
+        assertThat(runtimeMain).containsPattern("WORTWERK_DB_SSL_ROOT_CERT_BASE64\\s*=\\s*var\\.runtime_db_ssl_root_cert_base64");
         assertThat(runtimeMain).doesNotContain("var.runtime_db_url != \"\" ? {");
         assertThat(foundationOutputs).contains("output \"runtime_subnet_id\"");
         assertThat(foundationOutputs).contains("output \"load_balancer_subnet_id\"");
