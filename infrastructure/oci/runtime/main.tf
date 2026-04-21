@@ -19,12 +19,16 @@ locals {
       WORTWERK_WEBAUTHN_ALLOWED_ORIGINS = local.public_origin
       WORTWERK_BUILD_HASH               = substr(var.image_tag, 0, 7)
       MANAGEMENT_SERVER_PORT            = tostring(var.management_port)
-      WORTWERK_DB_URL                  = var.runtime_db_url
-      WORTWERK_DB_USERNAME             = var.runtime_db_username
-      WORTWERK_DB_PASSWORD_SECRET_OCID = var.runtime_db_password_secret_ocid
-      WORTWERK_DB_SSL_ROOT_CERT_BASE64 = var.runtime_db_ssl_root_cert_base64
+      WORTWERK_DB_URL                   = var.runtime_db_url
+      WORTWERK_DB_USERNAME              = var.runtime_db_username
+      WORTWERK_DB_PASSWORD_SECRET_OCID  = var.runtime_db_password_secret_ocid
+      WORTWERK_DB_SSL_ROOT_CERT_BASE64  = var.runtime_db_ssl_root_cert_base64
     }
   )
+  freeform_tags = {
+    group_id = local.stack_name
+    tier     = "runtime"
+  }
 }
 
 data "oci_identity_availability_domains" "this" {
@@ -48,8 +52,7 @@ resource "oci_container_instances_container_instance" "wort_werk" {
   compartment_id      = var.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.this.availability_domains[var.availability_domain_index].name
   display_name        = var.container_instance_name
-
-  shape = var.container_instance_shape
+  shape               = var.container_instance_shape
 
   shape_config {
     ocpus         = var.ocpus
@@ -84,6 +87,8 @@ resource "oci_container_instances_container_instance" "wort_werk" {
   lifecycle {
     create_before_destroy = true
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_load_balancer_load_balancer" "wort_werk" {
@@ -108,6 +113,8 @@ resource "oci_load_balancer_load_balancer" "wort_werk" {
     # an unnecessary replacement of a healthy live load balancer.
     ignore_changes = [reserved_ips]
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_load_balancer_backend_set" "wort_werk" {
