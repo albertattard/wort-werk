@@ -19,13 +19,11 @@ locals {
       WORTWERK_WEBAUTHN_ALLOWED_ORIGINS = local.public_origin
       WORTWERK_BUILD_HASH               = substr(var.image_tag, 0, 7)
       MANAGEMENT_SERVER_PORT            = tostring(var.management_port)
-    },
-    var.runtime_db_url != "" ? {
       WORTWERK_DB_URL                  = var.runtime_db_url
       WORTWERK_DB_USERNAME             = var.runtime_db_username
       WORTWERK_DB_PASSWORD_SECRET_OCID = var.runtime_db_password_secret_ocid
       WORTWERK_DB_SSL_ROOT_CERT_BASE64 = var.runtime_db_ssl_root_cert_base64
-    } : {}
+    }
   )
 }
 

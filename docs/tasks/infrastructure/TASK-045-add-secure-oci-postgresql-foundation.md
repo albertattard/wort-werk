@@ -23,6 +23,7 @@ Restructure Wort-Werk OCI infrastructure so shared bootstrap resources, PostgreS
 - Provide explicit OCPU and memory sizing inputs for the OCI PostgreSQL flex shape used by the `data` stack.
 - Move the `data` stack Terraform state into the shared OCI backend bucket using its own stack-specific object key.
 - Make the secret bootstrap workflow safe while `runtime_db_username` still defaults to the PostgreSQL admin user.
+- Treat the database connection outputs consumed by `runtime` as required inputs and inject the runtime DB environment unconditionally.
 - Keep bootstrap control-plane prerequisites, such as the OCI compartment and Terraform state bucket, documented outside `foundation` when they must exist before Terraform backend or stack initialization.
 - Standardize OCI Terraform naming so fixed Wort-Werk resource names live in locals while deployment-specific values remain variables.
 - Standardize shared freeform tagging in `foundation` so supported OCI resources inherit a single centralized `group_id` tag value.

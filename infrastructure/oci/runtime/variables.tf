@@ -134,26 +134,22 @@ variable "https_listener_port" {
 variable "runtime_db_url" {
   description = "JDBC URL used by the application runtime."
   type        = string
-  default     = ""
 }
 
 variable "runtime_db_username" {
   description = "Database username used by the application runtime."
   type        = string
-  default     = ""
 }
 
 variable "runtime_db_password_secret_ocid" {
   description = "OCI Vault secret OCID that stores the runtime database password."
   type        = string
-  default     = ""
   sensitive   = true
 }
 
 variable "runtime_db_ssl_root_cert_base64" {
   description = "Base64-encoded PostgreSQL CA certificate used for TLS verification."
   type        = string
-  default     = ""
   sensitive   = true
 }
 
