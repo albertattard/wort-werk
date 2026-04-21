@@ -12,48 +12,34 @@ data "oci_objectstorage_namespace" "this" {
 }
 
 locals {
-  stack_name                                  = "wort-werk"
-  topic_name                                  = "${local.stack_name}-devops"
-  project_name                                = "${local.stack_name}-release"
-  log_group_name                              = "${local.stack_name}-devops"
-  project_log_name                            = "${local.stack_name}-devops-project"
-  github_connection_secret_policy_name        = "${local.stack_name}-devops-github-connection"
-  github_connection_secret_policy_description = "Allow Wort-Werk OCI DevOps resources to read the GitHub and OCIR secrets required by the release pipeline"
-  github_connection_name                      = "${local.stack_name}-github"
-  build_pipeline_name                         = "${local.stack_name}-build"
-  deploy_pipeline_name                        = "${local.stack_name}-deploy"
-  build_stage_name                            = "checkout-and-package"
-  trigger_deploy_stage_name                   = "trigger-private-rollout"
-  shell_stage_name                            = "private-rollout"
-  release_handoff_bucket_name                 = "${local.stack_name}-release-handoff"
-  command_spec_artifact_name                  = "private-rollout-command-spec"
-  build_source_name                           = "wortwerk"
-  build_spec_path                             = "infrastructure/oci/devops/build_spec.yaml"
-  devops_secret_read_statements = concat([
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.github_connection_token_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.image_registry_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.runtime_db_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_public_certificate_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_public_certificate_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_private_key_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_private_key_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'",
-    "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.postgresql_admin_password_secret_ocid}'"
-    ],
-    var.tls_ca_certificate_secret_ocid != "" ? [
-      "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_ca_certificate_secret_ocid}'",
-      "Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles in compartment id ${var.compartment_ocid} where target.secret.id = '${var.tls_ca_certificate_secret_ocid}'"
-    ] : []
-  )
+  stack_name                            = "wort-werk"
+  topic_name                            = "${local.stack_name}-devops"
+  project_name                          = "${local.stack_name}-release"
+  log_group_name                        = "${local.stack_name}-devops"
+  project_log_name                      = "${local.stack_name}-devops-project"
+  devops_secret_read_policy_name        = "${local.stack_name}-devops-github-connection"
+  devops_secret_read_policy_description = "Allows Wort-Werk OCI DevOps resources to read the specific secrets required by the release pipeline."
+  github_connection_name                = "${local.stack_name}-github"
+  build_pipeline_name                   = "${local.stack_name}-build"
+  deploy_pipeline_name                  = "${local.stack_name}-deploy"
+  build_stage_name                      = "checkout-and-package"
+  trigger_deploy_stage_name             = "trigger-private-rollout"
+  shell_stage_name                      = "private-rollout"
+  release_handoff_bucket_name           = "${local.stack_name}-release-handoff"
+  command_spec_artifact_name            = "private-rollout-command-spec"
+  build_source_name                     = "wortwerk"
+  build_spec_path                       = "infrastructure/oci/devops/build_spec.yaml"
+  freeform_tags = {
+    group_id = local.stack_name
+    tier     = "devops"
+  }
 }
 
 resource "oci_ons_notification_topic" "devops" {
   compartment_id = var.compartment_ocid
   name           = local.topic_name
   description    = "Notifications for Wort-Werk OCI DevOps release infrastructure."
+  freeform_tags  = local.freeform_tags
 }
 
 resource "oci_devops_project" "wort_werk" {
@@ -64,12 +50,15 @@ resource "oci_devops_project" "wort_werk" {
   notification_config {
     topic_id = oci_ons_notification_topic.devops.id
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_logging_log_group" "devops" {
   compartment_id = var.compartment_ocid
   display_name   = local.log_group_name
   description    = "OCI Logging group for Wort-Werk DevOps project service logs."
+  freeform_tags  = local.freeform_tags
 }
 
 resource "oci_logging_log" "project" {
@@ -89,14 +78,38 @@ resource "oci_logging_log" "project" {
       source_type = "OCISERVICE"
     }
   }
+
+  freeform_tags = local.freeform_tags
 }
 
-resource "oci_identity_policy" "github_connection_secret_read" {
+resource "oci_identity_policy" "devops_secret_read" {
   provider       = oci.home
   compartment_id = var.compartment_ocid
-  name           = local.github_connection_secret_policy_name
-  description    = local.github_connection_secret_policy_description
-  statements     = local.devops_secret_read_statements
+  name           = local.devops_secret_read_policy_name
+  description    = local.devops_secret_read_policy_description
+  statements = concat([
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.github_connection_token_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.github_connection_token_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.image_registry_password_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.image_registry_password_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.runtime_db_password_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.runtime_db_password_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_public_certificate_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_public_certificate_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_private_key_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_private_key_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.postgresql_admin_password_secret_ocid}'",
+    "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.postgresql_admin_password_secret_ocid}'"
+    ],
+    var.tls_ca_certificate_secret_ocid != ""
+    ? [
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_ca_certificate_secret_ocid}'",
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_ca_certificate_secret_ocid}'"
+    ]
+    : []
+  )
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_devops_connection" "github" {
@@ -105,6 +118,7 @@ resource "oci_devops_connection" "github" {
   access_token    = var.github_connection_token_secret_ocid
   display_name    = local.github_connection_name
   description     = "GitHub connection used by the Wort-Werk release pipeline."
+  freeform_tags   = local.freeform_tags
 }
 
 resource "oci_objectstorage_bucket" "release_handoff" {
@@ -114,6 +128,7 @@ resource "oci_objectstorage_bucket" "release_handoff" {
   access_type    = "NoPublicAccess"
   storage_tier   = "Standard"
   versioning     = "Disabled"
+  freeform_tags  = local.freeform_tags
 }
 
 resource "oci_devops_build_pipeline" "release" {
@@ -330,6 +345,8 @@ resource "oci_devops_build_pipeline" "release" {
       description   = "Object Storage bucket that owns runtime Terraform state."
     }
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_devops_deploy_pipeline" "release" {
@@ -356,6 +373,8 @@ resource "oci_devops_deploy_pipeline" "release" {
       description   = "Reserved switch for future rollback behavior in the private shell stage."
     }
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_devops_deploy_artifact" "command_spec" {
@@ -369,6 +388,8 @@ resource "oci_devops_deploy_artifact" "command_spec" {
     deploy_artifact_source_type = "INLINE"
     base64encoded_content       = filebase64("${path.module}/command_spec.yaml")
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_devops_build_pipeline_stage" "build" {
@@ -402,6 +423,8 @@ resource "oci_devops_build_pipeline_stage" "build" {
     subnet_id            = var.devops_subnet_id
     nsg_ids              = [var.devops_nsg_id]
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_devops_build_pipeline_stage" "trigger_private_rollout" {
@@ -417,6 +440,8 @@ resource "oci_devops_build_pipeline_stage" "trigger_private_rollout" {
       id = oci_devops_build_pipeline_stage.build.id
     }
   }
+
+  freeform_tags = local.freeform_tags
 }
 
 resource "oci_devops_deploy_stage" "private_rollout" {
@@ -450,4 +475,6 @@ resource "oci_devops_deploy_stage" "private_rollout" {
       nsg_ids              = [var.devops_nsg_id]
     }
   }
+
+  freeform_tags = local.freeform_tags
 }

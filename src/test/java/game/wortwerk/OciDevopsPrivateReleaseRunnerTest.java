@@ -66,9 +66,11 @@ class OciDevopsPrivateReleaseRunnerTest {
         assertThat(devopsVariables).contains("variable \"devops_dynamic_group_name\"");
         assertThat(devopsVariables).contains("variable \"image_registry_password_secret_ocid\"");
         assertThat(devopsMain).contains("provider \"oci\" {\n  alias  = \"home\"");
-        assertThat(devopsMain).contains("resource \"oci_identity_policy\" \"github_connection_secret_read\"");
-        assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-family");
-        assertThat(devopsMain).contains("Allow dynamic-group ${var.devops_dynamic_group_name} to read secret-bundles");
+        assertThat(devopsMain).contains("resource \"oci_identity_policy\" \"devops_secret_read\"");
+        assertThat(devopsMain).contains("devops_secret_read_policy_name");
+        assertThat(devopsMain).contains("devops_secret_read_policy_description");
+        assertThat(devopsMain).contains("ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY");
+        assertThat(devopsMain).contains("ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES");
         assertThat(devopsMain).contains("target.secret.id = '${var.github_connection_token_secret_ocid}'");
         assertThat(devopsMain).contains("target.secret.id = '${var.image_registry_password_secret_ocid}'");
         assertThat(devopsMain).contains("target.secret.id = '${var.runtime_db_password_secret_ocid}'");
