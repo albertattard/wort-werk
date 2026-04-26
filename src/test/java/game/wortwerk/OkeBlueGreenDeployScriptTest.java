@@ -13,11 +13,14 @@ class OkeBlueGreenDeployScriptTest {
 
     @Test
     void shouldKeepPreviousSlotUntilPostSwitchObservationPasses() throws IOException {
+        String buildSpec = read("infrastructure/oci/oke-devops/build_spec.yaml");
         String script = read("infrastructure/oci/oke-devops/deploy-bluegreen.sh");
         String commandSpec = read("infrastructure/oci/oke-devops/command_spec.yaml");
         String variables = read("infrastructure/oci/oke-devops/variables.tf");
         String terraform = read("infrastructure/oci/oke-devops/main.tf");
 
+        assertThat(buildSpec).contains("mesa-libgbm");
+        assertThat(buildSpec).contains("libX11-xcb");
         assertThat(script).contains("POST_SWITCH_OBSERVATION_SECONDS=\"${POST_SWITCH_OBSERVATION_SECONDS:-120}\"");
         assertThat(script).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS");
         assertThat(script).contains("APP_RESOLVE_IP");

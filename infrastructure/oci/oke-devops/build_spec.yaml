@@ -17,6 +17,23 @@ steps:
       set -euo pipefail
       yum -y install oracle-java-jdk-release-el8
       yum -y install jdk-25-headful
+      yum -y install \
+        alsa-lib \
+        atk \
+        at-spi2-atk \
+        cups-libs \
+        dejavu-sans-fonts \
+        gtk3 \
+        libdrm \
+        libX11-xcb \
+        libXcomposite \
+        libXdamage \
+        libXrandr \
+        libXScrnSaver \
+        libxkbcommon \
+        mesa-libgbm \
+        nss \
+        pango
       export JAVA_HOME=/usr/java/jdk-25
       export PATH="$JAVA_HOME/bin:$PATH"
       java -version
