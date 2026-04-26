@@ -151,8 +151,9 @@ steps:
         --username "$IMAGE_REGISTRY_USERNAME" \
         --password-stdin
 
-      docker buildx build \
+      docker build \
         --platform linux/amd64 \
         --tag "$APP_IMAGE" \
-        --push \
         .
+
+      docker push "$APP_IMAGE"
