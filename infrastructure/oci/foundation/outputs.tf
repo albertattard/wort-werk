@@ -48,6 +48,26 @@ output "devops_subnet_id" {
   value       = oci_core_subnet.devops.id
 }
 
+output "oke_endpoint_subnet_id" {
+  description = "Private OKE Kubernetes API endpoint subnet OCID."
+  value       = oci_core_subnet.oke_endpoint.id
+}
+
+output "oke_worker_subnet_id" {
+  description = "Private OKE worker subnet OCID."
+  value       = oci_core_subnet.oke_workers.id
+}
+
+output "oke_admin_subnet_id" {
+  description = "Private OKE admin subnet OCID used by OCI Bastion sessions."
+  value       = oci_core_subnet.oke_admin.id
+}
+
+output "oke_admin_bastion_id" {
+  description = "OCI Bastion OCID used for private OKE administration, or null when disabled."
+  value       = try(oci_bastion_bastion.oke_admin[0].id, null)
+}
+
 output "nsg_id" {
   description = "Network Security Group OCID."
   value       = oci_core_network_security_group.runtime.id

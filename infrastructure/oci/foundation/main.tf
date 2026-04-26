@@ -14,15 +14,25 @@ locals {
   public_route_table_name           = "${local.stack_name}-public"
   runtime_route_table_name          = "${local.stack_name}-runtime"
   devops_route_table_name           = "${local.stack_name}-devops"
+  oke_endpoint_route_table_name     = "${local.stack_name}-oke-endpoint"
+  oke_worker_route_table_name       = "${local.stack_name}-oke-workers"
+  oke_admin_route_table_name        = "${local.stack_name}-oke-admin"
   database_route_table_name         = "${local.stack_name}-database"
   database_port                     = 5432
   runtime_nsg_name                  = "${local.stack_name}-runtime"
   load_balancer_nsg_name            = "${local.stack_name}-load-balancer"
   database_nsg_name                 = "${local.stack_name}-database"
   devops_nsg_name                   = "${local.stack_name}-devops"
+  oke_endpoint_security_list_name   = "${local.stack_name}-oke-endpoint"
+  oke_worker_security_list_name     = "${local.stack_name}-oke-workers"
+  oke_admin_security_list_name      = "${local.stack_name}-oke-admin"
   runtime_subnet_name               = "${local.stack_name}-runtime"
   database_subnet_name              = "${local.stack_name}-db"
   devops_subnet_name                = "${local.stack_name}-devops"
+  oke_endpoint_subnet_name          = "${local.stack_name}-oke-endpoint"
+  oke_worker_subnet_name            = "${local.stack_name}-oke-workers"
+  oke_admin_subnet_name             = "${local.stack_name}-oke-admin"
+  oke_admin_bastion_name            = "${local.stack_name}-oke-admin"
   runtime_dynamic_group_name        = "${local.stack_name}-container-runtime"
   runtime_dynamic_group_description = "Container instances for Wort-Werk runtime"
   devops_dynamic_group_name         = "${local.stack_name}-devops-runner"
@@ -98,10 +108,11 @@ resource "oci_core_route_table" "database" {
   freeform_tags  = local.freeform_tags
 }
 
-# Gives the private DevOps subnet outbound internet access without
-# assigning public IPs to build or deploy runners.
-# Used for external egress such as source fetches and dependency
-# downloads; inbound internet access is still not allowed.
+# Gives private subnets controlled outbound internet access without
+# assigning public IPs to their VNICs.
+# Used by the DevOps and OKE worker subnets for external egress such
+# as source fetches and Kubernetes node bootstrap traffic; inbound
+# internet access is still not allowed.
 resource "oci_core_nat_gateway" "devops" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.wort_werk.id
@@ -164,6 +175,254 @@ resource "oci_core_route_table" "devops" {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
     network_entity_id = oci_core_nat_gateway.devops.id
+  }
+}
+
+# Route table for the private OKE API endpoint subnet.
+# The private API endpoint remains off the public internet but still
+# needs OCI service access and controlled outbound internet egress.
+resource "oci_core_route_table" "oke_endpoint" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.oke_endpoint_route_table_name
+  freeform_tags  = local.freeform_tags
+
+  route_rules {
+    destination       = data.oci_core_services.oracle_services.services[0].cidr_block
+    destination_type  = "SERVICE_CIDR_BLOCK"
+    network_entity_id = oci_core_service_gateway.oracle_services.id
+  }
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_nat_gateway.devops.id
+  }
+}
+
+# Route table for the private OKE worker subnet.
+# Worker nodes need OCI service-gateway access plus NAT-backed outbound
+# internet egress in order to bootstrap and register successfully
+# without receiving public IPs.
+resource "oci_core_route_table" "oke_workers" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.oke_worker_route_table_name
+  freeform_tags  = local.freeform_tags
+
+  route_rules {
+    destination       = data.oci_core_services.oracle_services.services[0].cidr_block
+    destination_type  = "SERVICE_CIDR_BLOCK"
+    network_entity_id = oci_core_service_gateway.oracle_services.id
+  }
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_nat_gateway.devops.id
+  }
+}
+
+# Route table for the public OKE admin subnet used by OCI Bastion.
+# The bastion needs public ingress while still reaching the private
+# cluster endpoint over the VCN. OCI service-gateway routing is not
+# combined here because OCI forbids mixing an internet-gateway default
+# route with the catch-all Oracle Services route in the same table.
+resource "oci_core_route_table" "oke_admin" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.oke_admin_route_table_name
+  freeform_tags  = local.freeform_tags
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_internet_gateway.wort_werk.id
+  }
+}
+
+# Explicit security list for the private OKE API endpoint subnet.
+# OKE control-plane communication is declared here instead of relying
+# on implicit default VCN security-list behavior.
+resource "oci_core_security_list" "oke_endpoint" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.oke_endpoint_security_list_name
+  freeform_tags  = local.freeform_tags
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.oke_worker_subnet_cidr
+
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.oke_worker_subnet_cidr
+
+    tcp_options {
+      min = 12250
+      max = 12250
+    }
+  }
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.devops_subnet_cidr
+
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.oke_admin_subnet_cidr
+
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "6"
+    destination = var.oke_worker_subnet_cidr
+  }
+
+  egress_security_rules {
+    protocol         = "1"
+    destination      = var.oke_worker_subnet_cidr
+    destination_type = "CIDR_BLOCK"
+
+    icmp_options {
+      type = 3
+      code = 4
+    }
+  }
+
+  egress_security_rules {
+    protocol         = "6"
+    destination      = data.oci_core_services.oracle_services.services[0].cidr_block
+    destination_type = "SERVICE_CIDR_BLOCK"
+  }
+}
+
+# Explicit security list for the private OKE worker subnet.
+# Worker-node bootstrap and control-plane communication are constrained
+# to the required peers while still allowing outbound egress through
+# NAT and OCI service access.
+resource "oci_core_security_list" "oke_workers" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.oke_worker_security_list_name
+  freeform_tags  = local.freeform_tags
+
+  ingress_security_rules {
+    protocol = "all"
+    source   = var.oke_worker_subnet_cidr
+  }
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.oke_endpoint_subnet_cidr
+  }
+
+  ingress_security_rules {
+    protocol = "1"
+    source   = "0.0.0.0/0"
+
+    icmp_options {
+      type = 3
+      code = 4
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "all"
+    destination = var.oke_worker_subnet_cidr
+  }
+
+  egress_security_rules {
+    protocol    = "6"
+    destination = var.oke_endpoint_subnet_cidr
+
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "6"
+    destination = var.oke_endpoint_subnet_cidr
+
+    tcp_options {
+      min = 12250
+      max = 12250
+    }
+  }
+
+  egress_security_rules {
+    protocol         = "1"
+    destination      = "0.0.0.0/0"
+    destination_type = "CIDR_BLOCK"
+
+    icmp_options {
+      type = 3
+      code = 4
+    }
+  }
+
+  egress_security_rules {
+    protocol         = "6"
+    destination      = data.oci_core_services.oracle_services.services[0].cidr_block
+    destination_type = "SERVICE_CIDR_BLOCK"
+  }
+
+  egress_security_rules {
+    protocol         = "6"
+    destination      = "0.0.0.0/0"
+    destination_type = "CIDR_BLOCK"
+  }
+}
+
+# Explicit security list for the public OKE admin subnet used by OCI Bastion.
+# Ingress is limited to SSH from the allowed client CIDRs while egress is
+# constrained to the private cluster endpoint.
+resource "oci_core_security_list" "oke_admin" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.wort_werk.id
+  display_name   = local.oke_admin_security_list_name
+  freeform_tags  = local.freeform_tags
+
+  dynamic "ingress_security_rules" {
+    for_each = var.oke_admin_bastion_client_cidr_allow_list
+
+    content {
+      protocol = "6"
+      source   = ingress_security_rules.value
+
+      tcp_options {
+        min = 22
+        max = 22
+      }
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "6"
+    destination = var.oke_endpoint_subnet_cidr
+
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
   }
 }
 
@@ -436,20 +695,6 @@ resource "oci_core_network_security_group_security_rule" "devops_egress_to_inter
 }
 # ----------------------------------------------------------------------------------------------------------------------
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Database --> Anywhere
-# ----------------------------------------------------------------------------------------------------------------------
-# Allows the database tier to send outbound traffic to any destination over any protocol.
-# TODO: Verify whether we need to have such an open policy?
-# resource "oci_core_network_security_group_security_rule" "database_egress_to_any" {
-#   network_security_group_id = oci_core_network_security_group.database.id
-#   direction                 = "EGRESS"
-#   protocol                  = "all"
-#   destination               = "0.0.0.0/0"
-#   destination_type          = "CIDR_BLOCK"
-# }
-# ----------------------------------------------------------------------------------------------------------------------
-
 # Public subnet for the load balancer tier.
 # It uses the public route table and permits public IP assignment so the load balancer can accept traffic from the internet.
 resource "oci_core_subnet" "load_balancer" {
@@ -500,6 +745,69 @@ resource "oci_core_subnet" "devops" {
   route_table_id             = oci_core_route_table.devops.id
   prohibit_public_ip_on_vnic = true
   freeform_tags              = local.freeform_tags
+}
+
+# Private subnet for the OKE Kubernetes API endpoint.
+# It is intentionally separate from the DevOps runner subnet so
+# control-plane routing and security rules remain explicit.
+resource "oci_core_subnet" "oke_endpoint" {
+  compartment_id             = var.compartment_ocid
+  vcn_id                     = oci_core_vcn.wort_werk.id
+  cidr_block                 = var.oke_endpoint_subnet_cidr
+  display_name               = local.oke_endpoint_subnet_name
+  dns_label                  = "wortokectrl"
+  route_table_id             = oci_core_route_table.oke_endpoint.id
+  security_list_ids          = [oci_core_security_list.oke_endpoint.id]
+  prohibit_public_ip_on_vnic = true
+  freeform_tags              = local.freeform_tags
+}
+
+# Private subnet for OKE worker nodes.
+# It uses the dedicated OKE worker route table and forbids public IP
+# assignment so managed nodes stay private while retaining the egress
+# needed for cluster bootstrap and OCI service access.
+resource "oci_core_subnet" "oke_workers" {
+  compartment_id             = var.compartment_ocid
+  vcn_id                     = oci_core_vcn.wort_werk.id
+  cidr_block                 = var.oke_worker_subnet_cidr
+  display_name               = local.oke_worker_subnet_name
+  dns_label                  = "wortoke"
+  route_table_id             = oci_core_route_table.oke_workers.id
+  security_list_ids          = [oci_core_security_list.oke_workers.id]
+  prohibit_public_ip_on_vnic = true
+  freeform_tags              = local.freeform_tags
+}
+
+# Public subnet used by OCI Bastion sessions for private OKE administration.
+resource "oci_core_subnet" "oke_admin" {
+  compartment_id             = var.compartment_ocid
+  vcn_id                     = oci_core_vcn.wort_werk.id
+  cidr_block                 = var.oke_admin_subnet_cidr
+  display_name               = local.oke_admin_subnet_name
+  dns_label                  = "wortokeadm"
+  route_table_id             = oci_core_route_table.oke_admin.id
+  security_list_ids          = [oci_core_security_list.oke_admin.id]
+  prohibit_public_ip_on_vnic = false
+  freeform_tags              = local.freeform_tags
+}
+
+resource "oci_bastion_bastion" "oke_admin" {
+  count = var.enable_oke_admin_bastion ? 1 : 0
+
+  bastion_type                 = "STANDARD"
+  compartment_id               = var.compartment_ocid
+  name                         = local.oke_admin_bastion_name
+  target_subnet_id             = oci_core_subnet.oke_admin.id
+  client_cidr_block_allow_list = var.oke_admin_bastion_client_cidr_allow_list
+  max_session_ttl_in_seconds   = var.oke_admin_bastion_max_session_ttl_in_seconds
+  freeform_tags                = local.freeform_tags
+
+  lifecycle {
+    precondition {
+      condition     = length(var.oke_admin_bastion_client_cidr_allow_list) > 0
+      error_message = "Set oke_admin_bastion_client_cidr_allow_list to one or more narrow client CIDRs before enabling the OKE admin bastion."
+    }
+  }
 }
 
 resource "oci_kms_vault" "wort_werk" {

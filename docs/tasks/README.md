@@ -91,6 +91,8 @@ Use one of these `category` values for new tasks:
 - [TASK-048: Introduce Least-Privilege OCI Runtime DB Role](./infrastructure/TASK-048-introduce-least-privilege-oci-runtime-db-role.md)
 - [TASK-049: Adopt OCI DevOps Private Release Runner](./infrastructure/TASK-049-adopt-oci-devops-private-release-runner.md)
 - [TASK-050: Provide Java 25 Toolchain for OCI DevOps Builds](./infrastructure/TASK-050-provide-java-25-toolchain-for-oci-devops-builds.md)
+- [TASK-054: Design OCI OKE Blue-Green Runtime](./infrastructure/TASK-054-design-oci-oke-blue-green-runtime.md)
+- [TASK-055: Add GitHub Push Triggered OCI App Release](./infrastructure/TASK-055-add-github-push-triggered-oci-app-release.md)
 - [TASK-052: Move Runtime TLS Material to OCI Vault](./infrastructure/TASK-052-move-runtime-tls-material-to-oci-vault.md)
 
 ## Pending
@@ -103,6 +105,8 @@ Use one of these `category` values for new tasks:
 - [ ] [TASK-045: Split OCI PostgreSQL into Dedicated Data Stack](./infrastructure/TASK-045-add-secure-oci-postgresql-foundation.md)
 - [ ] [TASK-049: Adopt OCI DevOps Private Release Runner](./infrastructure/TASK-049-adopt-oci-devops-private-release-runner.md)
 - [ ] [TASK-050: Provide Java 25 Toolchain for OCI DevOps Builds](./infrastructure/TASK-050-provide-java-25-toolchain-for-oci-devops-builds.md)
+- [ ] [TASK-054: Design OCI OKE Blue-Green Runtime](./infrastructure/TASK-054-design-oci-oke-blue-green-runtime.md)
+- [ ] [TASK-055: Add GitHub Push Triggered OCI App Release](./infrastructure/TASK-055-add-github-push-triggered-oci-app-release.md)
 
 ## Done
 

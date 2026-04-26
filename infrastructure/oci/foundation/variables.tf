@@ -48,6 +48,42 @@ variable "devops_subnet_cidr" {
   default     = "10.10.4.0/24"
 }
 
+variable "oke_worker_subnet_cidr" {
+  description = "CIDR for the private subnet hosting OKE worker nodes."
+  type        = string
+  default     = "10.10.5.0/24"
+}
+
+variable "oke_endpoint_subnet_cidr" {
+  description = "CIDR for the private subnet hosting the OKE Kubernetes API endpoint."
+  type        = string
+  default     = "10.10.6.0/28"
+}
+
+variable "oke_admin_subnet_cidr" {
+  description = "CIDR for the public subnet used by OCI Bastion sessions that administer the OKE private endpoint."
+  type        = string
+  default     = "10.10.7.0/28"
+}
+
+variable "enable_oke_admin_bastion" {
+  description = "Whether to provision an OCI Bastion for private OKE administration."
+  type        = bool
+  default     = false
+}
+
+variable "oke_admin_bastion_client_cidr_allow_list" {
+  description = "Client CIDR allow list for the OCI Bastion used to administer OKE. Use narrow /32 entries for operator source IPs."
+  type        = list(string)
+  default     = []
+}
+
+variable "oke_admin_bastion_max_session_ttl_in_seconds" {
+  description = "Maximum session TTL for the OKE administration bastion."
+  type        = number
+  default     = 10800
+}
+
 variable "application_port" {
   description = "Application ingress port exposed by Wort-Werk."
   type        = number

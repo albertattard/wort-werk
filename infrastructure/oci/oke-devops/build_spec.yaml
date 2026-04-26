@@ -1,0 +1,141 @@
+version: 0.1
+component: build
+timeoutInSeconds: 3600
+shell: bash
+
+env:
+  exportedVariables:
+    - COMMIT_SHA
+    - RELEASE_VERSION
+    - IMAGE_TAG
+    - APP_IMAGE
+
+steps:
+  - type: Command
+    name: Install Java 25 toolchain
+    command: |
+      set -euo pipefail
+      yum -y install oracle-java-jdk-release-el8
+      yum -y install jdk-25-headful
+      export JAVA_HOME=/usr/java/jdk-25
+      export PATH="$JAVA_HOME/bin:$PATH"
+      java -version
+      mvn -version
+
+  - type: Command
+    name: Resolve release metadata
+    command: |
+      set -euo pipefail
+
+      export JAVA_HOME=/usr/java/jdk-25
+      export PATH="$JAVA_HOME/bin:$PATH"
+
+      export OCI_CLI_AUTH=resource_principal
+
+      resolve_build_argument() {
+        local name="$1"
+        local value
+
+        value="$(oci devops build-run get \
+          --build-run-id "$OCI_BUILD_RUN_ID" \
+          --query "data.\"build-run-arguments\".items[?name=='$name'] | [0].value" \
+          --raw-output)"
+
+        if [[ -n "$value" && "$value" != "null" ]]; then
+          printf '%s' "$value"
+          return 0
+        fi
+
+        oci devops build-pipeline get \
+          --build-pipeline-id "$OCI_BUILD_PIPELINE_ID" \
+          --query "data.\"build-pipeline-parameters\".items[?name=='$name'] | [0].\"default-value\"" \
+          --raw-output
+      }
+
+      require_argument() {
+        local name="$1"
+        local value="$2"
+        if [[ -z "$value" || "$value" == "null" ]]; then
+          echo "Missing required build argument: $name" >&2
+          exit 1
+        fi
+      }
+
+      COMMIT_SHA="${OCI_PRIMARY_SOURCE_COMMIT_HASH:-$(git rev-parse HEAD)}"
+      OCI_BUILD_PIPELINE_ID="$(oci devops build-run get \
+        --build-run-id "$OCI_BUILD_RUN_ID" \
+        --query 'data."build-pipeline-id"' \
+        --raw-output)"
+
+      RELEASE_VERSION="$(resolve_build_argument releaseVersion)"
+      IMAGE_REPOSITORY="$(resolve_build_argument imageRepository)"
+      IMAGE_REGISTRY_ENDPOINT="$(resolve_build_argument imageRegistryEndpoint)"
+      IMAGE_REGISTRY_USERNAME="$(resolve_build_argument imageRegistryUsername)"
+      IMAGE_REGISTRY_PASSWORD_SECRET_OCID="$(resolve_build_argument imageRegistryPasswordSecretOcid)"
+
+      if [[ -z "$RELEASE_VERSION" || "$RELEASE_VERSION" == "null" || "$RELEASE_VERSION" == "manual" ]]; then
+        RELEASE_VERSION="$(printf '%s' "$COMMIT_SHA" | cut -c1-12)"
+      fi
+
+      require_argument imageRepository "$IMAGE_REPOSITORY"
+      require_argument imageRegistryEndpoint "$IMAGE_REGISTRY_ENDPOINT"
+      require_argument imageRegistryUsername "$IMAGE_REGISTRY_USERNAME"
+      require_argument imageRegistryPasswordSecretOcid "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID"
+
+      IMAGE_TAG="$RELEASE_VERSION"
+      APP_IMAGE="${IMAGE_REPOSITORY}:${RELEASE_VERSION}"
+
+      cat > release-metadata.env <<EOF
+      COMMIT_SHA=$COMMIT_SHA
+      RELEASE_VERSION=$RELEASE_VERSION
+      IMAGE_TAG=$IMAGE_TAG
+      APP_IMAGE=$APP_IMAGE
+      IMAGE_REGISTRY_ENDPOINT=$IMAGE_REGISTRY_ENDPOINT
+      IMAGE_REGISTRY_USERNAME=$IMAGE_REGISTRY_USERNAME
+      IMAGE_REGISTRY_PASSWORD_SECRET_OCID=$IMAGE_REGISTRY_PASSWORD_SECRET_OCID
+      EOF
+
+  - type: Command
+    name: Verify release candidate
+    command: |
+      set -euo pipefail
+
+      export JAVA_HOME=/usr/java/jdk-25
+      export PATH="$JAVA_HOME/bin:$PATH"
+      export VERIFY_DB_USERNAME="wortwerk_verify"
+      export VERIFY_DB_PASSWORD="wortwerk_verify"
+
+      ./mvnw clean verify \
+        "-Dverify.container.image=wort-werk:verify-release" \
+        "-Dverify.environment.backend=podman"
+
+  - type: Command
+    name: Publish image to OCIR
+    command: |
+      set -euo pipefail
+      export OCI_CLI_AUTH=resource_principal
+      . ./release-metadata.env
+
+      base64_decode() {
+        if base64 --help 2>&1 | grep -q -- '--decode'; then
+          base64 --decode
+          return 0
+        fi
+
+        base64 -D
+      }
+
+      IMAGE_REGISTRY_PASSWORD="$(oci secrets secret-bundle get \
+        --secret-id "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID" \
+        --query 'data."secret-bundle-content".content' \
+        --raw-output | base64_decode)"
+
+      printf '%s' "$IMAGE_REGISTRY_PASSWORD" | docker login "$IMAGE_REGISTRY_ENDPOINT" \
+        --username "$IMAGE_REGISTRY_USERNAME" \
+        --password-stdin
+
+      docker buildx build \
+        --platform linux/amd64 \
+        --tag "$APP_IMAGE" \
+        --push \
+        .

@@ -1,0 +1,60 @@
+version: 0.1
+component: command
+timeoutInSeconds: 3600
+shell: bash
+
+env:
+  variables:
+    OKE_CLUSTER_ID: "${okeClusterId}"
+    OCI_REGION: "${ociRegion}"
+    APP_BASE_URL: "${appBaseUrl}"
+    APP_NAMESPACE: "${appNamespace}"
+    SERVICE_TYPE: "${serviceType}"
+    APP_HOST: "${appHost}"
+    USE_NGINX_INGRESS: "${useNginxIngress}"
+    IMAGE_REPOSITORY: "${imageRepository}"
+    IMAGE_REGISTRY_ENDPOINT: "${imageRegistryEndpoint}"
+    IMAGE_REGISTRY_USERNAME: "${imageRegistryUsername}"
+    IMAGE_REGISTRY_PASSWORD_SECRET_OCID: "${imageRegistryPasswordSecretOcid}"
+    RELEASE_VERSION: "${releaseVersion}"
+    RUNTIME_DB_URL: "${runtimeDbUrl}"
+    RUNTIME_DB_USERNAME: "${runtimeDbUsername}"
+    RUNTIME_DB_PASSWORD_SECRET_OCID: "${runtimeDbPasswordSecretOcid}"
+    RUNTIME_DB_SSL_ROOT_CERT_BASE64: "${runtimeDbSslRootCertBase64}"
+    POST_SWITCH_OBSERVATION_SECONDS: "${postSwitchObservationSeconds}"
+    POST_SWITCH_OBSERVATION_INTERVAL_SECONDS: "${postSwitchObservationIntervalSeconds}"
+
+steps:
+  - type: Command
+    name: Install kubectl and envsubst
+    command: |
+      set -euo pipefail
+
+      export PATH="$HOME/bin:$PATH"
+      mkdir -p "$HOME/bin"
+
+      if ! command -v kubectl >/dev/null 2>&1; then
+        curl -Lo kubectl "https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubectl"
+        install -m 0755 kubectl "$HOME/bin/kubectl"
+      fi
+
+      if ! command -v envsubst >/dev/null 2>&1; then
+        if command -v microdnf >/dev/null 2>&1; then
+          microdnf install -y gettext
+        elif command -v dnf >/dev/null 2>&1; then
+          dnf install -y gettext
+        else
+          yum install -y gettext
+        fi
+      fi
+
+  - type: Command
+    name: Run OKE blue-green rollout
+    command: |
+      set -euo pipefail
+      export OCI_CLI_AUTH=resource_principal
+      export PATH="$HOME/bin:$PATH"
+      if [[ -z "${APP_IMAGE:-}" && -n "${IMAGE_REPOSITORY:-}" && -n "${RELEASE_VERSION:-}" ]]; then
+        export APP_IMAGE="${IMAGE_REPOSITORY}:${RELEASE_VERSION}"
+      fi
+      ./infrastructure/oci/oke-devops/deploy-bluegreen.sh

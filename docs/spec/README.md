@@ -13,3 +13,4 @@ Each feature lives in its own `SPEC-XXX-*.md` file and includes status plus acce
 - [SPEC-006: Container-First Verification Workflow](./SPEC-006-container-first-verification-workflow.md)
 - [SPEC-007: Repo-Local Codex Review Skills](./SPEC-007-repo-local-codex-review-skills.md)
 - [SPEC-008: OCI PostgreSQL and Secure Runtime Connectivity](./SPEC-008-oci-postgresql-runtime-security.md)
+- [SPEC-009: OCI OKE Blue-Green Runtime](./SPEC-009-oci-oke-blue-green-runtime.md)

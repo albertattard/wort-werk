@@ -7,6 +7,11 @@ Wort-Werk OCI Terraform is split into four stacks.
 - `runtime/`: application rollout by image tag
 - `devops/`: OCI DevOps managed build/deploy scaffolding for private release execution
 
+The repository now also contains an OKE migration path:
+
+- `oke-runtime/`: OKE cluster and node-pool provisioning for Kubernetes-based blue-green rollout
+- `oke-devops/`: OCI DevOps managed build/deploy scaffolding for the OKE rollout path
+
 ## Bootstrap OCI Control Plane
 
 The Wort-Werk compartment and the shared OCI Object Storage bucket used for Terraform remote state are bootstrap prerequisites and are no longer provisioned by `foundation`.
@@ -67,6 +72,18 @@ Apply order:
 7. optionally create the GitHub DevOps connection secret and OCIR push secret in OCI Vault, then apply `devops/`
 8. bootstrap the dedicated runtime DB role from a host that can reach the private PostgreSQL endpoint
 9. trigger runtime rollout through OCI DevOps, or run `runtime` only for the one-time backend migration / OCI-resident apply path
+
+OKE migration-oriented apply order:
+1. bootstrap the Wort-Werk compartment
+2. bootstrap the shared Terraform state bucket inside that compartment
+3. foundation, including the dedicated OKE endpoint, worker, and optional admin-bastion outputs
+4. create or rotate DB secrets in OCI Vault
+5. data
+6. apply `oke-runtime/`
+7. optionally bootstrap ingress-nginx through `oke-runtime/bootstrap-ingress-nginx.sh` from inside the VCN, or `oke-runtime/bootstrap-ingress-nginx-via-bastion.sh` from an operator laptop outside the VCN
+8. create or rotate the GitHub DevOps connection secret and OCIR push secret in OCI Vault
+9. apply `oke-devops/`
+10. trigger OKE rollout through `oke-devops/run-release.sh`
 
 ## Set the DB Credentials
 
