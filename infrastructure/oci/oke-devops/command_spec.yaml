@@ -27,6 +27,8 @@ env:
     TLS_CA_CERTIFICATE_SECRET_OCID: "${tlsCaCertificateSecretOcid}"
     POST_SWITCH_OBSERVATION_SECONDS: "${postSwitchObservationSeconds}"
     POST_SWITCH_OBSERVATION_INTERVAL_SECONDS: "${postSwitchObservationIntervalSeconds}"
+    COMMIT_SHA: "${COMMIT_SHA}"
+    REPOSITORY_URL: "https://github.com/albertattard/wort-werk.git"
 
 steps:
   - type: Command
@@ -52,6 +54,16 @@ steps:
         fi
       fi
 
+      if ! command -v git >/dev/null 2>&1; then
+        if command -v microdnf >/dev/null 2>&1; then
+          microdnf install -y git
+        elif command -v dnf >/dev/null 2>&1; then
+          dnf install -y git
+        else
+          yum install -y git
+        fi
+      fi
+
   - type: Command
     name: Run OKE blue-green rollout
     command: |
@@ -61,4 +73,14 @@ steps:
       if [[ -z "${APP_IMAGE:-}" && -n "${IMAGE_REPOSITORY:-}" && -n "${RELEASE_VERSION:-}" ]]; then
         export APP_IMAGE="${IMAGE_REPOSITORY}:${RELEASE_VERSION}"
       fi
+      if [[ -z "${COMMIT_SHA:-}" || "${COMMIT_SHA}" == "null" ]]; then
+        echo "Missing required deployment variable: COMMIT_SHA" >&2
+        exit 1
+      fi
+      WORKDIR="$(mktemp -d)"
+      git init "$WORKDIR"
+      git -C "$WORKDIR" remote add origin "$REPOSITORY_URL"
+      git -C "$WORKDIR" fetch --depth 1 origin "$COMMIT_SHA"
+      git -C "$WORKDIR" checkout --detach FETCH_HEAD
+      cd "$WORKDIR"
       ./infrastructure/oci/oke-devops/deploy-bluegreen.sh

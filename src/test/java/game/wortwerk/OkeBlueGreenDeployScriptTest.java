@@ -43,6 +43,8 @@ class OkeBlueGreenDeployScriptTest {
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_SECONDS: \"${postSwitchObservationSeconds}\"");
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS: \"${postSwitchObservationIntervalSeconds}\"");
         assertThat(commandSpec).contains("APP_RESOLVE_IP: \"${appResolveIp}\"");
+        assertThat(commandSpec).contains("COMMIT_SHA: \"${COMMIT_SHA}\"");
+        assertThat(commandSpec).contains("git -C \"$WORKDIR\" fetch --depth 1 origin \"$COMMIT_SHA\"");
         assertThat(commandSpec).contains("POSTGRESQL_DB_SYSTEM_ID: \"${postgresqlDbSystemId}\"");
         assertThat(commandSpec).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID: \"${tlsPublicCertificateSecretOcid}\"");
         assertThat(commandSpec).contains("TLS_PRIVATE_KEY_SECRET_OCID: \"${tlsPrivateKeySecretOcid}\"");
