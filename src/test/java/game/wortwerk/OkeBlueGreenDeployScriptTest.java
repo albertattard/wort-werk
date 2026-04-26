@@ -39,6 +39,8 @@ class OkeBlueGreenDeployScriptTest {
         assertThat(terraform).contains("name          = \"postSwitchObservationIntervalSeconds\"");
         assertThat(terraform).contains("name          = \"postgresqlDbSystemId\"");
         assertThat(terraform).doesNotContain("runtimeDbSslRootCertBase64");
+        assertThat(terraform).doesNotContain("name          = \"ociRegion\"");
+        assertThat(commandSpec).contains("OCI_REGION: \"${regionRuntime}\"");
     }
 
     @Test

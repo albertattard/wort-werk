@@ -6,7 +6,7 @@ shell: bash
 env:
   variables:
     OKE_CLUSTER_ID: "${okeClusterId}"
-    OCI_REGION: "${ociRegion}"
+    OCI_REGION: "${regionRuntime}"
     APP_BASE_URL: "${appBaseUrl}"
     APP_NAMESPACE: "${appNamespace}"
     SERVICE_TYPE: "${serviceType}"

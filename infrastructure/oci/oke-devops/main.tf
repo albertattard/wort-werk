@@ -147,7 +147,7 @@ resource "oci_devops_build_pipeline" "release" {
     }
 
     items {
-      name          = "ociRegion"
+      name          = "regionRuntime"
       default_value = var.region
       description   = "OCI region used by the OKE cluster."
     }
@@ -265,7 +265,7 @@ resource "oci_devops_deploy_pipeline" "release" {
     }
 
     items {
-      name          = "ociRegion"
+      name          = "regionRuntime"
       default_value = var.region
       description   = "OCI region used by the OKE cluster."
     }
