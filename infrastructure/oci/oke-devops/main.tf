@@ -352,6 +352,12 @@ resource "oci_devops_deploy_artifact" "command_spec" {
     base64encoded_content       = filebase64("${path.module}/command_spec.yaml")
   }
 
+  lifecycle {
+    # OCI reads this field back decoded even though the API expects base64 input,
+    # which otherwise causes a perpetual no-op diff after every apply.
+    ignore_changes = [deploy_artifact_source[0].base64encoded_content]
+  }
+
   freeform_tags = local.freeform_tags
 }
 

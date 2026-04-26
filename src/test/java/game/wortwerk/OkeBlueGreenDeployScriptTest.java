@@ -41,6 +41,7 @@ class OkeBlueGreenDeployScriptTest {
         assertThat(terraform).doesNotContain("runtimeDbSslRootCertBase64");
         assertThat(terraform).doesNotContain("name          = \"ociRegion\"");
         assertThat(commandSpec).contains("OCI_REGION: \"${regionRuntime}\"");
+        assertThat(terraform).contains("ignore_changes = [deploy_artifact_source[0].base64encoded_content]");
     }
 
     @Test
