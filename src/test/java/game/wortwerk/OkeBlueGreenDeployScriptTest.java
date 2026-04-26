@@ -22,6 +22,10 @@ class OkeBlueGreenDeployScriptTest {
         assertThat(script).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS");
         assertThat(script).contains("oci psql connection-details get");
         assertThat(script).contains("POSTGRESQL_DB_SYSTEM_ID");
+        assertThat(script).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID");
+        assertThat(script).contains("TLS_PRIVATE_KEY_SECRET_OCID");
+        assertThat(script).contains("\"${TLS_CA_CERTIFICATE_SECRET_OCID}\" != \"none\"");
+        assertThat(script).contains("kubectl create secret tls wortwerk-tls");
         assertThat(script).contains("observe_public_endpoint");
         assertThat(script).contains("rollback_after_failed_observation \"$TARGET_SLOT\" \"$PREVIOUS_SLOT\"");
         assertThat(script).contains("apply_active_service \"$previous_slot\"");
@@ -32,16 +36,43 @@ class OkeBlueGreenDeployScriptTest {
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_SECONDS: \"${postSwitchObservationSeconds}\"");
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS: \"${postSwitchObservationIntervalSeconds}\"");
         assertThat(commandSpec).contains("POSTGRESQL_DB_SYSTEM_ID: \"${postgresqlDbSystemId}\"");
+        assertThat(commandSpec).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID: \"${tlsPublicCertificateSecretOcid}\"");
+        assertThat(commandSpec).contains("TLS_PRIVATE_KEY_SECRET_OCID: \"${tlsPrivateKeySecretOcid}\"");
+        assertThat(commandSpec).contains("TLS_CA_CERTIFICATE_SECRET_OCID: \"${tlsCaCertificateSecretOcid}\"");
         assertThat(variables).contains("variable \"post_switch_observation_seconds\"");
         assertThat(variables).contains("variable \"postgresql_db_system_id\"");
+        assertThat(variables).contains("variable \"tls_public_certificate_secret_ocid\"");
+        assertThat(variables).contains("variable \"tls_private_key_secret_ocid\"");
+        assertThat(variables).contains("variable \"tls_ca_certificate_secret_ocid\"");
         assertThat(variables).contains("default     = 120");
         assertThat(terraform).contains("name          = \"postSwitchObservationSeconds\"");
         assertThat(terraform).contains("name          = \"postSwitchObservationIntervalSeconds\"");
         assertThat(terraform).contains("name          = \"postgresqlDbSystemId\"");
+        assertThat(terraform).contains("name          = \"tlsPublicCertificateSecretOcid\"");
+        assertThat(terraform).contains("name          = \"tlsPrivateKeySecretOcid\"");
+        assertThat(terraform).contains("name          = \"tlsCaCertificateSecretOcid\"");
         assertThat(terraform).doesNotContain("runtimeDbSslRootCertBase64");
         assertThat(terraform).doesNotContain("name          = \"ociRegion\"");
         assertThat(commandSpec).contains("OCI_REGION: \"${regionRuntime}\"");
-        assertThat(terraform).contains("ignore_changes = [deploy_artifact_source[0].base64encoded_content]");
+        assertThat(terraform).contains("ignore_changes");
+        assertThat(terraform).contains("deploy_artifact_source[0].base64encoded_content");
+        assertThat(terraform).contains("resource \"terraform_data\" \"command_spec_hash\"");
+        assertThat(terraform).contains("input = filesha256(\"${path.module}/command_spec.yaml\")");
+        assertThat(terraform).contains("command_spec_artifact_display_name");
+        assertThat(terraform).contains("local.tls_ca_certificate_secret_parameter");
+        assertThat(terraform).contains("create_before_destroy = true");
+        assertThat(terraform).contains("replace_triggered_by");
+        assertThat(terraform).contains("terraform_data.command_spec_hash");
+    }
+
+    @Test
+    void shouldBindNginxIngressToWortwerkTlsSecret() throws IOException {
+        String ingress = read("infrastructure/oci/oke-runtime/manifests/ingress.yaml.tpl");
+
+        assertThat(ingress).contains("tls:");
+        assertThat(ingress).contains("hosts:");
+        assertThat(ingress).contains("- ${APP_HOST}");
+        assertThat(ingress).contains("secretName: wortwerk-tls");
     }
 
     @Test
@@ -51,7 +82,7 @@ class OkeBlueGreenDeployScriptTest {
         String readme = read("infrastructure/oci/oke-devops/README.md");
 
         assertThat(terraform).contains("resource \"oci_devops_trigger\" \"github_push\"");
-        assertThat(terraform).contains("trigger_source  = \"GITHUB\"");
+        assertThat(terraform).contains("trigger_source = \"GITHUB\"");
         assertThat(terraform).contains("type              = \"TRIGGER_BUILD_PIPELINE\"");
         assertThat(terraform).contains("events         = [\"PUSH\"]");
         assertThat(terraform).contains("head_ref = var.repository_branch");

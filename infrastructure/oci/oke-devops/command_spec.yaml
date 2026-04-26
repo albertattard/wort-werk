@@ -21,6 +21,9 @@ env:
     RUNTIME_DB_USERNAME: "${runtimeDbUsername}"
     RUNTIME_DB_PASSWORD_SECRET_OCID: "${runtimeDbPasswordSecretOcid}"
     POSTGRESQL_DB_SYSTEM_ID: "${postgresqlDbSystemId}"
+    TLS_PUBLIC_CERTIFICATE_SECRET_OCID: "${tlsPublicCertificateSecretOcid}"
+    TLS_PRIVATE_KEY_SECRET_OCID: "${tlsPrivateKeySecretOcid}"
+    TLS_CA_CERTIFICATE_SECRET_OCID: "${tlsCaCertificateSecretOcid}"
     POST_SWITCH_OBSERVATION_SECONDS: "${postSwitchObservationSeconds}"
     POST_SWITCH_OBSERVATION_INTERVAL_SECONDS: "${postSwitchObservationIntervalSeconds}"
 

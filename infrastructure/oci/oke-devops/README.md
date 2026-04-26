@@ -58,12 +58,15 @@ Required deploy variables:
 - `RUNTIME_DB_USERNAME`
 - `RUNTIME_DB_PASSWORD_SECRET_OCID`
 - `POSTGRESQL_DB_SYSTEM_ID`
+- `TLS_PUBLIC_CERTIFICATE_SECRET_OCID` when `USE_NGINX_INGRESS=true`
+- `TLS_PRIVATE_KEY_SECRET_OCID` when `USE_NGINX_INGRESS=true`
 
 Optional deploy variables:
 
 - `USE_NGINX_INGRESS`
 - `APP_HOST`
 - `SERVICE_TYPE`
+- `TLS_CA_CERTIFICATE_SECRET_OCID`
 - `POST_SWITCH_OBSERVATION_SECONDS`, default `120`
 - `POST_SWITCH_OBSERVATION_INTERVAL_SECONDS`, default `10`
 
@@ -71,6 +74,9 @@ Optional deploy variables:
 
 The deploy flow assumes public ingress already targets the stable `wortwerk-active` `Service`.
 The blue-green cutover itself happens by changing the `Service` selector, not by modifying the public edge on each release.
+
+When `USE_NGINX_INGRESS=true`, the deploy flow also creates or updates a Kubernetes TLS secret named `wortwerk-tls` from OCI Vault certificate secrets and binds the ingress to that secret.
+Do not move the production DNS record to the OKE ingress load balancer until that TLS path is configured and the ingress endpoint presents the `wortwerk.xyz` certificate.
 
 ## Terraform Stack
 
@@ -103,6 +109,9 @@ Required Terraform inputs:
 - `runtime_db_username`
 - `runtime_db_password_secret_ocid`
 - `postgresql_db_system_id`
+- `tls_public_certificate_secret_ocid` when `use_nginx_ingress=true`
+- `tls_private_key_secret_ocid` when `use_nginx_ingress=true`
+- `tls_ca_certificate_secret_ocid` when the certificate chain is stored separately
 - `post_switch_observation_seconds`
 - `post_switch_observation_interval_seconds`
 

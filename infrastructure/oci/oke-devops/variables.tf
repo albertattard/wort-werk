@@ -118,6 +118,24 @@ variable "postgresql_db_system_id" {
   type        = string
 }
 
+variable "tls_public_certificate_secret_ocid" {
+  description = "Vault secret OCID that stores the PEM public certificate or certificate bundle used by ingress-nginx."
+  type        = string
+  default     = ""
+}
+
+variable "tls_private_key_secret_ocid" {
+  description = "Vault secret OCID that stores the PEM private key used by ingress-nginx."
+  type        = string
+  default     = ""
+}
+
+variable "tls_ca_certificate_secret_ocid" {
+  description = "Optional Vault secret OCID that stores the PEM CA certificate chain appended to the ingress-nginx TLS certificate."
+  type        = string
+  default     = ""
+}
+
 variable "post_switch_observation_seconds" {
   description = "Seconds to observe the public endpoint after switching the active Service selector before deleting the previous slot."
   type        = number

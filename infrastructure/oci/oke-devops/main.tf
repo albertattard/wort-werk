@@ -23,8 +23,10 @@ locals {
   trigger_deploy_stage_name             = "trigger-oke-rollout"
   shell_stage_name                      = "oke-bluegreen-rollout"
   command_spec_artifact_name            = "oke-bluegreen-command-spec"
+  command_spec_artifact_display_name    = "${local.command_spec_artifact_name}-${substr(filesha256("${path.module}/command_spec.yaml"), 0, 12)}"
   build_source_name                     = "wortwerk"
   build_spec_path                       = "infrastructure/oci/oke-devops/build_spec.yaml"
+  tls_ca_certificate_secret_parameter   = var.tls_ca_certificate_secret_ocid != "" ? var.tls_ca_certificate_secret_ocid : "none"
   freeform_tags = {
     group_id = local.stack_name
     tier     = "oke-devops"
@@ -83,14 +85,33 @@ resource "oci_identity_policy" "devops_secret_read" {
   compartment_id = var.compartment_ocid
   name           = local.devops_secret_read_policy_name
   description    = local.devops_secret_read_policy_description
-  statements = [
+  statements = concat([
     "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.github_connection_token_secret_ocid}'",
     "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.github_connection_token_secret_ocid}'",
     "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.image_registry_password_secret_ocid}'",
     "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.image_registry_password_secret_ocid}'",
     "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.runtime_db_password_secret_ocid}'",
     "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.runtime_db_password_secret_ocid}'"
-  ]
+    ],
+    var.tls_public_certificate_secret_ocid != ""
+    ? [
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_public_certificate_secret_ocid}'",
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_public_certificate_secret_ocid}'"
+    ]
+    : [],
+    var.tls_private_key_secret_ocid != ""
+    ? [
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_private_key_secret_ocid}'",
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_private_key_secret_ocid}'"
+    ]
+    : [],
+    var.tls_ca_certificate_secret_ocid != ""
+    ? [
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-FAMILY  IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_ca_certificate_secret_ocid}'",
+      "ALLOW DYNAMIC-GROUP ${var.devops_dynamic_group_name} TO READ SECRET-BUNDLES IN COMPARTMENT ID ${var.compartment_ocid} WHERE target.secret.id = '${var.tls_ca_certificate_secret_ocid}'"
+    ]
+    : []
+  )
 
   freeform_tags = local.freeform_tags
 }
@@ -204,6 +225,24 @@ resource "oci_devops_build_pipeline" "release" {
       name          = "postgresqlDbSystemId"
       default_value = var.postgresql_db_system_id
       description   = "OCI PostgreSQL DB system OCID used to resolve the service CA certificate inside the deploy runner."
+    }
+
+    items {
+      name          = "tlsPublicCertificateSecretOcid"
+      default_value = var.tls_public_certificate_secret_ocid
+      description   = "Vault secret OCID used for the ingress-nginx public TLS certificate."
+    }
+
+    items {
+      name          = "tlsPrivateKeySecretOcid"
+      default_value = var.tls_private_key_secret_ocid
+      description   = "Vault secret OCID used for the ingress-nginx private TLS key."
+    }
+
+    items {
+      name          = "tlsCaCertificateSecretOcid"
+      default_value = local.tls_ca_certificate_secret_parameter
+      description   = "Optional Vault secret OCID used for the ingress-nginx TLS CA certificate chain."
     }
 
     items {
@@ -325,6 +364,24 @@ resource "oci_devops_deploy_pipeline" "release" {
     }
 
     items {
+      name          = "tlsPublicCertificateSecretOcid"
+      default_value = var.tls_public_certificate_secret_ocid
+      description   = "Vault secret OCID used for the ingress-nginx public TLS certificate."
+    }
+
+    items {
+      name          = "tlsPrivateKeySecretOcid"
+      default_value = var.tls_private_key_secret_ocid
+      description   = "Vault secret OCID used for the ingress-nginx private TLS key."
+    }
+
+    items {
+      name          = "tlsCaCertificateSecretOcid"
+      default_value = local.tls_ca_certificate_secret_parameter
+      description   = "Optional Vault secret OCID used for the ingress-nginx TLS CA certificate chain."
+    }
+
+    items {
       name          = "postSwitchObservationSeconds"
       default_value = tostring(var.post_switch_observation_seconds)
       description   = "Seconds to observe the public endpoint after traffic switches before deleting the previous slot."
@@ -340,11 +397,15 @@ resource "oci_devops_deploy_pipeline" "release" {
   freeform_tags = local.freeform_tags
 }
 
+resource "terraform_data" "command_spec_hash" {
+  input = filesha256("${path.module}/command_spec.yaml")
+}
+
 resource "oci_devops_deploy_artifact" "command_spec" {
   argument_substitution_mode = "SUBSTITUTE_PLACEHOLDERS"
   deploy_artifact_type       = "COMMAND_SPEC"
   project_id                 = oci_devops_project.wort_werk.id
-  display_name               = local.command_spec_artifact_name
+  display_name               = local.command_spec_artifact_display_name
   description                = "Shell stage command specification for the private Wort-Werk OKE rollout path."
 
   deploy_artifact_source {
@@ -355,7 +416,9 @@ resource "oci_devops_deploy_artifact" "command_spec" {
   lifecycle {
     # OCI reads this field back decoded even though the API expects base64 input,
     # which otherwise causes a perpetual no-op diff after every apply.
-    ignore_changes = [deploy_artifact_source[0].base64encoded_content]
+    create_before_destroy = true
+    ignore_changes        = [deploy_artifact_source[0].base64encoded_content]
+    replace_triggered_by  = [terraform_data.command_spec_hash]
   }
 
   freeform_tags = local.freeform_tags
@@ -414,12 +477,12 @@ resource "oci_devops_build_pipeline_stage" "trigger_oke_rollout" {
 }
 
 resource "oci_devops_trigger" "github_push" {
-  project_id      = oci_devops_project.wort_werk.id
-  trigger_source  = "GITHUB"
-  connection_id   = oci_devops_connection.github.id
-  display_name    = local.github_push_trigger_name
-  description     = "Starts the Wort-Werk OKE release pipeline for trunk pushes that affect application/runtime paths."
-  freeform_tags   = local.freeform_tags
+  project_id     = oci_devops_project.wort_werk.id
+  trigger_source = "GITHUB"
+  connection_id  = oci_devops_connection.github.id
+  display_name   = local.github_push_trigger_name
+  description    = "Starts the Wort-Werk OKE release pipeline for trunk pushes that affect application/runtime paths."
+  freeform_tags  = local.freeform_tags
 
   actions {
     type              = "TRIGGER_BUILD_PIPELINE"

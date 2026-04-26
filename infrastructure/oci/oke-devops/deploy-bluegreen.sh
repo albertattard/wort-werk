@@ -74,6 +74,31 @@ resolve_runtime_db_ssl_root_cert_base64() {
     --raw-output | base64 | tr -d '\n'
 }
 
+apply_ingress_tls_secret() {
+  require_env TLS_PUBLIC_CERTIFICATE_SECRET_OCID
+  require_env TLS_PRIVATE_KEY_SECRET_OCID
+
+  local tls_cert_path="$WORKDIR/wortwerk-tls.crt"
+  local tls_key_path="$WORKDIR/wortwerk-tls.key"
+
+  read_secret_value "$TLS_PUBLIC_CERTIFICATE_SECRET_OCID" > "$tls_cert_path"
+
+  if [[ -n "${TLS_CA_CERTIFICATE_SECRET_OCID:-}" && "${TLS_CA_CERTIFICATE_SECRET_OCID}" != "none" ]]; then
+    printf '\n' >> "$tls_cert_path"
+    read_secret_value "$TLS_CA_CERTIFICATE_SECRET_OCID" >> "$tls_cert_path"
+  fi
+
+  read_secret_value "$TLS_PRIVATE_KEY_SECRET_OCID" > "$tls_key_path"
+  chmod 0600 "$tls_cert_path" "$tls_key_path"
+
+  kubectl create secret tls wortwerk-tls \
+    --namespace "$APP_NAMESPACE" \
+    --cert "$tls_cert_path" \
+    --key "$tls_key_path" \
+    --dry-run=client \
+    -o yaml | kubectl apply -f -
+}
+
 current_slot="$(kubectl get service wortwerk-active \
   -n "$APP_NAMESPACE" \
   -o go-template='{{index .spec.selector "app.kubernetes.io/slot"}}' 2>/dev/null || true)"
@@ -184,6 +209,7 @@ apply_active_service "$TARGET_SLOT"
 
 if [[ "${USE_NGINX_INGRESS:-false}" == "true" ]]; then
   require_env APP_HOST
+  apply_ingress_tls_secret
   render infrastructure/oci/oke-runtime/manifests/ingress.yaml.tpl "$WORKDIR/ingress.yaml"
   kubectl apply -f "$WORKDIR/ingress.yaml"
 fi

@@ -24,6 +24,9 @@ Optional edge:
 - ingress-nginx with an `Ingress` that routes to `wortwerk-active`
 - direct OCI load balancer exposure by setting the stable `Service` type to `LoadBalancer`
 
+For production `https://wortwerk.xyz`, ingress-nginx must be configured with a Kubernetes TLS secret named `wortwerk-tls`.
+The OKE DevOps rollout creates that secret from OCI Vault certificate secrets before applying the ingress manifest.
+
 The recommendation is deliberate.
 Your requirement is to keep the old version live until the new version is ready, then switch and delete the old one.
 That is better served by a stable in-cluster `Service` than by introducing cross-namespace coordination and edge-level cutover.
@@ -174,6 +177,9 @@ Deploy pipeline:
 - `APP_IMAGE`
 - `APP_HOST` when optional ingress-nginx exposure is enabled
 - `SERVICE_TYPE` when exposing the stable `Service` directly through an OCI load balancer
+- `TLS_PUBLIC_CERTIFICATE_SECRET_OCID` when optional ingress-nginx exposure is enabled
+- `TLS_PRIVATE_KEY_SECRET_OCID` when optional ingress-nginx exposure is enabled
+- `TLS_CA_CERTIFICATE_SECRET_OCID` when the certificate chain is stored separately
 - `IMAGE_REGISTRY_ENDPOINT`
 - `IMAGE_REGISTRY_USERNAME`
 - `IMAGE_REGISTRY_PASSWORD_SECRET_OCID`

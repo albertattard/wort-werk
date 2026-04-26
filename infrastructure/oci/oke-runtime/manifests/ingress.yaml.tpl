@@ -10,6 +10,10 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - ${APP_HOST}
+      secretName: wortwerk-tls
   rules:
     - host: ${APP_HOST}
       http:
