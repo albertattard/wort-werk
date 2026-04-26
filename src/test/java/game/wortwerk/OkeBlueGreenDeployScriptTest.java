@@ -20,6 +20,8 @@ class OkeBlueGreenDeployScriptTest {
 
         assertThat(script).contains("POST_SWITCH_OBSERVATION_SECONDS=\"${POST_SWITCH_OBSERVATION_SECONDS:-120}\"");
         assertThat(script).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS");
+        assertThat(script).contains("APP_RESOLVE_IP");
+        assertThat(script).contains("curl_args+=(--resolve");
         assertThat(script).contains("oci psql connection-details get");
         assertThat(script).contains("POSTGRESQL_DB_SYSTEM_ID");
         assertThat(script).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID");
@@ -35,12 +37,14 @@ class OkeBlueGreenDeployScriptTest {
 
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_SECONDS: \"${postSwitchObservationSeconds}\"");
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS: \"${postSwitchObservationIntervalSeconds}\"");
+        assertThat(commandSpec).contains("APP_RESOLVE_IP: \"${appResolveIp}\"");
         assertThat(commandSpec).contains("POSTGRESQL_DB_SYSTEM_ID: \"${postgresqlDbSystemId}\"");
         assertThat(commandSpec).contains("TLS_PUBLIC_CERTIFICATE_SECRET_OCID: \"${tlsPublicCertificateSecretOcid}\"");
         assertThat(commandSpec).contains("TLS_PRIVATE_KEY_SECRET_OCID: \"${tlsPrivateKeySecretOcid}\"");
         assertThat(commandSpec).contains("TLS_CA_CERTIFICATE_SECRET_OCID: \"${tlsCaCertificateSecretOcid}\"");
         assertThat(variables).contains("variable \"post_switch_observation_seconds\"");
         assertThat(variables).contains("variable \"postgresql_db_system_id\"");
+        assertThat(variables).contains("variable \"app_resolve_ip\"");
         assertThat(variables).contains("variable \"tls_public_certificate_secret_ocid\"");
         assertThat(variables).contains("variable \"tls_private_key_secret_ocid\"");
         assertThat(variables).contains("variable \"tls_ca_certificate_secret_ocid\"");
@@ -48,6 +52,7 @@ class OkeBlueGreenDeployScriptTest {
         assertThat(terraform).contains("name          = \"postSwitchObservationSeconds\"");
         assertThat(terraform).contains("name          = \"postSwitchObservationIntervalSeconds\"");
         assertThat(terraform).contains("name          = \"postgresqlDbSystemId\"");
+        assertThat(terraform).contains("name          = \"appResolveIp\"");
         assertThat(terraform).contains("name          = \"tlsPublicCertificateSecretOcid\"");
         assertThat(terraform).contains("name          = \"tlsPrivateKeySecretOcid\"");
         assertThat(terraform).contains("name          = \"tlsCaCertificateSecretOcid\"");

@@ -80,6 +80,12 @@ variable "app_base_url" {
   type        = string
 }
 
+variable "app_resolve_ip" {
+  description = "Optional IP address used by curl --resolve for smoke tests before public DNS points at OKE."
+  type        = string
+  default     = ""
+}
+
 variable "service_type" {
   description = "Kubernetes Service type used by wortwerk-active."
   type        = string

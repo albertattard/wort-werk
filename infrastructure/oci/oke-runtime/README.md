@@ -26,6 +26,7 @@ Optional edge:
 
 For production `https://wortwerk.xyz`, ingress-nginx must be configured with a Kubernetes TLS secret named `wortwerk-tls`.
 The OKE DevOps rollout creates that secret from OCI Vault certificate secrets before applying the ingress manifest.
+During the first migration release, keep public DNS on the old runtime and use the OKE DevOps `APP_RESOLVE_IP` override to make post-switch checks resolve `wortwerk.xyz` to the OKE ingress load balancer IP.
 
 The recommendation is deliberate.
 Your requirement is to keep the old version live until the new version is ready, then switch and delete the old one.
@@ -176,6 +177,7 @@ Deploy pipeline:
 - `APP_NAMESPACE`
 - `APP_IMAGE`
 - `APP_HOST` when optional ingress-nginx exposure is enabled
+- `APP_RESOLVE_IP` when validating the OKE ingress load balancer before public DNS cutover
 - `SERVICE_TYPE` when exposing the stable `Service` directly through an OCI load balancer
 - `TLS_PUBLIC_CERTIFICATE_SECRET_OCID` when optional ingress-nginx exposure is enabled
 - `TLS_PRIVATE_KEY_SECRET_OCID` when optional ingress-nginx exposure is enabled

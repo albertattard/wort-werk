@@ -8,6 +8,7 @@ env:
     OKE_CLUSTER_ID: "${okeClusterId}"
     OCI_REGION: "${regionRuntime}"
     APP_BASE_URL: "${appBaseUrl}"
+    APP_RESOLVE_IP: "${appResolveIp}"
     APP_NAMESPACE: "${appNamespace}"
     SERVICE_TYPE: "${serviceType}"
     APP_HOST: "${appHost}"

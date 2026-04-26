@@ -26,6 +26,7 @@ locals {
   command_spec_artifact_display_name    = "${local.command_spec_artifact_name}-${substr(filesha256("${path.module}/command_spec.yaml"), 0, 12)}"
   build_source_name                     = "wortwerk"
   build_spec_path                       = "infrastructure/oci/oke-devops/build_spec.yaml"
+  app_resolve_ip_parameter              = var.app_resolve_ip != "" ? var.app_resolve_ip : "none"
   tls_ca_certificate_secret_parameter   = var.tls_ca_certificate_secret_ocid != "" ? var.tls_ca_certificate_secret_ocid : "none"
   freeform_tags = {
     group_id = local.stack_name
@@ -180,6 +181,12 @@ resource "oci_devops_build_pipeline" "release" {
     }
 
     items {
+      name          = "appResolveIp"
+      default_value = local.app_resolve_ip_parameter
+      description   = "Optional IP address used by curl --resolve for smoke tests before public DNS points at OKE."
+    }
+
+    items {
       name          = "appNamespace"
       default_value = var.app_namespace
       description   = "Stable namespace used by the blue-green rollout."
@@ -313,6 +320,12 @@ resource "oci_devops_deploy_pipeline" "release" {
       name          = "appBaseUrl"
       default_value = var.app_base_url
       description   = "Stable public base URL used for the post-switch smoke test."
+    }
+
+    items {
+      name          = "appResolveIp"
+      default_value = local.app_resolve_ip_parameter
+      description   = "Optional IP address used by curl --resolve for smoke tests before public DNS points at OKE."
     }
 
     items {

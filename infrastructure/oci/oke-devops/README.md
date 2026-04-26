@@ -65,6 +65,7 @@ Optional deploy variables:
 
 - `USE_NGINX_INGRESS`
 - `APP_HOST`
+- `APP_RESOLVE_IP` to force smoke checks to the OKE ingress load balancer before public DNS is cut over
 - `SERVICE_TYPE`
 - `TLS_CA_CERTIFICATE_SECRET_OCID`
 - `POST_SWITCH_OBSERVATION_SECONDS`, default `120`
@@ -77,6 +78,7 @@ The blue-green cutover itself happens by changing the `Service` selector, not by
 
 When `USE_NGINX_INGRESS=true`, the deploy flow also creates or updates a Kubernetes TLS secret named `wortwerk-tls` from OCI Vault certificate secrets and binds the ingress to that secret.
 Do not move the production DNS record to the OKE ingress load balancer until that TLS path is configured and the ingress endpoint presents the `wortwerk.xyz` certificate.
+For the first migration release, set `APP_RESOLVE_IP`/`app_resolve_ip` to the OKE ingress load balancer IP so the post-switch check validates OKE with `curl --resolve` while public DNS still points at the old runtime.
 
 ## Terraform Stack
 
@@ -105,6 +107,7 @@ Required Terraform inputs:
 - `oke_cluster_id`
 - `app_namespace`
 - `app_base_url`
+- `app_resolve_ip` when validating OKE before public DNS cutover
 - `runtime_db_url`
 - `runtime_db_username`
 - `runtime_db_password_secret_ocid`

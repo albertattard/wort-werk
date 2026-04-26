@@ -155,12 +155,33 @@ rollback_after_failed_observation() {
 observe_public_endpoint() {
   local deadline
   local check_url
+  local check_scheme
+  local check_authority
+  local check_host
+  local curl_port
+  local curl_args
 
   deadline="$(($(date +%s) + POST_SWITCH_OBSERVATION_SECONDS))"
   check_url="${APP_BASE_URL%/}${POST_SWITCH_SMOKE_PATH}"
+  check_scheme="$(printf '%s' "$APP_BASE_URL" | sed -E 's#^([a-zA-Z][a-zA-Z0-9+.-]*)://.*#\1#')"
+  check_authority="${APP_BASE_URL#*://}"
+  check_authority="${check_authority%%/*}"
+  check_host="${check_authority%%:*}"
+  if [[ "$check_authority" == *:* ]]; then
+    curl_port="${check_authority##*:}"
+  elif [[ "$check_scheme" == "http" ]]; then
+    curl_port=80
+  else
+    curl_port=443
+  fi
+  curl_args=(-fsS)
+
+  if [[ -n "${APP_RESOLVE_IP:-}" && "${APP_RESOLVE_IP}" != "none" ]]; then
+    curl_args+=(--resolve "${check_host}:${curl_port}:${APP_RESOLVE_IP}")
+  fi
 
   while [[ "$(date +%s)" -lt "$deadline" ]]; do
-    if ! curl -fsS "$check_url" >/dev/null; then
+    if ! curl "${curl_args[@]}" "$check_url" >/dev/null; then
       return 1
     fi
 
