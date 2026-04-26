@@ -113,8 +113,8 @@ variable "runtime_db_password_secret_ocid" {
   type        = string
 }
 
-variable "runtime_db_ssl_root_cert_base64" {
-  description = "Base64-encoded PostgreSQL CA certificate used by the application runtime."
+variable "postgresql_db_system_id" {
+  description = "OCI PostgreSQL DB system OCID used by the deploy runner to resolve the service CA certificate."
   type        = string
 }
 

@@ -20,6 +20,8 @@ class OkeBlueGreenDeployScriptTest {
 
         assertThat(script).contains("POST_SWITCH_OBSERVATION_SECONDS=\"${POST_SWITCH_OBSERVATION_SECONDS:-120}\"");
         assertThat(script).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS");
+        assertThat(script).contains("oci psql connection-details get");
+        assertThat(script).contains("POSTGRESQL_DB_SYSTEM_ID");
         assertThat(script).contains("observe_public_endpoint");
         assertThat(script).contains("rollback_after_failed_observation \"$TARGET_SLOT\" \"$PREVIOUS_SLOT\"");
         assertThat(script).contains("apply_active_service \"$previous_slot\"");
@@ -29,10 +31,14 @@ class OkeBlueGreenDeployScriptTest {
 
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_SECONDS: \"${postSwitchObservationSeconds}\"");
         assertThat(commandSpec).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS: \"${postSwitchObservationIntervalSeconds}\"");
+        assertThat(commandSpec).contains("POSTGRESQL_DB_SYSTEM_ID: \"${postgresqlDbSystemId}\"");
         assertThat(variables).contains("variable \"post_switch_observation_seconds\"");
+        assertThat(variables).contains("variable \"postgresql_db_system_id\"");
         assertThat(variables).contains("default     = 120");
         assertThat(terraform).contains("name          = \"postSwitchObservationSeconds\"");
         assertThat(terraform).contains("name          = \"postSwitchObservationIntervalSeconds\"");
+        assertThat(terraform).contains("name          = \"postgresqlDbSystemId\"");
+        assertThat(terraform).doesNotContain("runtimeDbSslRootCertBase64");
     }
 
     @Test

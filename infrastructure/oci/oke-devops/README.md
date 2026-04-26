@@ -57,7 +57,7 @@ Required deploy variables:
 - `RUNTIME_DB_URL`
 - `RUNTIME_DB_USERNAME`
 - `RUNTIME_DB_PASSWORD_SECRET_OCID`
-- `RUNTIME_DB_SSL_ROOT_CERT_BASE64`
+- `POSTGRESQL_DB_SYSTEM_ID`
 
 Optional deploy variables:
 
@@ -102,7 +102,7 @@ Required Terraform inputs:
 - `runtime_db_url`
 - `runtime_db_username`
 - `runtime_db_password_secret_ocid`
-- `runtime_db_ssl_root_cert_base64`
+- `postgresql_db_system_id`
 - `post_switch_observation_seconds`
 - `post_switch_observation_interval_seconds`
 

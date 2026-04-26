@@ -20,6 +20,7 @@ require_env IMAGE_REGISTRY_PASSWORD_SECRET_OCID
 require_env RUNTIME_DB_URL
 require_env RUNTIME_DB_USERNAME
 require_env RUNTIME_DB_PASSWORD_SECRET_OCID
+require_env POSTGRESQL_DB_SYSTEM_ID
 
 SERVICE_TYPE="${SERVICE_TYPE:-ClusterIP}"
 POST_SWITCH_OBSERVATION_SECONDS="${POST_SWITCH_OBSERVATION_SECONDS:-120}"
@@ -59,6 +60,18 @@ read_secret_value() {
     --secret-id "$secret_ocid" \
     --query 'data."secret-bundle-content".content' \
     --raw-output | base64_decode
+}
+
+resolve_runtime_db_ssl_root_cert_base64() {
+  if [[ -n "${RUNTIME_DB_SSL_ROOT_CERT_BASE64:-}" ]]; then
+    printf '%s' "$RUNTIME_DB_SSL_ROOT_CERT_BASE64"
+    return 0
+  fi
+
+  OCI_CLI_REGION="$OCI_REGION" oci psql connection-details get \
+    --db-system-id "$POSTGRESQL_DB_SYSTEM_ID" \
+    --query 'data."ca-certificate"' \
+    --raw-output | base64 | tr -d '\n'
 }
 
 current_slot="$(kubectl get service wortwerk-active \
@@ -137,6 +150,7 @@ kubectl apply -f "$WORKDIR/namespace.yaml"
 
 IMAGE_REGISTRY_PASSWORD="$(read_secret_value "$IMAGE_REGISTRY_PASSWORD_SECRET_OCID")"
 RUNTIME_DB_PASSWORD="$(read_secret_value "$RUNTIME_DB_PASSWORD_SECRET_OCID")"
+RUNTIME_DB_SSL_ROOT_CERT_BASE64="$(resolve_runtime_db_ssl_root_cert_base64)"
 
 kubectl create secret docker-registry wortwerk-registry \
   --namespace "$APP_NAMESPACE" \
@@ -151,7 +165,7 @@ kubectl create secret generic wortwerk-runtime \
   --from-literal=WORTWERK_DB_URL="$RUNTIME_DB_URL" \
   --from-literal=WORTWERK_DB_USERNAME="$RUNTIME_DB_USERNAME" \
   --from-literal=WORTWERK_DB_PASSWORD="$RUNTIME_DB_PASSWORD" \
-  --from-literal=WORTWERK_DB_SSL_ROOT_CERT_BASE64="${RUNTIME_DB_SSL_ROOT_CERT_BASE64:-}" \
+  --from-literal=WORTWERK_DB_SSL_ROOT_CERT_BASE64="$RUNTIME_DB_SSL_ROOT_CERT_BASE64" \
   --from-literal=SERVER_PORT=8080 \
   --from-literal=MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info \
   --from-literal=MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED=true \
