@@ -21,6 +21,7 @@ class OkeBlueGreenDeployScriptTest {
 
         assertThat(buildSpec).contains("mesa-libgbm");
         assertThat(buildSpec).contains("libX11-xcb");
+        assertThat(buildSpec).contains("--file container/Dockerfile");
         assertThat(buildSpec).contains("docker push \"$APP_IMAGE\"");
         assertThat(script).contains("POST_SWITCH_OBSERVATION_SECONDS=\"${POST_SWITCH_OBSERVATION_SECONDS:-120}\"");
         assertThat(script).contains("POST_SWITCH_OBSERVATION_INTERVAL_SECONDS");

@@ -152,6 +152,7 @@ steps:
         --password-stdin
 
       docker build \
+        --file container/Dockerfile \
         --platform linux/amd64 \
         --tag "$APP_IMAGE" \
         .
