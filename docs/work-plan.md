@@ -17,7 +17,7 @@ This document is the execution and handoff source of truth for the first release
 - The Android-only Flutter baseline is generated, declares the approved bundled article assets, and passes `flutter pub get` and `flutter analyze`.
 - The full `assets/` article snapshot is committed. TASK-00-0001 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
 - The full snapshot is approved for redistribution by the project owner; TASK-00-0002 records the authorization for all imported images and audio.
-- The article snapshot is ready for application development. Automated content validation is deferred to milestone 2, where it can be developed and tested alongside the content loader.
+- The article snapshot is ready for application development. Repeatable content validation is scheduled in milestone 2 alongside the content loader.
 - Repository hygiene for a Flutter application is committed.
 
 ## Milestones
@@ -78,7 +78,7 @@ This document is the execution and handoff source of truth for the first release
 
 ### 2. Content model and validation
 
-**Status:** ready for task definition
+**Status:** ready
 
 **Outcome:** The app loads selected article records into typed models and rejects invalid content predictably.
 
@@ -92,11 +92,13 @@ This document is the execution and handoff source of truth for the first release
 **Completion evidence:**
 
 - Unit tests cover parsing and invalid-content failures.
-- The selected article subset loads successfully from bundled assets.
+- The full approved bundled dataset loads successfully and passes repeatable validation.
 
-**Commit boundary:** Content model, loader, validator, and tests.
+**Commit boundary:** One focused commit for each completed task.
 
-**Next task:** Define the first milestone-2 task record for the article domain model and bundled CSV repository.
+**Task sequence:** TASK-02-0001 (model and row parser) → TASK-02-0002 (bundled repository) → TASK-02-0003 (invalid-content handling) → TASK-02-0004 (full snapshot validation).
+
+**Next task:** Complete TASK-02-0001 to define the article model and parse valid CSV rows.
 
 ### 3. Article-practice exercise
 
