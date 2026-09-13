@@ -8,7 +8,7 @@ The first release focuses on one offline article-practice exercise: learners see
 
 The repository currently holds exercise content. Flutter application setup and implementation have not started.
 
-See [the first-release plan](docs/first-release.md) for the agreed scope, content contract, and acceptance criteria. See [the work plan](docs/work-plan.md) for the current milestone and how to resume work in a new session.
+See [the first-release plan](docs/first-release.md) for the agreed scope, content contract, and acceptance criteria. See [the work plan](docs/work-plan.md) for milestone sequencing and [the task records](docs/tasks/) for the current task state, evidence, and blockers.
 
 ## Planned local development
 

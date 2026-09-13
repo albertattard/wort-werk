@@ -1,6 +1,6 @@
 # Work plan
 
-This document is the execution and handoff source of truth for the first release. `docs/first-release.md` defines the product boundary; this plan defines the order of work, completion evidence, and the next bounded task.
+This document is the execution and handoff source of truth for the first release. `docs/first-release.md` defines the product boundary; this plan defines milestone order and completion evidence. Individual task state, dependencies, evidence, and blockers are recorded in [`docs/tasks/`](tasks/).
 
 ## Working rules
 
@@ -8,7 +8,7 @@ This document is the execution and handoff source of truth for the first release
 - Preserve the first-release scope. Do not add a backend, accounts, synchronization, sentence exercises, or a generalized spaced-repetition engine.
 - Do not download learning assets at runtime. Approved resources must be copied into this repository from a pinned source revision.
 - Keep commits focused on one completed concern. Do not stage unrelated work.
-- At the end of each working session, update this document with the status, evidence, and next task.
+- At the end of each working session, update the affected task file in [`docs/tasks/`](tasks/) with its status, evidence, and next task. Update this plan only when milestone-level evidence or sequencing changes.
 
 ## Current state
 
