@@ -24,27 +24,23 @@ Audio should be available through an explicit play control. It should not automa
 
 The bundled source for this exercise is `assets/articles.csv`. It currently has these columns:
 
-| Column | Purpose |
-| --- | --- |
-| `Id` | Stable, unique content identifier |
-| `Noun` | German noun displayed to the learner |
-| `Article` | Correct definite article: `der`, `die`, or `das` |
-| `Category` | Content grouping, initially for future selection/filtering |
-| `Image` | Bundled image asset path |
-| `Audio` | Bundled noun-pronunciation asset path |
-| `AnswerAudio` | Bundled complete-answer pronunciation asset path |
+| Column        | Purpose                                                    |
+| ------------- | ---------------------------------------------------------- |
+| `Id`          | Stable, unique content identifier                          |
+| `Noun`        | German noun displayed to the learner                       |
+| `Article`     | Correct definite article: `der`, `die`, or `das`           |
+| `Category`    | Content grouping, initially for future selection/filtering |
+| `Image`       | Bundled image asset path                                   |
+| `Audio`       | Bundled noun-pronunciation asset path                      |
+| `AnswerAudio` | Bundled complete-answer pronunciation asset path           |
 
 The app must validate the content before use: every ID must be unique, every article must be one of the three supported values, and every referenced image and audio asset must exist. Asset paths in the CSV are the initial content contract and should not be reorganized without updating and revalidating the CSV.
 
 ## Content source and provenance
 
-All imported assets were created by the project owner and copied from an earlier
-related project. The owner authorizes their bundling and redistribution with
-this app. This authorization covers images, noun audio, and answer audio; no
-external attribution, licence notice, or source-repository link is required.
+All imported assets were created by the project owner and copied from an earlier related project. The owner authorizes their bundling and redistribution with this app. This authorization covers images, noun audio, and answer audio; no external attribution, licence notice, or source-repository link is required.
 
-The app bundles a local copy of approved resources and must not download
-learning assets at runtime.
+The app bundles a local copy of approved resources and must not download learning assets at runtime.
 
 ## Local progress
 

@@ -16,13 +16,14 @@ This document is the execution and handoff source of truth for the first release
 - Flutter application setup has not started.
 - The full `assets/` article snapshot is committed. Task 0.1 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
 - The full snapshot is approved for redistribution by the project owner; task 0.2 records the authorization for all imported images and audio.
+- The article snapshot is ready for application development. Automated content validation is deferred to milestone 2, where it can be developed and tested alongside the content loader.
 - Repository hygiene for a Flutter application is committed.
 
 ## Milestones
 
 ### 0. Content intake
 
-**Status:** in progress (tasks 0.1 through 0.3 complete; continue with validation in task 0.4)
+**Status:** complete
 
 **Outcome:** A complete, approved, locally bundled article-practice content set is ready for app development.
 
@@ -32,7 +33,6 @@ This document is the execution and handoff source of truth for the first release
 2. Record the owner authorization to bundle and redistribute the imported assets in `docs/first-release.md` (complete: task 0.2).
 3. Retain all 127 approved article records from `articles.csv` and the media they declare, preserving their CSV asset paths.
 4. Do not add sentence content or unrelated media to the release snapshot.
-5. Add a repeatable validation approach that checks unique IDs, supported articles, and asset-path existence.
 
 **Not in scope:** Creating a Flutter project, designing screens, or importing sentence content.
 
@@ -41,15 +41,15 @@ This document is the execution and handoff source of truth for the first release
 - The full 127-item snapshot and asset-authorization decision are documented.
 - Every image and audio path for every article record resolves locally.
 - Asset provenance and redistribution permission are explicitly recorded.
-- The content-validation check passes.
+- Task 0.1's recorded integrity check confirms the current CSV structure, IDs, supported articles, and all declared local media paths.
 
 **Commit boundary:** Content snapshot and provenance documentation, separate from Flutter scaffolding.
 
-**Next task:** Complete task 0.4: add repeatable validation for the full approved article snapshot.
+**Next task:** Select the first physical target device, then begin milestone 1.
 
 ### 1. Flutter baseline and physical-device launch
 
-**Status:** blocked by milestone 0 and target-device selection
+**Status:** blocked by target-device selection
 
 **Outcome:** A generated Flutter application launches on one physical target device.
 
