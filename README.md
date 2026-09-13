@@ -6,7 +6,7 @@ The first release focuses on one offline article-practice exercise: learners see
 
 ## Current status
 
-The repository currently holds exercise content. Flutter application setup and implementation have not started.
+The repository contains the generated Android Flutter baseline and the bundled exercise content. Application feature implementation has not started.
 
 See [the first-release plan](docs/first-release.md) for the agreed scope, content contract, and acceptance criteria. See [the work plan](docs/work-plan.md) for milestone sequencing and [the task records](docs/tasks/) for the current task state, evidence, and blockers.
 

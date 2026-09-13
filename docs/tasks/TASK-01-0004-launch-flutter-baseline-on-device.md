@@ -1,7 +1,7 @@
 ---
 id: TASK-01-0004
 title: Launch Flutter baseline on selected physical device
-status: blocked
+status: ready
 milestone: flutter_baseline_and_physical_device_launch
 depends_on: [TASK-01-0003]
 blocks: []
@@ -20,7 +20,8 @@ Launch the generated, unmodified Flutter starter application on the selected phy
 
 ## Evidence
 
-Blocked by TASK-01-0003.
+TASK-01-0003 is complete. The generated Android baseline is ready to install and
+launch on the selected Google Pixel 8.
 
 ## Decisions and blockers
 
