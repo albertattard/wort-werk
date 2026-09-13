@@ -26,13 +26,13 @@ The bundled source for this exercise is `assets/articles.json`. Each record has 
 
 | Property      | Purpose                                                    |
 | ------------- | ---------------------------------------------------------- |
-| `Id`          | Stable, unique content identifier                          |
-| `Noun`        | German noun displayed to the learner                       |
-| `Article`     | Correct definite article: `der`, `die`, or `das`           |
-| `Category`    | Content grouping, initially for future selection/filtering |
-| `Image`       | Bundled image asset path                                   |
-| `Audio`       | Bundled noun-pronunciation asset path                      |
-| `AnswerAudio` | Bundled complete-answer pronunciation asset path           |
+| `id`              | Stable, unique content identifier                          |
+| `noun`            | German noun displayed to the learner                       |
+| `article`         | Correct definite article: `der`, `die`, or `das`           |
+| `category`        | Content grouping, initially for future selection/filtering |
+| `imagePath`       | Bundled image asset path                                   |
+| `nounAudioPath`   | Bundled noun-pronunciation asset path                      |
+| `answerAudioPath` | Bundled complete-answer pronunciation asset path           |
 
 The app must validate the content before use: every ID must be unique, every article must be one of the three supported values, and every referenced image and audio asset must exist. Asset paths in the JSON are the initial content contract and should not be reorganized without updating and revalidating the JSON.
 

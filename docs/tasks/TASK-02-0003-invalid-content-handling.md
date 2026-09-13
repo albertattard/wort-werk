@@ -10,14 +10,14 @@ updated: 2026-09-13
 
 ## Scope
 
-Define and implement deterministic content validation for loaded article records. Validate IDs, supported article values, required fields, and declared local asset paths without adding UI behavior or a separate pre-Flutter validation tool.
+Define and implement deterministic collection-level content validation for loaded article records. Validate IDs and declared local asset paths without adding UI behavior or a separate pre-Flutter validation tool.
 
 ## Completion criteria
 
-- Duplicate or missing IDs are rejected.
-- Only `der`, `die`, and `das` are accepted as articles.
-- Missing required fields and invalid declared image, noun-audio, or answer-audio paths are rejected.
+- Duplicate, blank, or malformed IDs are rejected.
+- Blank noun text and invalid declared image, noun-audio, or answer-audio paths are rejected.
 - The repository exposes validation failures predictably for callers and tests.
+- Validation stops at the first detected failure and returns no partial collection.
 - Unit tests cover each invalid-content category and a valid collection.
 
 ## Evidence
@@ -26,7 +26,7 @@ Blocked by TASK-02-0001 and TASK-02-0002.
 
 ## Decisions and blockers
 
-This task defines semantic content-policy failures. TASK-02-0004 applies those rules to the complete approved snapshot and verifies that every declared media asset can be loaded.
+TASK-02-0001 rejects missing/wrongly typed properties and unsupported raw article values while mapping them to `GermanArticle`. This task requires `noun` to contain at least one non-whitespace character while preserving its authored text. It requires each ID and category to match the lowercase ASCII slug grammar `[a-z0-9]+(?:-[a-z0-9]+)*`, rejects blank or duplicate IDs, and does not normalize malformed values. Categories have no fixed allow-list. It also rejects absolute paths, path traversal, and paths outside the required media prefixes. An image path must be under `assets/images/` and end in `.png`; noun- and answer-audio paths must be under `assets/audio/` and end in `.mp3`. It deliberately does not check whether a permitted path exists; TASK-02-0004 applies those rules to the complete approved snapshot and verifies that every declared media asset can be loaded. Validation fails fast with a `FormatException`; it does not aggregate issues or return a partial collection.
 
 ## Next task
 

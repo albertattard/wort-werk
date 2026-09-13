@@ -86,7 +86,7 @@ This document is the execution and handoff source of truth for the first release
 
 1. Add an `Article` domain model and JSON content repository.
 2. Map bundled JSON records without performing file or UI work inside widgets.
-3. Implement content validation for IDs, articles, and declared asset paths.
+3. Implement collection-level content validation for IDs and declared asset paths.
 4. Add unit tests for valid and invalid records.
 
 **Completion evidence:**

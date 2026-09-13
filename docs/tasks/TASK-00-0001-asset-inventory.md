@@ -22,10 +22,10 @@ Inventory the committed `assets/` tree for the article-practice dataset. Do not 
 
 ### Article record enumeration
 
-`assets/articles.json` is the canonical inventory. Its `Id`, `Image`, `Audio`, and `AnswerAudio` properties enumerate all article records and their required asset paths.
+`assets/articles.json` is the canonical inventory. Its `id`, `imagePath`, `nounAudioPath`, and `answerAudioPath` properties enumerate all article records and their required asset paths.
 
 ```sh
-jq -r '.[] | "\(.Id) | image=\(.Image) | noun-audio=\(.Audio) | answer-audio=\(.AnswerAudio)"' assets/articles.json
+jq -r '.[] | "\(.id) | image=\(.imagePath) | noun-audio=\(.nounAudioPath) | answer-audio=\(.answerAudioPath)"' assets/articles.json
 ```
 
 Result: the command enumerates 127 article records, each with one image path, one noun-audio path, and one answer-audio path.
