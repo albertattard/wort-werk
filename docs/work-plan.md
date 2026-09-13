@@ -14,23 +14,24 @@ This document is the execution and handoff source of truth for the first release
 
 - First-release scope is documented in `docs/first-release.md`.
 - Flutter application setup has not started.
-- The existing `assets/` directory is untracked. `assets/articles.csv` refers to image files that are not currently present in this repository.
+- The candidate `assets/` snapshot is committed. Task 0.1 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
+- The candidate snapshot is not yet approved for redistribution; task 0.2 must record the pinned source revision and explicit authorization before any records or media are selected for the first release.
 - Repository hygiene for a Flutter application is committed.
 
 ## Milestones
 
 ### 0. Content intake
 
-**Status:** not started
+**Status:** in progress (task 0.2 blocked on provenance and redistribution authorization)
 
 **Outcome:** A small, approved, locally bundled article-practice content set is ready for app development.
 
 **Scope:**
 
-1. Inspect the `assets` directory in the related `wort-werk-take-1` repository.
-2. Select an initial subset of 10 to 20 article records from `articles.csv`.
-3. Record the exact source commit and the redistribution/provenance decision in `docs/first-release.md`.
-4. Copy only approved assets required by the selected records into this repository, preserving the CSV asset paths.
+1. Inventory the candidate `assets/` snapshot and verify its CSV-to-media mappings (complete: task 0.1).
+2. Record the exact source commit and the redistribution/provenance decision in `docs/first-release.md`.
+3. Select an initial subset of 10 to 20 approved article records from `articles.csv`.
+4. Retain only the approved assets required by the selected records, preserving their CSV asset paths.
 5. Add a repeatable validation approach that checks unique IDs, supported articles, and asset-path existence.
 
 **Not in scope:** Creating a Flutter project, designing screens, or importing sentence content.
@@ -44,7 +45,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Commit boundary:** Content snapshot and provenance documentation, separate from Flutter scaffolding.
 
-**Next task:** Inspect the related repository's asset layout and identify the smallest complete article subset.
+**Next task:** Complete task 0.2: record the pinned upstream source revision and explicit redistribution authorization for images and audio.
 
 ### 1. Flutter baseline and physical-device launch
 

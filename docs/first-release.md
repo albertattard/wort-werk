@@ -38,9 +38,9 @@ The app must validate the content before use: every ID must be unique, every art
 
 ## Content source and provenance
 
-The source material is available in the `assets` directory of the related [wort-werk-take-1 repository](https://github.com/albertattard/wort-werk-take-1/tree/main/assets).
+The candidate source material was copied from the `assets` directory of the related [wort-werk-take-1 repository](https://github.com/albertattard/wort-werk-take-1/tree/main/assets). The local candidate snapshot is inventory-verified, but is not yet approved for use in the first release.
 
-Before importing resources, record the exact source commit in this document and confirm that every image and audio recording may be bundled and redistributed with this app. The app must bundle a pinned local copy of approved resources; it must not download learning assets from GitHub at runtime.
+Before approving or selecting resources for the first release, record the exact source commit in this document and confirm that every image and audio recording may be bundled and redistributed with this app. The app must bundle a pinned local copy of approved resources; it must not download learning assets from GitHub at runtime.
 
 ## Local progress
 
