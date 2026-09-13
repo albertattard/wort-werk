@@ -102,19 +102,20 @@ This document is the execution and handoff source of truth for the first release
 
 **Status:** blocked by milestone 2
 
-**Outcome:** A learner can answer an article question and receive clear feedback.
+**Outcome:** A learner can answer an article question by tapping an article button and receive clear feedback.
 
 **Scope:**
 
-1. Select and display an article record with its image and noun.
+1. Display one selected article record with its image above its noun text.
 2. Provide explicit noun-audio playback.
-3. Present `der`, `die`, and `das` choices.
-4. Show correct or incorrect feedback, the complete answer, and answer-audio playback.
-5. Continue to the next item after feedback.
+3. Present three large, tappable answer buttons labelled `der`, `die`, and `das` beneath the question.
+4. Submit the answer when the learner taps a button; do not provide typed-answer input or require the keyboard.
+5. Show correct or incorrect feedback, the complete answer, and answer-audio playback.
+6. Continue to the next item after feedback.
 
 **Completion evidence:**
 
-- Widget tests cover correct and incorrect answers.
+- Widget tests cover correct and incorrect button selections and verify that no typed-answer input is present.
 - A manual phone test confirms image rendering and both audio actions.
 
 **Commit boundary:** Article-practice feature and its tests.
