@@ -6,7 +6,7 @@ This document is the execution and handoff source of truth for the first release
 
 - Work only on the current milestone unless its documented dependency requires otherwise.
 - Preserve the first-release scope. Do not add a backend, accounts, synchronization, sentence exercises, or a generalized spaced-repetition engine.
-- Do not download learning assets at runtime. Approved resources must be copied into this repository from a pinned source revision.
+- Do not download learning assets at runtime. Approved resources must be copied into this repository as a locally bundled snapshot.
 - Keep commits focused on one completed concern. Do not stage unrelated work.
 - At the end of each working session, update the affected task file in [`docs/tasks/`](tasks/) with its status, evidence, and next task. Update this plan only when milestone-level evidence or sequencing changes.
 
@@ -15,21 +15,21 @@ This document is the execution and handoff source of truth for the first release
 - First-release scope is documented in `docs/first-release.md`.
 - Flutter application setup has not started.
 - The candidate `assets/` snapshot is committed. Task 0.1 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
-- The candidate snapshot is not yet approved for redistribution; task 0.2 must record the pinned source revision and explicit authorization before any records or media are selected for the first release.
+- The candidate snapshot is approved for redistribution by the project owner; task 0.2 records the authorization for all imported images and audio.
 - Repository hygiene for a Flutter application is committed.
 
 ## Milestones
 
 ### 0. Content intake
 
-**Status:** in progress (task 0.2 blocked on provenance and redistribution authorization)
+**Status:** in progress (task 0.2 complete; continue with curation in task 0.3)
 
 **Outcome:** A small, approved, locally bundled article-practice content set is ready for app development.
 
 **Scope:**
 
 1. Inventory the candidate `assets/` snapshot and verify its CSV-to-media mappings (complete: task 0.1).
-2. Record the exact source commit and the redistribution/provenance decision in `docs/first-release.md`.
+2. Record the owner authorization to bundle and redistribute the imported assets in `docs/first-release.md` (complete: task 0.2).
 3. Select an initial subset of 10 to 20 approved article records from `articles.csv`.
 4. Retain only the approved assets required by the selected records, preserving their CSV asset paths.
 5. Add a repeatable validation approach that checks unique IDs, supported articles, and asset-path existence.
@@ -38,14 +38,14 @@ This document is the execution and handoff source of truth for the first release
 
 **Completion evidence:**
 
-- The selected item IDs and source commit are documented.
+- The selected item IDs and asset-authorization decision are documented.
 - Every image and audio path for the selected records resolves locally.
 - Asset provenance and redistribution permission are explicitly recorded.
 - The content-validation check passes.
 
 **Commit boundary:** Content snapshot and provenance documentation, separate from Flutter scaffolding.
 
-**Next task:** Complete task 0.2: record the pinned upstream source revision and explicit redistribution authorization for images and audio.
+**Next task:** Complete task 0.3: curate 10 to 20 approved article records and retain only their required assets.
 
 ### 1. Flutter baseline and physical-device launch
 
