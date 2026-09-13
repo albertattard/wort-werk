@@ -1,0 +1,39 @@
+English,German,Type,Register,Person,Number,Subject,SubjectExplicit,Audio
+Take out the trash,Bring den Müll raus.,Imperative,informal,2,singular,du,false,assets/audio/bring_den_muell_raus.mp3
+The light is on.,Das Licht ist an.,Declarative,neutral,3,singular,das Licht,true,assets/audio/das_licht_ist_an.mp3
+The dishes are in the dishwasher.,Das Geschirr ist in der Spülmaschine.,Declarative,neutral,3,singular,das Geschirr,true,assets/audio/das_geschirr_ist_in_der_spuelmaschine.mp3
+Set the table.,Deck den Tisch.,Imperative,informal,2,singular,du,false,assets/audio/deck_den_tisch.mp3
+The coffee is ready.,Der Kaffee ist fertig.,Declarative,neutral,3,singular,der Kaffee,true,assets/audio/der_kaffee_ist_fertig.mp3
+The flowers look great.,Die Blumen sehen toll aus.,Declarative,neutral,3,plural,die Blumen,true,assets/audio/die_blumen_sehen_toll_aus.mp3
+The cat is sleeping.,Die Katze schläft.,Declarative,neutral,3,singular,die Katze,true,assets/audio/die_katze_schlaeft.mp3
+The children are in the garden.,Die Kinder sind im Garten.,Declarative,neutral,3,plural,die Kinder,true,assets/audio/die_kinder_sind_im_garten.mp3
+The kitchen is clean.,Die Küche ist sauber.,Declarative,neutral,3,singular,die Küche,true,assets/audio/die_kueche_ist_sauber.mp3
+The door is open.,Die Tür ist offen.,Declarative,neutral,3,singular,die Tür,true,assets/audio/die_tuer_ist_offen.mp3
+The laundry is dry.,Die Wäsche ist trocken.,Declarative,neutral,3,singular,die Wäsche,true,assets/audio/die_waesche_ist_trocken.mp3
+Feed the cat.,Füttere die Katze.,Imperative,informal,2,singular,du,false,assets/audio/fuettere_die_katze.mp3
+Go to bed.,Geh ins Bett.,Imperative,informal,2,singular,du,false,assets/audio/geh_ins_bett.mp3
+Water the plants.,Gieß die Pflanzen.,Imperative,informal,2,singular,du,false,assets/audio/giess_die_pflanzen.mp3
+Hang up your coat.,Häng deinen Mantel auf.,Imperative,informal,2,singular,du,false,assets/audio/haeng_deinen_mantel_auf.mp3
+I need a towel.,Ich brauche ein Handtuch.,Declarative,neutral,1,singular,ich,true,assets/audio/ich_brauche_ein_handtuch.mp3
+I like your table.,Ich mag deinen Tisch.,Declarative,neutral,1,singular,ich,true,assets/audio/ich_mag_deinen_tisch.mp3
+Charge your phone.,Lade dein Handy auf.,Imperative,informal,2,singular,du,false,assets/audio/lade_dein_handy_auf.mp3
+Turn on the light.,Mach das Licht an.,Imperative,informal,2,singular,du,false,assets/audio/mach_das_licht_an.mp3
+Turn off the light.,Mach das Licht aus.,Imperative,informal,2,singular,du,false,assets/audio/mach_das_licht_aus.mp3
+Make your bed.,Mach dein Bett.,Imperative,informal,2,singular,du,false,assets/audio/mach_dein_bett.mp3
+Close the door.,Mach die Tür zu.,Imperative,informal,2,singular,du,false,assets/audio/mach_die_tuer_zu.mp3
+Make coffee.,Mach Kaffee.,Imperative,informal,2,singular,du,false,assets/audio/mach_kaffee.mp3
+My phone is charging.,Mein Handy lädt.,Declarative,neutral,3,singular,mein Handy,true,assets/audio/mein_handy_laedt.mp3
+Open the window.,Öffne das Fenster.,Imperative,informal,2,singular,du,false,assets/audio/oeffne_das_fenster.mp3
+Open the door.,Öffne die Tür.,Imperative,informal,2,singular,du,false,assets/audio/oeffne_die_tuer.mp3
+Brush your teeth.,Putz dir die Zähne.,Imperative,informal,2,singular,du,false,assets/audio/putz_dir_die_zaehne.mp3Clean your room.,Räum dein Zimmer auf.,Imperative,informal,2,singular,du,false,assets/audio/raeum_dein_zimmer_auf.mp3
+Clean your room.,Räum dein Zimmer auf.,Imperative,informal,2,singular,du,false,assets/audio/raeum_dein_zimmer_auf.mp3
+Clear the table.,Räum den Tisch ab.,Imperative,informal,2,singular,du,false,assets/audio/raeum_den_tisch_ab.mp3
+Put away the groceries.,Räum die Einkäufe weg.,Imperative,informal,2,singular,du,false,assets/audio/raeum_die_einkaeufe_weg.mp3
+Unload the dishwasher.,Räum die Spülmaschine aus.,Imperative,informal,2,singular,du,false,assets/audio/raeum_die_spuelmaschine_aus.mp3
+Vacuum the floor.,Saug den Boden.,Imperative,informal,2,singular,du,false,assets/audio/saug_den_boden.mp3
+Wash the dishes.,Spül das Geschirr.,Imperative,informal,2,singular,du,false,assets/audio/spuel_das_geschirr.mp3
+Check the mail.,Schau nach der Post.,Imperative,informal,2,singular,du,false,assets/audio/schau_nach_der_post.mp3
+Lock the door.,Schließ die Tür ab.,Imperative,informal,2,singular,du,false,assets/audio/schliess_die_tuer_ab.mp3
+Do the laundry.,Wasch die Wäsche.,Imperative,informal,2,singular,du,false,assets/audio/wasch_die_waesche.mp3
+Wipe the table.,Wisch den Tisch ab.,Imperative,informal,2,singular,du,false,assets/audio/wisch_den_tisch_ab.mp3
+Put on your shoes.,Zieh deine Schuhe an.,Imperative,informal,2,singular,du,false,assets/audio/zieh_deine_schuhe_an.mp3
