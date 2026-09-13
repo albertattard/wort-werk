@@ -45,7 +45,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Commit boundary:** Content snapshot and provenance documentation, separate from Flutter scaffolding.
 
-**Next task:** Select the first physical target device, then begin milestone 1.
+**Next task:** Complete TASK-01-0001 to select the first physical target device, then begin milestone 1.
 
 ### 1. Flutter baseline and physical-device launch
 
@@ -69,7 +69,9 @@ This document is the execution and handoff source of truth for the first release
 
 **Commit boundary:** Flutter project scaffolding and platform configuration only.
 
-**Next task:** Add content-model parsing after the baseline is committed.
+**Task sequence:** TASK-01-0001 (target selection) → TASK-01-0002 (toolchain) → TASK-01-0003 (scaffolding and assets) → TASK-01-0004 (physical-device launch).
+
+**Next task:** Add content-model parsing after TASK-01-0004 is complete and the baseline is committed.
 
 ### 2. Content model and validation
 
