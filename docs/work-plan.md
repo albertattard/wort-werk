@@ -49,13 +49,13 @@ This document is the execution and handoff source of truth for the first release
 
 ### 1. Flutter baseline and physical-device launch
 
-**Status:** blocked by target-device selection
+**Status:** ready for Android toolchain preparation
 
 **Outcome:** A generated Flutter application launches on one physical target device.
 
 **Scope:**
 
-1. Decide the initial physical target: iOS, Android, or both.
+1. The initial physical target is Android on a Google Pixel 8, connected by USB (TASK-01-0001 complete).
 2. Install Flutter and platform tooling, then resolve `flutter doctor` findings relevant to that target.
 3. Generate the Flutter application in this repository without replacing existing content.
 4. Declare the bundled asset directories in `pubspec.yaml`.
@@ -71,7 +71,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Task sequence:** TASK-01-0001 (target selection) → TASK-01-0002 (toolchain) → TASK-01-0003 (scaffolding and assets) → TASK-01-0004 (physical-device launch).
 
-**Next task:** Add content-model parsing after TASK-01-0004 is complete and the baseline is committed.
+**Next task:** Complete TASK-01-0002 to prepare the Android toolchain and detect the Pixel 8 before generating the Flutter baseline.
 
 ### 2. Content model and validation
 

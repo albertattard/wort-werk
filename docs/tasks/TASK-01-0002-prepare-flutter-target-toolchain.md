@@ -1,7 +1,7 @@
 ---
 id: TASK-01-0002
 title: Prepare Flutter target toolchain
-status: blocked
+status: planned
 milestone: flutter_baseline_and_physical_device_launch
 depends_on: [TASK-01-0001]
 blocks: [TASK-01-0003]
@@ -20,7 +20,7 @@ Install Flutter and only the platform tooling needed for the selected physical t
 
 ## Evidence
 
-Blocked by TASK-01-0001.
+TASK-01-0001 selected Android on a Google Pixel 8 connected by USB. Toolchain preparation has not started.
 
 ## Decisions and blockers
 

@@ -1,7 +1,7 @@
 ---
 id: TASK-01-0001
 title: Select initial physical target device
-status: planned
+status: complete
 milestone: flutter_baseline_and_physical_device_launch
 depends_on: [TASK-00-0005]
 blocks: [TASK-01-0002]
@@ -20,8 +20,10 @@ Choose the single physical platform and device that will prove the first-release
 
 ## Evidence
 
-Not started.
+On 2026-09-13, the project owner selected a Google Pixel 8 running Android as the physical baseline device. It will connect by USB for Flutter device detection and launch.
 
 ## Decisions and blockers
 
 The first release requires proof on at least one physical device. Supporting both platforms is not required for this milestone and must not delay the baseline.
+
+The Android/Pixel 8/USB decision unblocks TASK-01-0002. iOS tooling and wireless debugging are out of scope until a later, separately approved task.
