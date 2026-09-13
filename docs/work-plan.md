@@ -13,7 +13,7 @@ This document is the execution and handoff source of truth for the first release
 ## Current state
 
 - First-release scope is documented in `docs/first-release.md`.
-- Flutter application setup has not started.
+- Flutter 3.47.4 and the Android SDK toolchain are installed and configured for the selected USB-connected Google Pixel 8; `flutter doctor -v` reports a healthy Android toolchain and `flutter devices` detects the authorized phone.
 - The full `assets/` article snapshot is committed. TASK-00-0001 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
 - The full snapshot is approved for redistribution by the project owner; TASK-00-0002 records the authorization for all imported images and audio.
 - The article snapshot is ready for application development. Automated content validation is deferred to milestone 2, where it can be developed and tested alongside the content loader.
@@ -49,7 +49,7 @@ This document is the execution and handoff source of truth for the first release
 
 ### 1. Flutter baseline and physical-device launch
 
-**Status:** ready for Android toolchain preparation
+**Status:** ready for Flutter baseline scaffolding
 
 **Outcome:** A generated Flutter application launches on one physical target device.
 
@@ -71,7 +71,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Task sequence:** TASK-01-0001 (target selection) → TASK-01-0002 (toolchain) → TASK-01-0003 (scaffolding and assets) → TASK-01-0004 (physical-device launch).
 
-**Next task:** Complete TASK-01-0002 to prepare the Android toolchain and detect the Pixel 8 before generating the Flutter baseline.
+**Next task:** Complete TASK-01-0003 to generate the Flutter baseline and declare bundled assets before launching it on the Pixel 8.
 
 ### 2. Content model and validation
 
