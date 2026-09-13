@@ -1,10 +1,10 @@
 ---
-id: 0.2
+id: TASK-00-0002
 title: Provenance and redistribution decision
 status: complete
 milestone: content_intake
-depends_on: [0.1]
-blocks: [0.3]
+depends_on: [TASK-00-0001]
+blocks: [TASK-00-0003]
 updated: 2026-09-13
 ---
 

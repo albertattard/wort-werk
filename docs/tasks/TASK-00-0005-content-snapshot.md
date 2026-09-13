@@ -1,9 +1,9 @@
 ---
-id: 0.5
+id: TASK-00-0005
 title: Approved content snapshot
 status: complete
 milestone: content_intake
-depends_on: [0.3]
+depends_on: [TASK-00-0003]
 blocks: []
 updated: 2026-09-13
 ---
@@ -20,7 +20,7 @@ Finalize milestone 0 as one focused content-snapshot change. Include only the ap
 
 ## Evidence
 
-The approved article snapshot was added in `9a94bd2`; the complete 127-item dataset decision was recorded in `b5aaadf`. Tasks 0.1 through 0.3 record its integrity, authorization, and dataset evidence. `docs/work-plan.md` records milestone-0 completion. Automated validation is deferred to milestone 2.
+The approved article snapshot was added in `9a94bd2`; the complete 127-item dataset decision was recorded in `b5aaadf`. TASK-00-0001 through TASK-00-0003 record its integrity, authorization, and dataset evidence. `docs/work-plan.md` records milestone-0 completion. Automated validation is deferred to milestone 2.
 
 ## Decisions and blockers
 

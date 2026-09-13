@@ -1,10 +1,10 @@
 ---
-id: 0.1
+id: TASK-00-0001
 title: Asset inventory
 status: complete
 milestone: content_intake
 depends_on: []
-blocks: [0.2]
+blocks: [TASK-00-0002]
 updated: 2026-09-13
 ---
 

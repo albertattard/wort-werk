@@ -1,5 +1,5 @@
 ---
-id: 0.4
+id: TASK-02-0004
 title: Content validation
 status: deferred
 milestone: content_model_and_validation
@@ -22,7 +22,7 @@ Add a repeatable validation check for the curated `assets/articles.csv` and its 
 
 ## Evidence
 
-Deferred by the project owner on 2026-09-13. Task 0.1 already established the current snapshot's integrity; repeatable validation belongs with the app's CSV loader and its unit tests in milestone 2.
+Deferred by the project owner on 2026-09-13. TASK-00-0001 already established the current snapshot's integrity; repeatable validation belongs with the app's CSV loader and its unit tests in milestone 2.
 
 ## Decisions and blockers
 

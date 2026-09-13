@@ -14,8 +14,8 @@ This document is the execution and handoff source of truth for the first release
 
 - First-release scope is documented in `docs/first-release.md`.
 - Flutter application setup has not started.
-- The full `assets/` article snapshot is committed. Task 0.1 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
-- The full snapshot is approved for redistribution by the project owner; task 0.2 records the authorization for all imported images and audio.
+- The full `assets/` article snapshot is committed. TASK-00-0001 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
+- The full snapshot is approved for redistribution by the project owner; TASK-00-0002 records the authorization for all imported images and audio.
 - The article snapshot is ready for application development. Automated content validation is deferred to milestone 2, where it can be developed and tested alongside the content loader.
 - Repository hygiene for a Flutter application is committed.
 
@@ -29,8 +29,8 @@ This document is the execution and handoff source of truth for the first release
 
 **Scope:**
 
-1. Inventory the candidate `assets/` snapshot and verify its CSV-to-media mappings (complete: task 0.1).
-2. Record the owner authorization to bundle and redistribute the imported assets in `docs/first-release.md` (complete: task 0.2).
+1. Inventory the candidate `assets/` snapshot and verify its CSV-to-media mappings (complete: TASK-00-0001).
+2. Record the owner authorization to bundle and redistribute the imported assets in `docs/first-release.md` (complete: TASK-00-0002).
 3. Retain all 127 approved article records from `articles.csv` and the media they declare, preserving their CSV asset paths.
 4. Do not add sentence content or unrelated media to the release snapshot.
 
@@ -41,7 +41,7 @@ This document is the execution and handoff source of truth for the first release
 - The full 127-item snapshot and asset-authorization decision are documented.
 - Every image and audio path for every article record resolves locally.
 - Asset provenance and redistribution permission are explicitly recorded.
-- Task 0.1's recorded integrity check confirms the current CSV structure, IDs, supported articles, and all declared local media paths.
+- TASK-00-0001's recorded integrity check confirms the current CSV structure, IDs, supported articles, and all declared local media paths.
 
 **Commit boundary:** Content snapshot and provenance documentation, separate from Flutter scaffolding.
 
