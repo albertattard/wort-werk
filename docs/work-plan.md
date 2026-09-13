@@ -15,7 +15,7 @@ This document is the execution and handoff source of truth for the first release
 - First-release scope is documented in `docs/first-release.md`.
 - Flutter 3.47.4 and the Android SDK toolchain are installed and configured for the selected USB-connected Google Pixel 8; `flutter doctor -v` reports a healthy Android toolchain and `flutter devices` detects the authorized phone.
 - The Android-only Flutter baseline is generated, declares the approved bundled article assets, and passes `flutter pub get` and `flutter analyze`.
-- The full `assets/` article snapshot is committed. TASK-00-0001 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
+- The full `assets/` article snapshot is committed. TASK-00-0001 verified that all 127 records in `assets/articles.json` resolve to their declared local image and audio files.
 - The full snapshot is approved for redistribution by the project owner; TASK-00-0002 records the authorization for all imported images and audio.
 - The article snapshot is ready for application development. Repeatable content validation is scheduled in milestone 2 alongside the content loader.
 - Repository hygiene for a Flutter application is committed.
@@ -30,9 +30,9 @@ This document is the execution and handoff source of truth for the first release
 
 **Scope:**
 
-1. Inventory the candidate `assets/` snapshot and verify its CSV-to-media mappings (complete: TASK-00-0001).
+1. Inventory the candidate `assets/` snapshot and verify its JSON-to-media mappings (complete: TASK-00-0001).
 2. Record the owner authorization to bundle and redistribute the imported assets in `docs/first-release.md` (complete: TASK-00-0002).
-3. Retain all 127 approved article records from `articles.csv` and the media they declare, preserving their CSV asset paths.
+3. Retain all 127 approved article records from `articles.json` and the media they declare, preserving their JSON asset paths.
 4. Do not add sentence content or unrelated media to the release snapshot.
 
 **Not in scope:** Creating a Flutter project, designing screens, or importing sentence content.
@@ -42,7 +42,7 @@ This document is the execution and handoff source of truth for the first release
 - The full 127-item snapshot and asset-authorization decision are documented.
 - Every image and audio path for every article record resolves locally.
 - Asset provenance and redistribution permission are explicitly recorded.
-- TASK-00-0001's recorded integrity check confirms the current CSV structure, IDs, supported articles, and all declared local media paths.
+- TASK-00-0001's recorded integrity check confirms the current JSON structure, IDs, supported articles, and all declared local media paths.
 
 **Commit boundary:** Content snapshot and provenance documentation, separate from Flutter scaffolding.
 
@@ -74,7 +74,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Completion evidence:** On 2026-09-13, the generated baseline with its configured Android application ID built, installed, and launched on the USB-connected Google Pixel 8 (`41290DLJH001LG`). After returning the phone to its home screen, the app was manually reopened from its launcher icon. Android also successfully reopened `io.github.albertattard.wortwerk.MainActivity`. TASK-01-0004 records the commands and observed results.
 
-**Next task:** Define the first milestone-2 task record for the article domain model and bundled CSV repository.
+**Next task:** Define the first milestone-2 task record for the article domain model and bundled JSON repository.
 
 ### 2. Content model and validation
 
@@ -84,21 +84,21 @@ This document is the execution and handoff source of truth for the first release
 
 **Scope:**
 
-1. Add an `Article` domain model and CSV content repository.
-2. Parse the bundled CSV without performing file or UI work inside widgets.
+1. Add an `Article` domain model and JSON content repository.
+2. Map bundled JSON records without performing file or UI work inside widgets.
 3. Implement content validation for IDs, articles, and declared asset paths.
-4. Add unit tests for valid and invalid rows.
+4. Add unit tests for valid and invalid records.
 
 **Completion evidence:**
 
-- Unit tests cover parsing and invalid-content failures.
+- Unit tests cover JSON record mapping and invalid-content failures.
 - The full approved bundled dataset loads successfully and passes repeatable validation.
 
 **Commit boundary:** One focused commit for each completed task.
 
-**Task sequence:** TASK-02-0001 (model and row parser) → TASK-02-0002 (bundled repository) → TASK-02-0003 (invalid-content handling) → TASK-02-0004 (full snapshot validation).
+**Task sequence:** TASK-02-0001 (model and JSON record mapping) → TASK-02-0002 (bundled repository) → TASK-02-0003 (invalid-content handling) → TASK-02-0004 (full snapshot validation).
 
-**Next task:** Complete TASK-02-0001 to define the article model and parse valid CSV rows.
+**Next task:** Complete TASK-02-0001 to define the article model and map valid JSON records.
 
 ### 3. Article-practice exercise
 

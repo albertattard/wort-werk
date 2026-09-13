@@ -22,9 +22,9 @@ Audio should be available through an explicit play control. It should not automa
 
 ## Content contract
 
-The bundled source for this exercise is `assets/articles.csv`. It currently has these columns:
+The bundled source for this exercise is `assets/articles.json`. Each record has these properties:
 
-| Column        | Purpose                                                    |
+| Property      | Purpose                                                    |
 | ------------- | ---------------------------------------------------------- |
 | `Id`          | Stable, unique content identifier                          |
 | `Noun`        | German noun displayed to the learner                       |
@@ -34,7 +34,7 @@ The bundled source for this exercise is `assets/articles.csv`. It currently has 
 | `Audio`       | Bundled noun-pronunciation asset path                      |
 | `AnswerAudio` | Bundled complete-answer pronunciation asset path           |
 
-The app must validate the content before use: every ID must be unique, every article must be one of the three supported values, and every referenced image and audio asset must exist. Asset paths in the CSV are the initial content contract and should not be reorganized without updating and revalidating the CSV.
+The app must validate the content before use: every ID must be unique, every article must be one of the three supported values, and every referenced image and audio asset must exist. Asset paths in the JSON are the initial content contract and should not be reorganized without updating and revalidating the JSON.
 
 ## Content source and provenance
 
@@ -67,7 +67,7 @@ No account or cross-device synchronization is included.
 - The question image, noun audio, and answer audio work reliably.
 - Correct and incorrect feedback is clear and displays the complete answer.
 - Missed answers persist after the app is closed and can be practiced again.
-- Automated tests cover CSV parsing, content validation, and answer evaluation.
+- Automated tests cover JSON record mapping, content validation, and answer evaluation.
 
 ## Proposed working structure
 
@@ -75,7 +75,7 @@ When implementation starts, use this structure:
 
 ```text
 assets/
-  articles.csv
+  articles.json
   sentences.csv
   images/
   audio/

@@ -15,7 +15,7 @@ Generate the Flutter application in this repository while preserving the committ
 ## Completion criteria
 
 - Flutter project files are generated without replacing `assets/` or `docs/`.
-- `pubspec.yaml` declares the bundled image and audio asset directories and `assets/articles.csv`.
+- `pubspec.yaml` declares the bundled image and audio asset directories and `assets/articles.json`.
 - `flutter pub get` succeeds.
 - The focused change contains scaffolding and platform configuration only.
 
@@ -24,7 +24,7 @@ Generate the Flutter application in this repository while preserving the committ
 On 2026-09-13, generated the Android-only empty Flutter application with
 `flutter create --template app --empty --project-name wort_werk --platforms=android --no-pub .`.
 The existing `assets/` and `docs/` directories were retained. `pubspec.yaml`
-declares `assets/articles.csv`, `assets/images/`, and `assets/audio/`.
+declares `assets/articles.json`, `assets/images/`, and `assets/audio/`.
 `flutter pub get` and `flutter analyze` both succeeded.
 
 ## Decisions and blockers

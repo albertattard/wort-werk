@@ -1,0 +1,1145 @@
+[
+  {
+    "Id": "aerztin",
+    "Noun": "Ärztin",
+    "Article": "die",
+    "Category": "people",
+    "Image": "assets/images/420/people/Aerztin.png",
+    "Audio": "assets/audio/aerztin.mp3",
+    "AnswerAudio": "assets/audio/die_aerztin.mp3"
+  },
+  {
+    "Id": "affe",
+    "Noun": "Affe",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Affe.png",
+    "Audio": "assets/audio/affe.mp3",
+    "AnswerAudio": "assets/audio/der_affe.mp3"
+  },
+  {
+    "Id": "apfel",
+    "Noun": "Apfel",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Apfel.png",
+    "Audio": "assets/audio/apfel.mp3",
+    "AnswerAudio": "assets/audio/der_apfel.mp3"
+  },
+  {
+    "Id": "arbeitsbuch",
+    "Noun": "Arbeitsbuch",
+    "Article": "das",
+    "Category": "school",
+    "Image": "assets/images/420/school/Arbeitsbuch.png",
+    "Audio": "assets/audio/arbeitsbuch.mp3",
+    "AnswerAudio": "assets/audio/das_arbeitsbuch.mp3"
+  },
+  {
+    "Id": "artischocke",
+    "Noun": "Artischocke",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Artischocke.png",
+    "Audio": "assets/audio/artischocke.mp3",
+    "AnswerAudio": "assets/audio/die_artischocke.mp3"
+  },
+  {
+    "Id": "arzt",
+    "Noun": "Arzt",
+    "Article": "der",
+    "Category": "people",
+    "Image": "assets/images/420/people/Arzt.png",
+    "Audio": "assets/audio/arzt.mp3",
+    "AnswerAudio": "assets/audio/der_arzt.mp3"
+  },
+  {
+    "Id": "aubergine",
+    "Noun": "Aubergine",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Aubergine.png",
+    "Audio": "assets/audio/aubergine.mp3",
+    "AnswerAudio": "assets/audio/die_aubergine.mp3"
+  },
+  {
+    "Id": "banane",
+    "Noun": "Banane",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Banane.png",
+    "Audio": "assets/audio/banane.mp3",
+    "AnswerAudio": "assets/audio/die_banane.mp3"
+  },
+  {
+    "Id": "baum",
+    "Noun": "Baum",
+    "Article": "der",
+    "Category": "nature",
+    "Image": "assets/images/420/nature/Baum.png",
+    "Audio": "assets/audio/baum.mp3",
+    "AnswerAudio": "assets/audio/der_baum.mp3"
+  },
+  {
+    "Id": "bett",
+    "Noun": "Bett",
+    "Article": "das",
+    "Category": "home",
+    "Image": "assets/images/420/home/Bett.png",
+    "Audio": "assets/audio/bett.mp3",
+    "AnswerAudio": "assets/audio/das_bett.mp3"
+  },
+  {
+    "Id": "bleistift",
+    "Noun": "Bleistift",
+    "Article": "der",
+    "Category": "school",
+    "Image": "assets/images/420/school/Bleistift.png",
+    "Audio": "assets/audio/bleistift.mp3",
+    "AnswerAudio": "assets/audio/der_bleistift.mp3"
+  },
+  {
+    "Id": "blumenkohl",
+    "Noun": "Blumenkohl",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Blumenkohl.png",
+    "Audio": "assets/audio/blumenkohl.mp3",
+    "AnswerAudio": "assets/audio/der_blumenkohl.mp3"
+  },
+  {
+    "Id": "bluse",
+    "Noun": "Bluse",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Bluse.png",
+    "Audio": "assets/audio/bluse.mp3",
+    "AnswerAudio": "assets/audio/die_bluse.mp3"
+  },
+  {
+    "Id": "bohne",
+    "Noun": "Bohne",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Bohne.png",
+    "Audio": "assets/audio/bohne.mp3",
+    "AnswerAudio": "assets/audio/die_bohne.mp3"
+  },
+  {
+    "Id": "broetchen",
+    "Noun": "Brötchen",
+    "Article": "das",
+    "Category": "food",
+    "Image": "assets/images/420/food/Broetchen.png",
+    "Audio": "assets/audio/broetchen.mp3",
+    "AnswerAudio": "assets/audio/das_broetchen.mp3"
+  },
+  {
+    "Id": "brokkoli",
+    "Noun": "Brokkoli",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Brokkoli.png",
+    "Audio": "assets/audio/brokkoli.mp3",
+    "AnswerAudio": "assets/audio/der_brokkoli.mp3"
+  },
+  {
+    "Id": "buch",
+    "Noun": "Buch",
+    "Article": "das",
+    "Category": "school",
+    "Image": "assets/images/420/school/Buch.png",
+    "Audio": "assets/audio/buch.mp3",
+    "AnswerAudio": "assets/audio/das_buch.mp3"
+  },
+  {
+    "Id": "cafe",
+    "Noun": "Café",
+    "Article": "das",
+    "Category": "places",
+    "Image": "assets/images/420/places/Cafe.png",
+    "Audio": "assets/audio/cafe.mp3",
+    "AnswerAudio": "assets/audio/das_cafe.mp3"
+  },
+  {
+    "Id": "chamaeleon",
+    "Noun": "Chamäleon",
+    "Article": "das",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Chamaeleon.png",
+    "Audio": "assets/audio/chamaeleon.mp3",
+    "AnswerAudio": "assets/audio/das_chamaeleon.mp3"
+  },
+  {
+    "Id": "check-in-schalter",
+    "Noun": "Check-in-Schalter",
+    "Article": "der",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Check-in-Schalter.png",
+    "Audio": "assets/audio/check-in-schalter.mp3",
+    "AnswerAudio": "assets/audio/der_check-in-schalter.mp3"
+  },
+  {
+    "Id": "delphin",
+    "Noun": "Delphin",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Delphin.png",
+    "Audio": "assets/audio/delphin.mp3",
+    "AnswerAudio": "assets/audio/der_delphin.mp3"
+  },
+  {
+    "Id": "eisdiele",
+    "Noun": "Eisdiele",
+    "Article": "die",
+    "Category": "places",
+    "Image": "assets/images/420/places/Eisdiele.png",
+    "Audio": "assets/audio/eisdiele.mp3",
+    "AnswerAudio": "assets/audio/die_eisdiele.mp3"
+  },
+  {
+    "Id": "elefant",
+    "Noun": "Elefant",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Elefant.png",
+    "Audio": "assets/audio/elefant.mp3",
+    "AnswerAudio": "assets/audio/der_elefant.mp3"
+  },
+  {
+    "Id": "ente",
+    "Noun": "Ente",
+    "Article": "die",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Ente.png",
+    "Audio": "assets/audio/ente.mp3",
+    "AnswerAudio": "assets/audio/die_ente.mp3"
+  },
+  {
+    "Id": "essiggurke",
+    "Noun": "Essiggurke",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Essiggurke.png",
+    "Audio": "assets/audio/essiggurke.mp3",
+    "AnswerAudio": "assets/audio/die_essiggurke.mp3"
+  },
+  {
+    "Id": "fernseher",
+    "Noun": "Fernseher",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Fernseher.png",
+    "Audio": "assets/audio/fernseher.mp3",
+    "AnswerAudio": "assets/audio/der_fernseher.mp3"
+  },
+  {
+    "Id": "fisch",
+    "Noun": "Fisch",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Fisch.png",
+    "Audio": "assets/audio/fisch.mp3",
+    "AnswerAudio": "assets/audio/der_fisch.mp3"
+  },
+  {
+    "Id": "flasche",
+    "Noun": "Flasche",
+    "Article": "die",
+    "Category": "home",
+    "Image": "assets/images/420/home/Flasche.png",
+    "Audio": "assets/audio/flasche.mp3",
+    "AnswerAudio": "assets/audio/die_flasche.mp3"
+  },
+  {
+    "Id": "fleisch",
+    "Noun": "Fleisch",
+    "Article": "das",
+    "Category": "food",
+    "Image": "assets/images/420/food/Fleisch.png",
+    "Audio": "assets/audio/fleisch.mp3",
+    "AnswerAudio": "assets/audio/das_fleisch.mp3"
+  },
+  {
+    "Id": "fliege",
+    "Noun": "Fliege",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Fliege.png",
+    "Audio": "assets/audio/fliege.mp3",
+    "AnswerAudio": "assets/audio/die_fliege.mp3"
+  },
+  {
+    "Id": "flughafen",
+    "Noun": "Flughafen",
+    "Article": "der",
+    "Category": "places",
+    "Image": "assets/images/420/places/Flughafen.png",
+    "Audio": "assets/audio/flughafen.mp3",
+    "AnswerAudio": "assets/audio/der_flughafen.mp3"
+  },
+  {
+    "Id": "flugticket-01",
+    "Noun": "Flugticket",
+    "Article": "das",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Flugticket-01.png",
+    "Audio": "assets/audio/flugticket.mp3",
+    "AnswerAudio": "assets/audio/das_flugticket.mp3"
+  },
+  {
+    "Id": "flugticket-02",
+    "Noun": "Flugticket",
+    "Article": "das",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Flugticket-02.png",
+    "Audio": "assets/audio/flugticket.mp3",
+    "AnswerAudio": "assets/audio/das_flugticket.mp3"
+  },
+  {
+    "Id": "flugzeug",
+    "Noun": "Flugzeug",
+    "Article": "das",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Flugzeug.png",
+    "Audio": "assets/audio/flugzeug.mp3",
+    "AnswerAudio": "assets/audio/das_flugzeug.mp3"
+  },
+  {
+    "Id": "gabel",
+    "Noun": "Gabel",
+    "Article": "die",
+    "Category": "home",
+    "Image": "assets/images/420/home/Gabel.png",
+    "Audio": "assets/audio/gabel.mp3",
+    "AnswerAudio": "assets/audio/die_gabel.mp3"
+  },
+  {
+    "Id": "geige",
+    "Noun": "Geige",
+    "Article": "die",
+    "Category": "home",
+    "Image": "assets/images/420/home/Geige.png",
+    "Audio": "assets/audio/geige.mp3",
+    "AnswerAudio": "assets/audio/die_geige.mp3"
+  },
+  {
+    "Id": "gepaeck",
+    "Noun": "Gepäck",
+    "Article": "das",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Gepaeck.png",
+    "Audio": "assets/audio/gepaeck.mp3",
+    "AnswerAudio": "assets/audio/das_gepaeck.mp3"
+  },
+  {
+    "Id": "gitarre",
+    "Noun": "Gitarre",
+    "Article": "die",
+    "Category": "home",
+    "Image": "assets/images/420/home/Gitarre.png",
+    "Audio": "assets/audio/gitarre.mp3",
+    "AnswerAudio": "assets/audio/die_gitarre.mp3"
+  },
+  {
+    "Id": "grill",
+    "Noun": "Grill",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Grill.png",
+    "Audio": "assets/audio/grill.mp3",
+    "AnswerAudio": "assets/audio/der_grill.mp3"
+  },
+  {
+    "Id": "guertel",
+    "Noun": "Gürtel",
+    "Article": "der",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Guertel.png",
+    "Audio": "assets/audio/guertel.mp3",
+    "AnswerAudio": "assets/audio/der_guertel.mp3"
+  },
+  {
+    "Id": "gurke",
+    "Noun": "Gurke",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Gurke.png",
+    "Audio": "assets/audio/gurke.mp3",
+    "AnswerAudio": "assets/audio/die_gurke.mp3"
+  },
+  {
+    "Id": "handtuch",
+    "Noun": "Handtuch",
+    "Article": "das",
+    "Category": "home",
+    "Image": "assets/images/420/home/Handtuch.png",
+    "Audio": "assets/audio/handtuch.mp3",
+    "AnswerAudio": "assets/audio/das_handtuch.mp3"
+  },
+  {
+    "Id": "handy",
+    "Noun": "Handy",
+    "Article": "das",
+    "Category": "home",
+    "Image": "assets/images/420/home/Handy.png",
+    "Audio": "assets/audio/handy.mp3",
+    "AnswerAudio": "assets/audio/das_handy.mp3"
+  },
+  {
+    "Id": "hemd",
+    "Noun": "Hemd",
+    "Article": "das",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Hemd.png",
+    "Audio": "assets/audio/hemd.mp3",
+    "AnswerAudio": "assets/audio/das_hemd.mp3"
+  },
+  {
+    "Id": "hose",
+    "Noun": "Hose",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Hose.png",
+    "Audio": "assets/audio/hose.mp3",
+    "AnswerAudio": "assets/audio/die_hose.mp3"
+  },
+  {
+    "Id": "hotel",
+    "Noun": "Hotel",
+    "Article": "das",
+    "Category": "places",
+    "Image": "assets/images/420/places/Hotel.png",
+    "Audio": "assets/audio/hotel.mp3",
+    "AnswerAudio": "assets/audio/das_hotel.mp3"
+  },
+  {
+    "Id": "hund",
+    "Noun": "Hund",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Hund.png",
+    "Audio": "assets/audio/hund.mp3",
+    "AnswerAudio": "assets/audio/der_hund.mp3"
+  },
+  {
+    "Id": "jeans",
+    "Noun": "Jeans",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Jeans.png",
+    "Audio": "assets/audio/jeans.mp3",
+    "AnswerAudio": "assets/audio/die_jeans.mp3"
+  },
+  {
+    "Id": "kaese",
+    "Noun": "Käse",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Kaese.png",
+    "Audio": "assets/audio/kaese.mp3",
+    "AnswerAudio": "assets/audio/der_kaese.mp3"
+  },
+  {
+    "Id": "kaffee",
+    "Noun": "Kaffee",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Kaffee.png",
+    "Audio": "assets/audio/kaffee.mp3",
+    "AnswerAudio": "assets/audio/der_kaffee.mp3"
+  },
+  {
+    "Id": "kapuzenpullover",
+    "Noun": "Kapuzenpullover",
+    "Article": "der",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Kapuzenpullover.png",
+    "Audio": "assets/audio/kapuzenpullover.mp3",
+    "AnswerAudio": "assets/audio/der_kapuzenpullover.mp3"
+  },
+  {
+    "Id": "karotte",
+    "Noun": "Karotte",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Karotte.png",
+    "Audio": "assets/audio/karotte.mp3",
+    "AnswerAudio": "assets/audio/die_karotte.mp3"
+  },
+  {
+    "Id": "kartoffel",
+    "Noun": "Kartoffel",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Kartoffel.png",
+    "Audio": "assets/audio/kartoffel.mp3",
+    "AnswerAudio": "assets/audio/die_kartoffel.mp3"
+  },
+  {
+    "Id": "katze",
+    "Noun": "Katze",
+    "Article": "die",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Katze.png",
+    "Audio": "assets/audio/katze.mp3",
+    "AnswerAudio": "assets/audio/die_katze.mp3"
+  },
+  {
+    "Id": "kellner",
+    "Noun": "Kellner",
+    "Article": "der",
+    "Category": "people",
+    "Image": "assets/images/420/people/Kellner.png",
+    "Audio": "assets/audio/kellner.mp3",
+    "AnswerAudio": "assets/audio/der_kellner.mp3"
+  },
+  {
+    "Id": "kellnerin",
+    "Noun": "Kellnerin",
+    "Article": "die",
+    "Category": "people",
+    "Image": "assets/images/420/people/Kellnerin.png",
+    "Audio": "assets/audio/kellnerin.mp3",
+    "AnswerAudio": "assets/audio/die_kellnerin.mp3"
+  },
+  {
+    "Id": "kissen",
+    "Noun": "Kissen",
+    "Article": "das",
+    "Category": "home",
+    "Image": "assets/images/420/home/Kissen.png",
+    "Audio": "assets/audio/kissen.mp3",
+    "AnswerAudio": "assets/audio/das_kissen.mp3"
+  },
+  {
+    "Id": "kleid",
+    "Noun": "Kleid",
+    "Article": "das",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Kleid.png",
+    "Audio": "assets/audio/kleid.mp3",
+    "AnswerAudio": "assets/audio/das_kleid.mp3"
+  },
+  {
+    "Id": "knoblauch",
+    "Noun": "Knoblauch",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Knoblauch.png",
+    "Audio": "assets/audio/knoblauch.mp3",
+    "AnswerAudio": "assets/audio/der_knoblauch.mp3"
+  },
+  {
+    "Id": "kohl",
+    "Noun": "Kohl",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Kohl.png",
+    "Audio": "assets/audio/kohl.mp3",
+    "AnswerAudio": "assets/audio/der_kohl.mp3"
+  },
+  {
+    "Id": "kopfsalat",
+    "Noun": "Kopfsalat",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Kopfsalat.png",
+    "Audio": "assets/audio/kopfsalat.mp3",
+    "AnswerAudio": "assets/audio/der_kopfsalat.mp3"
+  },
+  {
+    "Id": "krawatte",
+    "Noun": "Krawatte",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Krawatte.png",
+    "Audio": "assets/audio/krawatte.mp3",
+    "AnswerAudio": "assets/audio/die_krawatte.mp3"
+  },
+  {
+    "Id": "kuerbis",
+    "Noun": "Kürbis",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Kuerbis.png",
+    "Audio": "assets/audio/kuerbis.mp3",
+    "AnswerAudio": "assets/audio/der_kuerbis.mp3"
+  },
+  {
+    "Id": "kuh",
+    "Noun": "Kuh",
+    "Article": "die",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Kuh.png",
+    "Audio": "assets/audio/kuh.mp3",
+    "AnswerAudio": "assets/audio/die_kuh.mp3"
+  },
+  {
+    "Id": "lampe",
+    "Noun": "Lampe",
+    "Article": "die",
+    "Category": "home",
+    "Image": "assets/images/420/home/Lampe.png",
+    "Audio": "assets/audio/lampe.mp3",
+    "AnswerAudio": "assets/audio/die_lampe.mp3"
+  },
+  {
+    "Id": "lebensmittel",
+    "Noun": "Lebensmittel",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Lebensmittel.png",
+    "Audio": "assets/audio/lebensmittel.mp3",
+    "AnswerAudio": "assets/audio/die_lebensmittel.mp3"
+  },
+  {
+    "Id": "lederjacke",
+    "Noun": "Lederjacke",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Lederjacke.png",
+    "Audio": "assets/audio/lederjacke.mp3",
+    "AnswerAudio": "assets/audio/die_lederjacke.mp3"
+  },
+  {
+    "Id": "lineal",
+    "Noun": "Lineal",
+    "Article": "das",
+    "Category": "school",
+    "Image": "assets/images/420/school/Lineal.png",
+    "Audio": "assets/audio/lineal.mp3",
+    "AnswerAudio": "assets/audio/das_lineal.mp3"
+  },
+  {
+    "Id": "loeffel",
+    "Noun": "Löffel",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Loeffel.png",
+    "Audio": "assets/audio/loeffel.mp3",
+    "AnswerAudio": "assets/audio/der_loeffel.mp3"
+  },
+  {
+    "Id": "mais",
+    "Noun": "Mais",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Mais.png",
+    "Audio": "assets/audio/mais.mp3",
+    "AnswerAudio": "assets/audio/der_mais.mp3"
+  },
+  {
+    "Id": "maus",
+    "Noun": "Maus",
+    "Article": "die",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Maus.png",
+    "Audio": "assets/audio/maus.mp3",
+    "AnswerAudio": "assets/audio/die_maus.mp3"
+  },
+  {
+    "Id": "messer",
+    "Noun": "Messer",
+    "Article": "das",
+    "Category": "home",
+    "Image": "assets/images/420/home/Messer.png",
+    "Audio": "assets/audio/messer.mp3",
+    "AnswerAudio": "assets/audio/das_messer.mp3"
+  },
+  {
+    "Id": "mond",
+    "Noun": "Mond",
+    "Article": "der",
+    "Category": "nature",
+    "Image": "assets/images/420/nature/Mond.png",
+    "Audio": "assets/audio/mond.mp3",
+    "AnswerAudio": "assets/audio/der_mond.mp3"
+  },
+  {
+    "Id": "orange",
+    "Noun": "Orange",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Orange.png",
+    "Audio": "assets/audio/orange.mp3",
+    "AnswerAudio": "assets/audio/die_orange.mp3"
+  },
+  {
+    "Id": "papagei",
+    "Noun": "Papagei",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Papagei.png",
+    "Audio": "assets/audio/papagei.mp3",
+    "AnswerAudio": "assets/audio/der_papagei.mp3"
+  },
+  {
+    "Id": "paprika",
+    "Noun": "Paprika",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Paprika.png",
+    "Audio": "assets/audio/paprika.mp3",
+    "AnswerAudio": "assets/audio/die_paprika.mp3"
+  },
+  {
+    "Id": "pfeffer",
+    "Noun": "Pfeffer",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Pfeffer.png",
+    "Audio": "assets/audio/pfeffer.mp3",
+    "AnswerAudio": "assets/audio/der_pfeffer.mp3"
+  },
+  {
+    "Id": "pferd",
+    "Noun": "Pferd",
+    "Article": "das",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Pferd.png",
+    "Audio": "assets/audio/pferd.mp3",
+    "AnswerAudio": "assets/audio/das_pferd.mp3"
+  },
+  {
+    "Id": "pflanze",
+    "Noun": "Pflanze",
+    "Article": "die",
+    "Category": "nature",
+    "Image": "assets/images/420/nature/Pflanze.png",
+    "Audio": "assets/audio/pflanze.mp3",
+    "AnswerAudio": "assets/audio/die_pflanze.mp3"
+  },
+  {
+    "Id": "pizza",
+    "Noun": "Pizza",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Pizza.png",
+    "Audio": "assets/audio/pizza.mp3",
+    "AnswerAudio": "assets/audio/die_pizza.mp3"
+  },
+  {
+    "Id": "polizist",
+    "Noun": "Polizist",
+    "Article": "der",
+    "Category": "people",
+    "Image": "assets/images/420/people/Polizist.png",
+    "Audio": "assets/audio/polizist.mp3",
+    "AnswerAudio": "assets/audio/der_polizist.mp3"
+  },
+  {
+    "Id": "polizistin",
+    "Noun": "Polizistin",
+    "Article": "die",
+    "Category": "people",
+    "Image": "assets/images/420/people/Polizistin.png",
+    "Audio": "assets/audio/polizistin.mp3",
+    "AnswerAudio": "assets/audio/die_polizistin.mp3"
+  },
+  {
+    "Id": "pullover",
+    "Noun": "Pullover",
+    "Article": "der",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Pullover.png",
+    "Audio": "assets/audio/pullover.mp3",
+    "AnswerAudio": "assets/audio/der_pullover.mp3"
+  },
+  {
+    "Id": "pyjama",
+    "Noun": "Pyjama",
+    "Article": "der",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Pyjama.png",
+    "Audio": "assets/audio/pyjama.mp3",
+    "AnswerAudio": "assets/audio/der_pyjama.mp3"
+  },
+  {
+    "Id": "radiergummi",
+    "Noun": "Radiergummi",
+    "Article": "das",
+    "Category": "school",
+    "Image": "assets/images/420/school/Radiergummi.png",
+    "Audio": "assets/audio/radiergummi.mp3",
+    "AnswerAudio": "assets/audio/das_radiergummi.mp3"
+  },
+  {
+    "Id": "regal",
+    "Noun": "Regal",
+    "Article": "das",
+    "Category": "home",
+    "Image": "assets/images/420/home/Regal.png",
+    "Audio": "assets/audio/regal.mp3",
+    "AnswerAudio": "assets/audio/das_regal.mp3"
+  },
+  {
+    "Id": "regenmantel",
+    "Noun": "Regenmantel",
+    "Article": "der",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Regenmantel.png",
+    "Audio": "assets/audio/regenmantel.mp3",
+    "AnswerAudio": "assets/audio/der_regenmantel.mp3"
+  },
+  {
+    "Id": "reisepass",
+    "Noun": "Reisepass",
+    "Article": "der",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Reisepass.png",
+    "Audio": "assets/audio/reisepass.mp3",
+    "AnswerAudio": "assets/audio/der_reisepass.mp3"
+  },
+  {
+    "Id": "restaurant",
+    "Noun": "Restaurant",
+    "Article": "das",
+    "Category": "places",
+    "Image": "assets/images/420/places/Restaurant.png",
+    "Audio": "assets/audio/restaurant.mp3",
+    "AnswerAudio": "assets/audio/das_restaurant.mp3"
+  },
+  {
+    "Id": "rettich",
+    "Noun": "Rettich",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Rettich.png",
+    "Audio": "assets/audio/rettich.mp3",
+    "AnswerAudio": "assets/audio/der_rettich.mp3"
+  },
+  {
+    "Id": "rock",
+    "Noun": "Rock",
+    "Article": "der",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Rock.png",
+    "Audio": "assets/audio/rock.mp3",
+    "AnswerAudio": "assets/audio/der_rock.mp3"
+  },
+  {
+    "Id": "rucksack",
+    "Noun": "Rucksack",
+    "Article": "der",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Rucksack.png",
+    "Audio": "assets/audio/rucksack.mp3",
+    "AnswerAudio": "assets/audio/der_rucksack.mp3"
+  },
+  {
+    "Id": "salz",
+    "Noun": "Salz",
+    "Article": "das",
+    "Category": "food",
+    "Image": "assets/images/420/food/Salz.png",
+    "Audio": "assets/audio/salz.mp3",
+    "AnswerAudio": "assets/audio/das_salz.mp3"
+  },
+  {
+    "Id": "schinken",
+    "Noun": "Schinken",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Schinken.png",
+    "Audio": "assets/audio/schinken.mp3",
+    "AnswerAudio": "assets/audio/der_schinken.mp3"
+  },
+  {
+    "Id": "schreibtisch",
+    "Noun": "Schreibtisch",
+    "Article": "der",
+    "Category": "school",
+    "Image": "assets/images/420/school/Schreibtisch.png",
+    "Audio": "assets/audio/schreibtisch.mp3",
+    "AnswerAudio": "assets/audio/der_schreibtisch.mp3"
+  },
+  {
+    "Id": "sessel",
+    "Noun": "Sessel",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Sessel.png",
+    "Audio": "assets/audio/sessel.mp3",
+    "AnswerAudio": "assets/audio/der_sessel.mp3"
+  },
+  {
+    "Id": "shorts",
+    "Noun": "Shorts",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Shorts.png",
+    "Audio": "assets/audio/shorts.mp3",
+    "AnswerAudio": "assets/audio/die_shorts.mp3"
+  },
+  {
+    "Id": "sicherheitskontrollpunkt",
+    "Noun": "Sicherheitskontrollpunkt",
+    "Article": "der",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Sicherheitskontrollpunkt.png",
+    "Audio": "assets/audio/sicherheitskontrollpunkt.mp3",
+    "AnswerAudio": "assets/audio/der_sicherheitskontrollpunkt.mp3"
+  },
+  {
+    "Id": "socke",
+    "Noun": "Socke",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Socke.png",
+    "Audio": "assets/audio/socke.mp3",
+    "AnswerAudio": "assets/audio/die_socke.mp3"
+  },
+  {
+    "Id": "socken",
+    "Noun": "Socken",
+    "Article": "die",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/Socken.png",
+    "Audio": "assets/audio/socken.mp3",
+    "AnswerAudio": "assets/audio/die_socken.mp3"
+  },
+  {
+    "Id": "sofa",
+    "Noun": "Sofa",
+    "Article": "das",
+    "Category": "home",
+    "Image": "assets/images/420/home/Sofa.png",
+    "Audio": "assets/audio/sofa.mp3",
+    "AnswerAudio": "assets/audio/das_sofa.mp3"
+  },
+  {
+    "Id": "sonne",
+    "Noun": "Sonne",
+    "Article": "die",
+    "Category": "nature",
+    "Image": "assets/images/420/nature/Sonne.png",
+    "Audio": "assets/audio/sonne.mp3",
+    "AnswerAudio": "assets/audio/die_sonne.mp3"
+  },
+  {
+    "Id": "sonnencreme",
+    "Noun": "Sonnencreme",
+    "Article": "die",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Sonnencreme.png",
+    "Audio": "assets/audio/sonnencreme.mp3",
+    "AnswerAudio": "assets/audio/die_sonnencreme.mp3"
+  },
+  {
+    "Id": "spargel",
+    "Noun": "Spargel",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Spargel.png",
+    "Audio": "assets/audio/spargel.mp3",
+    "AnswerAudio": "assets/audio/der_spargel.mp3"
+  },
+  {
+    "Id": "spatel",
+    "Noun": "Spatel",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Spatel.png",
+    "Audio": "assets/audio/spatel.mp3",
+    "AnswerAudio": "assets/audio/der_spatel.mp3"
+  },
+  {
+    "Id": "speckstreifen",
+    "Noun": "Speckstreifen",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Speckstreifen.png",
+    "Audio": "assets/audio/speckstreifen.mp3",
+    "AnswerAudio": "assets/audio/der_speckstreifen.mp3"
+  },
+  {
+    "Id": "speckstreifen-pl",
+    "Noun": "Speckstreifen",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Speckstreifen-pl.png",
+    "Audio": "assets/audio/speckstreifen.mp3",
+    "AnswerAudio": "assets/audio/die_speckstreifen.mp3"
+  },
+  {
+    "Id": "stern",
+    "Noun": "Stern",
+    "Article": "der",
+    "Category": "nature",
+    "Image": "assets/images/420/nature/Stern.png",
+    "Audio": "assets/audio/stern.mp3",
+    "AnswerAudio": "assets/audio/der_stern.mp3"
+  },
+  {
+    "Id": "stier",
+    "Noun": "Stier",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Stier.png",
+    "Audio": "assets/audio/stier.mp3",
+    "AnswerAudio": "assets/audio/der_stier.mp3"
+  },
+  {
+    "Id": "stift",
+    "Noun": "Stift",
+    "Article": "der",
+    "Category": "school",
+    "Image": "assets/images/420/school/Stift.png",
+    "Audio": "assets/audio/stift.mp3",
+    "AnswerAudio": "assets/audio/der_stift.mp3"
+  },
+  {
+    "Id": "strand",
+    "Noun": "Strand",
+    "Article": "der",
+    "Category": "nature",
+    "Image": "assets/images/420/nature/Strand.png",
+    "Audio": "assets/audio/strand.mp3",
+    "AnswerAudio": "assets/audio/der_strand.mp3"
+  },
+  {
+    "Id": "strandtuch",
+    "Noun": "Strandtuch",
+    "Article": "das",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Strandtuch.png",
+    "Audio": "assets/audio/strandtuch.mp3",
+    "AnswerAudio": "assets/audio/das_strandtuch.mp3"
+  },
+  {
+    "Id": "stuhl",
+    "Noun": "Stuhl",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Stuhl.png",
+    "Audio": "assets/audio/stuhl.mp3",
+    "AnswerAudio": "assets/audio/der_stuhl.mp3"
+  },
+  {
+    "Id": "t-shirt",
+    "Noun": "T-Shirt",
+    "Article": "das",
+    "Category": "clothing",
+    "Image": "assets/images/420/clothing/T-Shirt.png",
+    "Audio": "assets/audio/t-shirt.mp3",
+    "AnswerAudio": "assets/audio/das_t-shirt.mp3"
+  },
+  {
+    "Id": "tee",
+    "Noun": "Tee",
+    "Article": "der",
+    "Category": "food",
+    "Image": "assets/images/420/food/Tee.png",
+    "Audio": "assets/audio/tee.mp3",
+    "AnswerAudio": "assets/audio/der_tee.mp3"
+  },
+  {
+    "Id": "teller",
+    "Noun": "Teller",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Teller.png",
+    "Audio": "assets/audio/teller.mp3",
+    "AnswerAudio": "assets/audio/der_teller.mp3"
+  },
+  {
+    "Id": "teppich",
+    "Noun": "Teppich",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Teppich.png",
+    "Audio": "assets/audio/teppich.mp3",
+    "AnswerAudio": "assets/audio/der_teppich.mp3"
+  },
+  {
+    "Id": "tisch",
+    "Noun": "Tisch",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Tisch.png",
+    "Audio": "assets/audio/tisch.mp3",
+    "AnswerAudio": "assets/audio/der_tisch.mp3"
+  },
+  {
+    "Id": "tomate",
+    "Noun": "Tomate",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Tomate.png",
+    "Audio": "assets/audio/tomate.mp3",
+    "AnswerAudio": "assets/audio/die_tomate.mp3"
+  },
+  {
+    "Id": "vogel",
+    "Noun": "Vogel",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Vogel.png",
+    "Audio": "assets/audio/vogel.mp3",
+    "AnswerAudio": "assets/audio/der_vogel.mp3"
+  },
+  {
+    "Id": "wal",
+    "Noun": "Wal",
+    "Article": "der",
+    "Category": "animals",
+    "Image": "assets/images/420/animals/Wal.png",
+    "Audio": "assets/audio/wal.mp3",
+    "AnswerAudio": "assets/audio/der_wal.mp3"
+  },
+  {
+    "Id": "wasserkocher",
+    "Noun": "Wasserkocher",
+    "Article": "der",
+    "Category": "home",
+    "Image": "assets/images/420/home/Wasserkocher.png",
+    "Audio": "assets/audio/wasserkocher.mp3",
+    "AnswerAudio": "assets/audio/der_wasserkocher.mp3"
+  },
+  {
+    "Id": "zeitung-01",
+    "Noun": "Zeitung",
+    "Article": "die",
+    "Category": "home",
+    "Image": "assets/images/420/home/Zeitung-01.png",
+    "Audio": "assets/audio/zeitung.mp3",
+    "AnswerAudio": "assets/audio/die_zeitung.mp3"
+  },
+  {
+    "Id": "zeitung-02",
+    "Noun": "Zeitung",
+    "Article": "die",
+    "Category": "home",
+    "Image": "assets/images/420/home/Zeitung-02.png",
+    "Audio": "assets/audio/zeitung.mp3",
+    "AnswerAudio": "assets/audio/die_zeitung.mp3"
+  },
+  {
+    "Id": "zucchini",
+    "Noun": "Zucchini",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Zucchini.png",
+    "Audio": "assets/audio/zucchini.mp3",
+    "AnswerAudio": "assets/audio/die_zucchini.mp3"
+  },
+  {
+    "Id": "zug",
+    "Noun": "Zug",
+    "Article": "der",
+    "Category": "travel",
+    "Image": "assets/images/420/travel/Zug.png",
+    "Audio": "assets/audio/zug.mp3",
+    "AnswerAudio": "assets/audio/der_zug.mp3"
+  },
+  {
+    "Id": "zwiebel",
+    "Noun": "Zwiebel",
+    "Article": "die",
+    "Category": "food",
+    "Image": "assets/images/420/food/Zwiebel.png",
+    "Audio": "assets/audio/zwiebel.mp3",
+    "AnswerAudio": "assets/audio/die_zwiebel.mp3"
+  }
+]

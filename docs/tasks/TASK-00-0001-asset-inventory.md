@@ -22,22 +22,20 @@ Inventory the committed `assets/` tree for the article-practice dataset. Do not 
 
 ### Article record enumeration
 
-`assets/articles.csv` is the canonical inventory. Its `Id`, `Image`, `Audio`, and `AnswerAudio` columns enumerate all article records and their required asset paths.
+`assets/articles.json` is the canonical inventory. Its `Id`, `Image`, `Audio`, and `AnswerAudio` properties enumerate all article records and their required asset paths.
 
 ```sh
-awk -F',' 'NR > 1 {
-  printf "%s | image=%s | noun-audio=%s | answer-audio=%s\\n", $1, $5, $6, $7
-}' assets/articles.csv
+jq -r '.[] | "\(.Id) | image=\(.Image) | noun-audio=\(.Audio) | answer-audio=\(.AnswerAudio)"' assets/articles.json
 ```
 
 Result: the command enumerates 127 article records, each with one image path, one noun-audio path, and one answer-audio path.
 
 ### Integrity check
 
-The CSV has seven fields in every row, 127 unique non-empty IDs, and only the supported articles (`der`, `die`, and `das`). All 381 declared references are safe local `assets/images/` or `assets/audio/` paths that resolve to files. The 127 unique referenced images are readable PNG files and the 249 unique referenced audio files are readable MP3 files.
+The JSON has seven required properties in every record, 127 unique non-empty IDs, and only the supported articles (`der`, `die`, and `das`). All 381 declared references are safe local `assets/images/` or `assets/audio/` paths that resolve to files. The 127 unique referenced images are readable PNG files and the 249 unique referenced audio files are readable MP3 files.
 
 No paths are missing or mismatched. Five audio references are intentionally shared: `flugticket-01` and `flugticket-02` share both audio files, `zeitung-01` and `zeitung-02` share both audio files, and `speckstreifen` and `speckstreifen-pl` share the noun audio while retaining article-specific answer audio. The image filenames distinguish each corresponding variant.
 
 ## Decisions and blockers
 
-Asset availability is established locally; this task does not establish source provenance or redistribution permission. The checks above validate CSV structure, path mapping, and media readability; they do not manually verify the semantic content of each recording or image.
+Asset availability is established locally; this task does not establish source provenance or redistribution permission. The checks above validate JSON structure, path mapping, and media readability; they do not manually verify the semantic content of each recording or image.

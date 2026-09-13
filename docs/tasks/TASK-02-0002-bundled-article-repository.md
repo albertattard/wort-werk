@@ -10,12 +10,12 @@ updated: 2026-09-13
 
 ## Scope
 
-Add a repository that loads `assets/articles.csv` from Flutter's bundled assets and returns typed `Article` records using the row parser from TASK-02-0001. Keep asset I/O and content loading outside widgets.
+Add a repository that loads `assets/articles.json` from Flutter's bundled assets and returns typed `Article` records using the JSON-record mapper from TASK-02-0001. Keep asset I/O and content loading outside widgets.
 
 ## Completion criteria
 
-- The repository loads the declared CSV asset through an asset-bundle boundary.
-- It returns typed `Article` records rather than CSV strings or maps.
+- The repository loads the declared JSON asset through an asset-bundle boundary.
+- It returns typed `Article` records rather than JSON strings or maps.
 - Unit tests cover successful loading with a controlled asset-bundle double.
 - Widgets, image rendering, audio playback, answer buttons, and content-policy validation are not added.
 
@@ -25,7 +25,7 @@ Blocked by TASK-02-0001.
 
 ## Decisions and blockers
 
-The repository is the only Milestone 2 component that knows how to read the bundled CSV. TASK-02-0003 adds semantic validation to this loading path.
+The repository is the only Milestone 2 component that knows how to read the bundled JSON. TASK-02-0003 adds semantic validation to this loading path.
 
 ## Next task
 

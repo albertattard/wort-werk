@@ -36,4 +36,4 @@ An emulator or simulator does not satisfy this task. The release acceptance crit
 
 ## Next task
 
-Define the first milestone-2 task record for the article domain model and bundled CSV repository before beginning implementation. No TASK-02-0001 record exists yet.
+Complete TASK-02-0001 to define the article domain model and map JSON records before beginning repository implementation.
