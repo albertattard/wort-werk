@@ -14,38 +14,38 @@ This document is the execution and handoff source of truth for the first release
 
 - First-release scope is documented in `docs/first-release.md`.
 - Flutter application setup has not started.
-- The candidate `assets/` snapshot is committed. Task 0.1 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
-- The candidate snapshot is approved for redistribution by the project owner; task 0.2 records the authorization for all imported images and audio.
+- The full `assets/` article snapshot is committed. Task 0.1 verified that all 127 rows in `assets/articles.csv` resolve to their declared local image and audio files.
+- The full snapshot is approved for redistribution by the project owner; task 0.2 records the authorization for all imported images and audio.
 - Repository hygiene for a Flutter application is committed.
 
 ## Milestones
 
 ### 0. Content intake
 
-**Status:** in progress (task 0.2 complete; continue with curation in task 0.3)
+**Status:** in progress (tasks 0.1 through 0.3 complete; continue with validation in task 0.4)
 
-**Outcome:** A small, approved, locally bundled article-practice content set is ready for app development.
+**Outcome:** A complete, approved, locally bundled article-practice content set is ready for app development.
 
 **Scope:**
 
 1. Inventory the candidate `assets/` snapshot and verify its CSV-to-media mappings (complete: task 0.1).
 2. Record the owner authorization to bundle and redistribute the imported assets in `docs/first-release.md` (complete: task 0.2).
-3. Select an initial subset of 10 to 20 approved article records from `articles.csv`.
-4. Retain only the approved assets required by the selected records, preserving their CSV asset paths.
+3. Retain all 127 approved article records from `articles.csv` and the media they declare, preserving their CSV asset paths.
+4. Do not add sentence content or unrelated media to the release snapshot.
 5. Add a repeatable validation approach that checks unique IDs, supported articles, and asset-path existence.
 
 **Not in scope:** Creating a Flutter project, designing screens, or importing sentence content.
 
 **Completion evidence:**
 
-- The selected item IDs and asset-authorization decision are documented.
-- Every image and audio path for the selected records resolves locally.
+- The full 127-item snapshot and asset-authorization decision are documented.
+- Every image and audio path for every article record resolves locally.
 - Asset provenance and redistribution permission are explicitly recorded.
 - The content-validation check passes.
 
 **Commit boundary:** Content snapshot and provenance documentation, separate from Flutter scaffolding.
 
-**Next task:** Complete task 0.3: curate 10 to 20 approved article records and retain only their required assets.
+**Next task:** Complete task 0.4: add repeatable validation for the full approved article snapshot.
 
 ### 1. Flutter baseline and physical-device launch
 
