@@ -50,7 +50,7 @@ This document is the execution and handoff source of truth for the first release
 
 ### 1. Flutter baseline and physical-device launch
 
-**Status:** ready for physical-device launch
+**Status:** complete
 
 **Outcome:** A generated Flutter application launches on one physical target device.
 
@@ -60,7 +60,7 @@ This document is the execution and handoff source of truth for the first release
 2. Install Flutter and platform tooling, then resolve `flutter doctor` findings relevant to that target.
 3. Generate the Flutter application in this repository without replacing existing content.
 4. Declare the bundled asset directories in `pubspec.yaml`.
-5. Launch the unmodified app on the physical device.
+5. Launch the generated app, with its configured Android application ID, on the physical device.
 
 **Completion evidence:**
 
@@ -72,11 +72,13 @@ This document is the execution and handoff source of truth for the first release
 
 **Task sequence:** TASK-01-0001 (target selection) → TASK-01-0002 (toolchain) → TASK-01-0003 (scaffolding and assets) → TASK-01-0004 (physical-device launch).
 
-**Next task:** Complete TASK-01-0004 by launching the unmodified Flutter baseline on the Pixel 8.
+**Completion evidence:** On 2026-09-13, the generated baseline with its configured Android application ID built, installed, and launched on the USB-connected Google Pixel 8 (`41290DLJH001LG`). After returning the phone to its home screen, the app was manually reopened from its launcher icon. Android also successfully reopened `io.github.albertattard.wortwerk.MainActivity`. TASK-01-0004 records the commands and observed results.
+
+**Next task:** Define the first milestone-2 task record for the article domain model and bundled CSV repository.
 
 ### 2. Content model and validation
 
-**Status:** blocked by milestone 1
+**Status:** ready for task definition
 
 **Outcome:** The app loads selected article records into typed models and rejects invalid content predictably.
 
@@ -94,7 +96,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Commit boundary:** Content model, loader, validator, and tests.
 
-**Next task:** Build the article-practice interaction using the validated content model.
+**Next task:** Define the first milestone-2 task record for the article domain model and bundled CSV repository.
 
 ### 3. Article-practice exercise
 

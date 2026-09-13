@@ -1,7 +1,7 @@
 ---
 id: TASK-01-0004
 title: Launch Flutter baseline on selected physical device
-status: ready
+status: complete
 milestone: flutter_baseline_and_physical_device_launch
 depends_on: [TASK-01-0003]
 blocks: []
@@ -10,7 +10,7 @@ updated: 2026-09-13
 
 ## Scope
 
-Launch the generated, unmodified Flutter starter application on the selected physical device and verify that it can be opened from the device home screen. Do not begin application feature work.
+Launch the generated Flutter starter application, with its configured Android application ID, on the selected physical device and verify that it can be opened from the device home screen. Do not begin application feature work.
 
 ## Completion criteria
 
@@ -20,9 +20,20 @@ Launch the generated, unmodified Flutter starter application on the selected phy
 
 ## Evidence
 
-TASK-01-0003 is complete. The generated Android baseline is ready to install and
-launch on the selected Google Pixel 8.
+On 2026-09-13, the generated baseline was launched on the USB-connected Google Pixel 8 (`41290DLJH001LG`, Android 17 / API 37) with:
+
+```text
+flutter run -d 41290DLJH001LG
+```
+
+Flutter built `build/app/outputs/flutter-apk/app-debug.apk`, installed it, and started `io.github.albertattard.wortwerk.MainActivity`; the Dart VM service became available on the device. `flutter analyze` also completed with no issues before the launch.
+
+The phone was returned to its home screen and the installed app was manually reopened from its launcher icon. Android Debug Bridge also reported `Status: ok` for `io.github.albertattard.wortwerk/.MainActivity`.
 
 ## Decisions and blockers
 
 An emulator or simulator does not satisfy this task. The release acceptance criterion requires a physical-device launch.
+
+## Next task
+
+Define the first milestone-2 task record for the article domain model and bundled CSV repository before beginning implementation. No TASK-02-0001 record exists yet.
