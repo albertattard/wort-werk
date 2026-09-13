@@ -1,0 +1,19 @@
+# Normalize text files while preserving platform-specific launcher scripts.
+* text=auto
+
+*.dart text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.csv text eol=lf
+gradlew text eol=lf
+*.bat text eol=crlf
+
+# Learning media must never undergo text conversion.
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.mp3 -text
+*.m4a -text
+*.wav -text
