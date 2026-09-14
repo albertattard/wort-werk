@@ -1,7 +1,7 @@
 ---
 id: TASK-02-0001
 title: Define the article model and map valid JSON records
-status: ready
+status: complete
 milestone: content_model_and_validation
 depends_on: [TASK-01-0004]
 blocks: [TASK-02-0002, TASK-02-0003]
@@ -26,11 +26,20 @@ Define typed `Article` and immutable `JsonArticleRecord` models, a `GermanArticl
 
 ## Evidence
 
-Not started.
+On 2026-09-13, `Article`, `GermanArticle`, `JsonArticleRecord`, and the pure
+`ArticleJsonMapper` were added. Record decoding accepts only the seven
+lower-camel-case content-contract properties and reports missing, non-string,
+and unknown properties with record and available-ID context. The mapper turns
+the raw article string into the enum and rejects unsupported values.
+
+`flutter test test/content/json_article_record_test.dart` passed seven tests:
+valid `der`, `die`, and `das` mappings; an unsupported article; missing and
+non-string properties; and an unknown property. `flutter analyze` completed
+with no issues.
 
 ## Decisions and blockers
 
-JSON record mapping must remain separately testable. It owns structural-schema failures and translation of the raw article string to `GermanArticle`, including rejection of unsupported values. Collection-level validation and duplicate-ID detection belong to TASK-02-0003; loading the bundled file belongs to TASK-02-0002.
+JSON record mapping remains separately testable. It owns structural-schema failures and translation of the raw article string to `GermanArticle`, including rejection of unsupported values. Collection-level validation and duplicate-ID detection belong to TASK-02-0003; loading the bundled file belongs to TASK-02-0002.
 
 ## Next task
 

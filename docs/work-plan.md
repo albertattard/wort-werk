@@ -18,6 +18,9 @@ This document is the execution and handoff source of truth for the first release
 - The full `assets/` article snapshot is committed. TASK-00-0001 verified that all 127 records in `assets/articles.json` resolve to their declared local image and audio files.
 - The full snapshot is approved for redistribution by the project owner; TASK-00-0002 records the authorization for all imported images and audio.
 - The article snapshot is ready for application development. Repeatable content validation is scheduled in milestone 2 alongside the content loader.
+- TASK-02-0001 defines the typed article model and pure JSON-record mapping. Its
+  seven unit tests and `flutter analyze` pass; bundled-file loading remains
+  intentionally deferred to TASK-02-0002.
 - Repository hygiene for a Flutter application is committed.
 
 ## Milestones
@@ -98,7 +101,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Task sequence:** TASK-02-0001 (model and JSON record mapping) → TASK-02-0002 (bundled repository) → TASK-02-0003 (invalid-content handling) → TASK-02-0004 (full snapshot validation).
 
-**Next task:** Complete TASK-02-0001 to define the article model and map valid JSON records.
+**Next task:** Complete TASK-02-0002 to load bundled JSON through an article repository.
 
 ### 3. Article-practice exercise
 
