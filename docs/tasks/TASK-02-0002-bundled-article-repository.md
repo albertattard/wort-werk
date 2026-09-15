@@ -1,11 +1,11 @@
 ---
 id: TASK-02-0002
 title: Load bundled articles through a repository
-status: blocked
+status: complete
 milestone: content_model_and_validation
 depends_on: [TASK-02-0001]
 blocks: [TASK-02-0003, TASK-02-0004]
-updated: 2026-09-13
+updated: 2026-09-15
 ---
 
 ## Scope
@@ -23,7 +23,15 @@ Add a repository that loads `assets/articles.json` from Flutter's bundled assets
 
 ## Evidence
 
-Blocked by TASK-02-0001.
+On 2026-09-15, `BundledArticleRepository` was added with an injected
+`AssetBundle`. It loads the declared `assets/articles.json`, requires a
+top-level JSON array, and maps every object through `JsonArticleRecord` and
+`ArticleJsonMapper`. Invalid JSON includes the asset path in its
+`FormatException`; non-array roots and non-object records fail fast.
+
+`flutter test test/content/bundled_article_repository_test.dart
+test/content/json_article_record_test.dart` passed all 11 tests, including
+controlled-asset-bundle loading. `flutter analyze` completed with no issues.
 
 ## Decisions and blockers
 
