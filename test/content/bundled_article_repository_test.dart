@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wort_werk/content/bundled_article_repository.dart';
@@ -78,6 +79,113 @@ void main() {
       );
     },
   );
+
+  test('loads a valid collection through the validation path', () async {
+    final repository = BundledArticleRepository(
+      assetBundle: _StringAssetBundle(
+        jsonEncode([_validRecord(), _validRecord(id: 'birne', noun: 'Birne')]),
+      ),
+    );
+
+    final articles = await repository.loadArticles();
+
+    expect(articles.map((article) => article.id), ['apfel', 'birne']);
+  });
+
+  test('rejects a blank ID', () async {
+    await _expectInvalidCollection(_validRecord(id: ''), property: 'id');
+  });
+
+  test('rejects a malformed ID without normalizing it', () async {
+    await _expectInvalidCollection(
+      _validRecord(id: 'Apfel Pie'),
+      property: 'id',
+    );
+  });
+
+  test('rejects a duplicate ID', () async {
+    final repository = BundledArticleRepository(
+      assetBundle: _StringAssetBundle(
+        jsonEncode([_validRecord(), _validRecord(noun: 'Anderer Apfel')]),
+      ),
+    );
+
+    await expectLater(
+      repository.loadArticles(),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          allOf(contains('Article record 2'), contains('duplicates')),
+        ),
+      ),
+    );
+  });
+
+  test(
+    'rejects a blank noun while preserving authored non-blank text',
+    () async {
+      await _expectInvalidCollection(
+        _validRecord(noun: '  \t'),
+        property: 'noun',
+      );
+    },
+  );
+
+  test('rejects a malformed category without an allow-list', () async {
+    await _expectInvalidCollection(
+      _validRecord(category: 'Fruit & vegetables'),
+      property: 'category',
+    );
+  });
+
+  test('rejects an invalid image path', () async {
+    await _expectInvalidCollection(
+      _validRecord(imagePath: 'assets/audio/apfel.mp3'),
+      property: 'imagePath',
+    );
+  });
+
+  test('rejects noun-audio path traversal', () async {
+    await _expectInvalidCollection(
+      _validRecord(nounAudioPath: 'assets/audio/../images/apfel.mp3'),
+      property: 'nounAudioPath',
+    );
+  });
+
+  test('rejects an absolute media path', () async {
+    await _expectInvalidCollection(
+      _validRecord(nounAudioPath: '/assets/audio/apfel.mp3'),
+      property: 'nounAudioPath',
+    );
+  });
+
+  test('rejects an answer-audio path with the wrong extension', () async {
+    await _expectInvalidCollection(
+      _validRecord(answerAudioPath: 'assets/audio/der_apfel.wav'),
+      property: 'answerAudioPath',
+    );
+  });
+}
+
+Future<void> _expectInvalidCollection(
+  Map<String, String> record, {
+  required String property,
+}) async {
+  final repository = BundledArticleRepository(
+    assetBundle: _StringAssetBundle(jsonEncode([record])),
+  );
+
+  await expectLater(
+    repository.loadArticles(),
+    throwsA(
+      isA<FormatException>().having(
+        (error) => error.message,
+        'message',
+        allOf(contains('Article record 1'), contains('property "$property"')),
+      ),
+    ),
+  );
 }
 
 class _StringAssetBundle extends CachingAssetBundle {
@@ -93,12 +201,19 @@ class _StringAssetBundle extends CachingAssetBundle {
   }
 }
 
-Map<String, String> _validRecord() => {
-  'id': 'apfel',
-  'noun': 'Apfel',
+Map<String, String> _validRecord({
+  String id = 'apfel',
+  String noun = 'Apfel',
+  String category = 'food',
+  String imagePath = 'assets/images/420/food/Apfel.png',
+  String nounAudioPath = 'assets/audio/apfel.mp3',
+  String answerAudioPath = 'assets/audio/der_apfel.mp3',
+}) => {
+  'id': id,
+  'noun': noun,
   'article': 'der',
-  'category': 'food',
-  'imagePath': 'assets/images/420/food/Apfel.png',
-  'nounAudioPath': 'assets/audio/apfel.mp3',
-  'answerAudioPath': 'assets/audio/der_apfel.mp3',
+  'category': category,
+  'imagePath': imagePath,
+  'nounAudioPath': nounAudioPath,
+  'answerAudioPath': answerAudioPath,
 };

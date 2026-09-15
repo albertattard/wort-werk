@@ -20,9 +20,10 @@ This document is the execution and handoff source of truth for the first release
 - The article snapshot is ready for application development. Repeatable content validation is scheduled in milestone 2 alongside the content loader.
 - TASK-02-0001 defines the typed article model and pure JSON-record mapping.
   TASK-02-0002 loads the declared bundled JSON through an injected asset-bundle
-  boundary and maps it into typed articles. Their 11 focused tests and
-  `flutter analyze` pass; collection-level content validation remains deferred
-  to TASK-02-0003.
+  boundary and maps it into typed articles. TASK-02-0003 applies collection
+  policy validation for IDs, nouns, categories, and declared media paths; the
+  three tasks' 21 focused tests and `flutter analyze` pass. Checking that
+  permitted media paths exist remains deferred to TASK-02-0004.
 - Repository hygiene for a Flutter application is committed.
 
 ## Milestones
@@ -103,7 +104,7 @@ This document is the execution and handoff source of truth for the first release
 
 **Task sequence:** TASK-02-0001 (model and JSON record mapping) → TASK-02-0002 (bundled repository) → TASK-02-0003 (invalid-content handling) → TASK-02-0004 (full snapshot validation).
 
-**Next task:** Complete TASK-02-0003 to reject invalid article content predictably.
+**Next task:** Complete TASK-02-0004 to validate the complete approved content snapshot.
 
 ### 3. Article-practice exercise
 

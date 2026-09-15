@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../domain/article.dart';
+import 'article_content_validator.dart';
 import 'json_article_record.dart';
 
 class BundledArticleRepository {
@@ -11,12 +12,14 @@ class BundledArticleRepository {
     ArticleJsonMapper mapper = const ArticleJsonMapper(),
   }) : this._(assetBundle, mapper);
 
-  const BundledArticleRepository._(this._assetBundle, this._mapper);
+  const BundledArticleRepository._(this._assetBundle, this._mapper)
+    : _validator = const ArticleContentValidator();
 
   static const assetPath = 'assets/articles.json';
 
   final AssetBundle _assetBundle;
   final ArticleJsonMapper _mapper;
+  final ArticleContentValidator _validator;
 
   Future<List<Article>> loadArticles() async {
     final contents = await _assetBundle.loadString(assetPath);
@@ -28,10 +31,12 @@ class BundledArticleRepository {
       );
     }
 
-    return [
+    final articles = [
       for (var index = 0; index < decoded.length; index++)
         _mapRecord(decoded[index], index),
     ];
+    _validator.validate(articles);
+    return articles;
   }
 
   Object? _decode(String contents) {

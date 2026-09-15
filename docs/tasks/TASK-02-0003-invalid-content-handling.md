@@ -1,11 +1,11 @@
 ---
 id: TASK-02-0003
 title: Reject invalid article content predictably
-status: blocked
+status: complete
 milestone: content_model_and_validation
 depends_on: [TASK-02-0001, TASK-02-0002]
 blocks: [TASK-02-0004]
-updated: 2026-09-13
+updated: 2026-09-15
 ---
 
 ## Scope
@@ -22,7 +22,16 @@ Define and implement deterministic collection-level content validation for loade
 
 ## Evidence
 
-Blocked by TASK-02-0001 and TASK-02-0002.
+On 2026-09-15, `ArticleContentValidator` was added to the bundled repository
+loading path. It rejects blank, malformed, and duplicate IDs; blank nouns;
+malformed categories; and image/audio paths with an invalid prefix, extension,
+or traversal. Validation stops at the first invalid record, before the
+repository returns a collection.
+
+`flutter test test/content/bundled_article_repository_test.dart
+test/content/json_article_record_test.dart` passed all 21 tests, including a
+valid collection and each invalid-content category. `flutter analyze` completed
+with no issues, and `git diff --check` passed.
 
 ## Decisions and blockers
 
